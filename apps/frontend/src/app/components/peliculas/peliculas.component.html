@@ -1,0 +1,61 @@
+<div class="peliculas-container">
+  <div class="peliculas-header">
+    <h1>Películas en Cartelera</h1>
+    <p>Descubre las mejores películas disponibles</p>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando películas...</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-container">
+    <div class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
+  </div>
+
+  <div *ngIf="!isLoading && !errorMessage" class="peliculas-grid">
+    <div *ngFor="let pelicula of peliculas" class="pelicula-card">
+      <div class="pelicula-poster">
+        <img 
+          [src]="pelicula.posterUrl || '/assets/images/default-poster.svg'" 
+          [alt]="pelicula.titulo"
+          [title]="pelicula.titulo"
+          (error)="onImageError($event)"
+        />
+        <div class="pelicula-overlay">
+          <button class="btn btn-primary" (click)="verDetalle(pelicula)">
+            Ver Detalles
+          </button>
+        </div>
+      </div>
+      
+      <div class="pelicula-info">
+        <h3 class="pelicula-titulo">{{ pelicula.titulo }}</h3>
+        <p class="pelicula-clasificacion">{{ pelicula.clasificacion }}</p>
+        <p class="pelicula-duracion">{{ getDuracionString(pelicula.duracionMin) }}</p>
+        <p class="pelicula-generos">{{ getGenerosString(pelicula.generos) }}</p>
+        
+        <div class="pelicula-actions">
+          <button class="btn btn-secondary" (click)="verDetalle(pelicula)">
+            <i class="fas fa-info-circle"></i>
+            Detalles
+          </button>
+          <button class="btn btn-primary" (click)="verFunciones(pelicula)">
+            <i class="fas fa-ticket-alt"></i>
+            Ver Funciones
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!isLoading && !errorMessage && peliculas.length === 0" class="empty-state">
+    <div class="empty-icon">
+      <i class="fas fa-film"></i>
+    </div>
+    <h3>No hay películas disponibles</h3>
+    <p>Pronto tendremos nuevas películas en cartelera</p>
+  </div>
+</div>

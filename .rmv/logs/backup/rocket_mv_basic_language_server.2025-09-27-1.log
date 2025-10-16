@@ -1,0 +1,6 @@
+2025-09-27 16:51:54.961 [pool-3-thread-1] INFO  com.rs.mv.mvvs.client.catalog.from.scan.CurrentPathScanner - [client:400205]scan file in current open file directory(C:/Users/AdminORT/cine-app/apps/backend/src/pedidos)
+2025-09-27 18:12:47.112 [pool-3-thread-1] INFO  com.rs.mv.mvvs.client.catalog.from.scan.CurrentPathScanner - [client:400205]scan file in current open file directory(C:/Users/AdminORT/cine-app/apps/frontend/src/app/components/vendedor)
+2025-09-27 21:02:13.384 [pool-3-thread-1] INFO  com.rs.mv.mvvs.client.catalog.from.scan.CurrentPathScanner - [client:400205]scan file in current open file directory(C:/Users/AdminORT/cine-app/apps/frontend/src/app/components/vendedor)
+2025-09-27 22:32:24.986 [pool-3-thread-1] INFO  com.rs.mv.mvvs.client.catalog.from.scan.CurrentPathScanner - [client:400205]scan file in current open file directory(C:/Users/AdminORT/cine-app/apps/frontend/src/app/components/admin/dulceria)
+2025-09-27 22:33:57.266 [pool-3-thread-1] INFO  com.rs.mv.mvvs.client.catalog.from.scan.CurrentPathScanner - [client:400205]scan file in current open file directory(C:/Users/AdminORT/cine-app/apps/backend/src/boletos)
+2025-09-27 22:46:36.465 [pool-3-thread-1] INFO  com.rs.mv.mvvs.client.catalog.from.scan.CurrentPathScanner - [client:400205]scan file in current open file directory(C:/Users/AdminORT/cine-app/apps/backend/src/boletos)

@@ -1,0 +1,53 @@
+<div class="vendedor-container">
+  <div class="vendedor-header">
+    <h1>Panel de Vendedor</h1>
+    <p>Gestiona las ventas y atiende a los clientes</p>
+  </div>
+
+  <div class="vendedor-grid">
+    <div class="vendedor-card">
+      <div class="card-icon">
+        <i class="fas fa-ticket-alt"></i>
+      </div>
+      <h3>Vender Boletos</h3>
+      <p>Vende boletos para las funciones disponibles</p>
+      <button class="btn btn-primary" (click)="venderBoletos()">Vender Boletos</button>
+    </div>
+
+    <div class="vendedor-card">
+      <div class="card-icon">
+        <i class="fas fa-shopping-cart"></i>
+      </div>
+      <h3>Vender Dulcería</h3>
+      <p>Gestiona las ventas de productos de dulcería</p>
+      <button class="btn btn-primary" (click)="venderDulceria()">Vender Dulcería</button>
+    </div>
+
+    <div class="vendedor-card">
+      <div class="card-icon">
+        <i class="fas fa-qrcode"></i>
+      </div>
+      <h3>Validar Boletos</h3>
+      <p>Escanea y valida códigos QR de boletos</p>
+      <button class="btn btn-primary" (click)="validarBoletos()">Validar</button>
+    </div>
+
+    <div class="vendedor-card">
+      <div class="card-icon">
+        <i class="fas fa-candy-cane"></i>
+      </div>
+      <h3>Entregar Dulcería Web</h3>
+      <p>Escanea QR y entrega pedidos de dulcería web</p>
+      <button class="btn btn-primary" (click)="validarDulceria()">Entregar</button>
+    </div>
+
+    <div class="vendedor-card">
+      <div class="card-icon">
+        <i class="fas fa-chart-line"></i>
+      </div>
+      <h3>Mis Ventas</h3>
+      <p>Consulta el historial de tus ventas</p>
+      <button class="btn btn-primary" (click)="verMisVentas()">Ver Ventas</button>
+    </div>
+  </div>
+</div>

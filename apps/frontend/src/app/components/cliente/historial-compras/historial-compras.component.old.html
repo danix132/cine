@@ -1,0 +1,199 @@
+<div class="historial-container">
+  <!-- Header -->
+  <div class="historial-header">
+    <button class="btn-volver" (click)="volver()">
+      <i class="fas fa-arrow-left"></i> Volver
+    </button>
+    <h1><i class="fas fa-history"></i> Historial de Compras</h1>
+    <p>Consulta todas tus compras de boletos y dulcería</p>
+  </div>
+
+  <!-- Estadísticas -->
+  <div class="estadisticas-grid" *ngIf="!isLoading">
+    <div class="stat-card stat-total">
+      <div class="stat-icon">
+        <i class="fas fa-dollar-sign"></i>
+      </div>
+      <div class="stat-info">
+        <div class="stat-label">Total Gastado</div>
+        <div class="stat-value">${{ totalGastado.toFixed(2) }}</div>
+      </div>
+    </div>
+
+    <div class="stat-card stat-boletos">
+      <div class="stat-icon">
+        <i class="fas fa-ticket-alt"></i>
+      </div>
+      <div class="stat-info">
+        <div class="stat-label">Boletos Comprados</div>
+        <div class="stat-value">{{ totalBoletos }}</div>
+        <div class="stat-detalle">{{ boletosValidados }} validados</div>
+      </div>
+    </div>
+
+    <div class="stat-card stat-dulceria">
+      <div class="stat-icon">
+        <i class="fas fa-candy-cane"></i>
+      </div>
+      <div class="stat-info">
+        <div class="stat-label">Productos Dulcería</div>
+        <div class="stat-value">{{ totalDulceria }}</div>
+        <div class="stat-detalle">{{ dulceriasCanjeadas }} canjeados</div>
+      </div>
+    </div>
+
+    <div class="stat-card stat-compras">
+      <div class="stat-icon">
+        <i class="fas fa-shopping-bag"></i>
+      </div>
+      <div class="stat-info">
+        <div class="stat-label">Total Compras</div>
+        <div class="stat-value">{{ historial.length }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filtros-card" *ngIf="!isLoading">
+    <div class="filtros-row">
+      <div class="filtro-item">
+        <label for="filtroTipo" class="form-label">Tipo:</label>
+        <select 
+          id="filtroTipo" 
+          class="form-select" 
+          [(ngModel)]="filtroTipo"
+          (change)="aplicarFiltros()">
+          <option value="TODOS">Todos</option>
+          <option value="BOLETO">Boletos</option>
+          <option value="DULCERIA">Dulcería</option>
+        </select>
+      </div>
+
+      <div class="filtro-item">
+        <label for="filtroEstado" class="form-label">Estado:</label>
+        <select 
+          id="filtroEstado" 
+          class="form-select" 
+          [(ngModel)]="filtroEstado"
+          (change)="aplicarFiltros()">
+          <option value="TODOS">Todos</option>
+          <option value="CANJEADO">Canjeados</option>
+          <option value="PENDIENTE">Pendientes</option>
+        </select>
+      </div>
+
+      <div class="filtro-item flex-grow">
+        <label for="filtroBusqueda" class="form-label">Buscar:</label>
+        <input 
+          type="text" 
+          id="filtroBusqueda"
+          class="form-control" 
+          placeholder="Buscar por descripción..."
+          [(ngModel)]="filtroBusqueda"
+          (input)="aplicarFiltros()">
+      </div>
+
+      <div class="filtro-item" *ngIf="hayFiltrosActivos()">
+        <label class="form-label invisible">.</label>
+        <button class="btn btn-secondary" (click)="limpiarFiltros()">
+          <i class="fas fa-times"></i> Limpiar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando historial...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="errorMessage && !isLoading" class="alert alert-danger">
+    <i class="fas fa-exclamation-circle"></i> {{ errorMessage }}
+  </div>
+
+  <!-- Lista de compras -->
+  <div *ngIf="!isLoading && !errorMessage" class="historial-lista">
+    <!-- Sin resultados -->
+    <div *ngIf="historialFiltrado.length === 0" class="empty-state">
+      <i class="fas fa-inbox"></i>
+      <h3>No hay compras</h3>
+      <p *ngIf="hayFiltrosActivos()">No se encontraron compras con los filtros aplicados</p>
+      <p *ngIf="!hayFiltrosActivos()">Aún no has realizado ninguna compra</p>
+      <button class="btn btn-primary" (click)="volver()" *ngIf="!hayFiltrosActivos()">
+        <i class="fas fa-shopping-cart"></i> Ir a Comprar
+      </button>
+    </div>
+
+    <!-- Items del historial -->
+    <div class="historial-item" *ngFor="let item of historialFiltrado">
+      <div class="item-header">
+        <div class="item-tipo">
+          <span class="tipo-badge" [class.tipo-boleto]="item.tipo === 'BOLETO'" 
+                [class.tipo-dulceria]="item.tipo === 'DULCERIA'">
+            <i class="fas" [class.fa-ticket-alt]="item.tipo === 'BOLETO'" 
+               [class.fa-candy-cane]="item.tipo === 'DULCERIA'"></i>
+            {{ item.tipo }}
+          </span>
+        </div>
+        <div class="item-fecha">
+          <i class="fas fa-calendar-alt"></i>
+          {{ item.fecha | date:'dd/MM/yyyy HH:mm' }}
+        </div>
+      </div>
+
+      <div class="item-body">
+        <div class="item-info">
+          <h4>{{ item.descripcion }}</h4>
+          <div class="item-detalles">
+            <span class="detalle-cantidad">
+              <i class="fas fa-box"></i> Cantidad: <strong>{{ item.cantidad }}</strong>
+            </span>
+            <span class="detalle-precio">
+              <i class="fas fa-dollar-sign"></i> Precio: <strong>${{ item.precio.toFixed(2) }}</strong>
+            </span>
+            <span class="detalle-total">
+              <i class="fas fa-receipt"></i> Total: <strong>${{ item.total.toFixed(2) }}</strong>
+            </span>
+          </div>
+        </div>
+
+        <!-- Código QR (solo para boletos) -->
+        <div class="item-qr" *ngIf="item.codigoQR && item.qrCodeUrl">
+          <div class="qr-container" (click)="mostrarQRModal(item)">
+            <img [src]="item.qrCodeUrl" alt="Código QR" class="qr-image" />
+            <div class="qr-overlay">
+              <i class="fas fa-search-plus"></i>
+              <span>Ver QR</span>
+            </div>
+          </div>
+          <div class="qr-codigo">{{ item.codigoQR }}</div>
+        </div>
+
+        <div class="item-estado">
+          <div class="estado-badge" [ngClass]="getEstadoClass(item.estado)">
+            {{ getEstadoTexto(item.estado) }}
+          </div>
+          <div class="canjeado-badge" *ngIf="item.canjeado">
+            <i class="fas fa-check-circle"></i> Canjeado
+          </div>
+          <div class="pendiente-badge" *ngIf="!item.canjeado && item.estado !== 'CANCELADO'">
+            <i class="fas fa-clock"></i> Pendiente
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resumen de resultados -->
+    <div class="resultados-info" *ngIf="historialFiltrado.length > 0">
+      <p>
+        Mostrando <strong>{{ historialFiltrado.length }}</strong> 
+        {{ historialFiltrado.length === 1 ? 'compra' : 'compras' }}
+        <span *ngIf="historialFiltrado.length !== historial.length">
+          de <strong>{{ historial.length }}</strong> total{{ historial.length !== 1 ? 'es' : '' }}
+        </span>
+      </p>
+    </div>
+  </div>
+</div>

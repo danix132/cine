@@ -1,0 +1,333 @@
+.admin-peliculas {
+  padding: 20px;
+}
+.admin-peliculas .header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.admin-peliculas .header h2 {
+  margin: 0;
+  font-size: 24px;
+}
+.admin-peliculas .peliculas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
+.admin-peliculas .pelicula-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.2s;
+}
+.admin-peliculas .pelicula-card:hover {
+  transform: translateY(-5px);
+}
+.admin-peliculas .pelicula-card img {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+}
+.admin-peliculas .pelicula-card .pelicula-info {
+  padding: 15px;
+}
+.admin-peliculas .pelicula-card .pelicula-info h3 {
+  margin: 0 0 10px;
+  font-size: 18px;
+}
+.admin-peliculas .pelicula-card .pelicula-info .duracion, .admin-peliculas .pelicula-card .pelicula-info .clasificacion {
+  color: #666;
+  margin: 5px 0;
+}
+.admin-peliculas .pelicula-card .pelicula-info .estado {
+  color: #444;
+  margin: 5px 0;
+  font-weight: 500;
+}
+.admin-peliculas .pelicula-card .pelicula-info .acciones {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+.admin-peliculas .pelicula-card .pelicula-info .acciones button {
+  flex: 1;
+  font-size: 0.9rem;
+  padding: 6px 12px;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+.modal .modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.modal .modal-content h3 {
+  margin: 0 0 20px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+.form-group .form-control {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+.form-group .form-control:focus {
+  outline: none;
+  border-color: #667eea;
+}
+.form-group textarea.form-control {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+.form-actions button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.form-actions button.btn-secondary {
+  background: #6c757d;
+  color: white;
+  border: none;
+}
+.form-actions button.btn-secondary:hover {
+  background: #5a6268;
+}
+.form-actions button.btn-info {
+  background: #17a2b8;
+  color: white;
+  border: none;
+}
+.form-actions button.btn-info:hover {
+  background: #138496;
+}
+.form-actions button.btn-info:disabled {
+  background: #7cc7d2;
+  cursor: not-allowed;
+}
+.form-actions button.btn-warning {
+  background: #ffc107;
+  color: #212529;
+  border: none;
+}
+.form-actions button.btn-warning:hover {
+  background: #e0a800;
+}
+.form-actions button.btn-primary {
+  background: #667eea;
+  color: white;
+  border: none;
+}
+.form-actions button.btn-primary:hover {
+  background: #5a6edb;
+}
+.form-actions button.btn-primary:disabled {
+  background: #b7c0ea;
+  cursor: not-allowed;
+}
+
+.alert {
+  padding: 10px 15px;
+  margin: 15px 0;
+  border: 1px solid transparent;
+  border-radius: 4px;
+}
+.alert.alert-success {
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+  color: #155724;
+}
+.alert.alert-warning {
+  background-color: #fff3cd;
+  border-color: #ffeaa7;
+  color: #856404;
+}
+.alert.alert-danger {
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+  color: #721c24;
+}
+.alert pre {
+  margin: 0;
+  white-space: pre-wrap;
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
+.debug-info {
+  background: #f8f9fa;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  border: 1px solid #e9ecef;
+}
+.debug-info .debug-errors {
+  color: #dc3545;
+  margin-top: 5px;
+}
+
+.filtros-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+.filtros-card .card-body {
+  padding: 20px;
+}
+.filtros-card .filtros-row {
+  display: flex;
+  gap: 1cm;
+  align-items: end;
+}
+.filtros-card .filtros-row .filtro-pelicula {
+  flex: 1 1 40%;
+}
+.filtros-card .filtros-row .filtro-estado {
+  flex: 1 1 25%;
+}
+.filtros-card .filtros-row .filtro-genero {
+  flex: 1 1 25%;
+}
+.filtros-card .row {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: end;
+}
+.filtros-card .row > div {
+  flex: 0 0 auto;
+}
+.filtros-card .row .col-md-3 {
+  width: 25%;
+}
+.filtros-card .row .col-md-4 {
+  width: 33.333333%;
+}
+.filtros-card .row .col-md-1 {
+  width: 8.333333%;
+}
+
+.position-relative {
+  position: relative;
+}
+
+.sugerencias-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+.sugerencias-dropdown .sugerencia-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.2s;
+}
+.sugerencias-dropdown .sugerencia-item:hover, .sugerencias-dropdown .sugerencia-item.active {
+  background-color: #f8f9fa;
+}
+.sugerencias-dropdown .sugerencia-item:last-child {
+  border-bottom: none;
+}
+.sugerencias-dropdown .sugerencia-item .sugerencia-poster {
+  width: 40px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+.sugerencias-dropdown .sugerencia-item .sugerencia-info {
+  flex: 1;
+  min-width: 0;
+}
+.sugerencias-dropdown .sugerencia-item .sugerencia-info .sugerencia-titulo {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sugerencias-dropdown .sugerencia-item .sugerencia-info .sugerencia-detalles {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+.sugerencias-dropdown .sugerencia-item .sugerencia-info .sugerencia-detalles .badge {
+  font-size: 0.75rem;
+  padding: 2px 6px;
+}
+.sugerencias-dropdown .sugerencia-item .sugerencia-info .sugerencia-detalles .text-muted {
+  font-size: 0.85rem;
+}
+.sugerencias-dropdown .sugerencia-item .sugerencia-info .sugerencia-generos {
+  font-size: 0.8rem;
+  color: #6c757d;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sugerencias-dropdown .no-sugerencias {
+  padding: 20px;
+  text-align: center;
+  color: #6c757d;
+}
+.sugerencias-dropdown .no-sugerencias i {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 1.5rem;
+}
+
+.no-results,
+.no-movies {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}

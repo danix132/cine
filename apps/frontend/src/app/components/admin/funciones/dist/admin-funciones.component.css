@@ -1,0 +1,500 @@
+.admin-funciones {
+  padding: 20px;
+}
+.admin-funciones .header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.admin-funciones .header h2 {
+  margin: 0;
+  font-size: 24px;
+  color: #333;
+}
+.admin-funciones .header .btn {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 500;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.admin-funciones .header .btn.btn-success {
+  background: #28a745;
+  color: white;
+  border: none;
+}
+.admin-funciones .header .btn.btn-success:hover {
+  background: #218838;
+  transform: translateY(-1px);
+}
+.admin-funciones .filtros-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+.admin-funciones .filtros-card .card-body {
+  padding: 20px;
+}
+.admin-funciones .filtros-card .card-body .row {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+.admin-funciones .filtros-card .card-body .row .col-md-4 {
+  flex: 1;
+  min-width: 200px;
+}
+.admin-funciones .filtros-card .card-body .row .col-md-4 .form-label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: #555;
+}
+.admin-funciones .filtros-card .card-body .row .col-md-4 .form-control {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.95rem;
+}
+.admin-funciones .filtros-card .card-body .row .col-md-4 .form-control:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+}
+.admin-funciones .loading-container {
+  text-align: center;
+  padding: 40px;
+}
+.admin-funciones .loading-container .spinner-border {
+  width: 2rem;
+  height: 2rem;
+  border: 0.25em solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spinner-border 0.75s linear infinite;
+  color: #667eea;
+}
+.admin-funciones .funciones-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+.admin-funciones .funciones-card .card-body {
+  padding: 0;
+}
+.admin-funciones .funciones-card .card-body .table-responsive {
+  border-radius: 8px;
+}
+.admin-funciones .funciones-card .card-body .table-responsive table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+}
+.admin-funciones .funciones-card .card-body .table-responsive table thead .table-dark {
+  background-color: #343a40;
+}
+.admin-funciones .funciones-card .card-body .table-responsive table thead .table-dark th {
+  background-color: #343a40;
+  color: white;
+  border-color: #454d55;
+  padding: 12px;
+  font-weight: 600;
+  text-align: left;
+  border-bottom: 2px solid #454d55;
+}
+.admin-funciones .funciones-card .card-body .table-responsive table tbody tr {
+  border-bottom: 1px solid #dee2e6;
+  transition: background-color 0.15s ease;
+}
+.admin-funciones .funciones-card .card-body .table-responsive table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+.admin-funciones .funciones-card .card-body .table-responsive table tbody tr.table-danger {
+  background-color: #f8d7da;
+}
+.admin-funciones .funciones-card .card-body .table-responsive table tbody tr.table-danger:hover {
+  background-color: #f5c6cb;
+}
+.admin-funciones .funciones-card .card-body .table-responsive table tbody tr td {
+  padding: 12px;
+  vertical-align: middle;
+}
+.admin-funciones .funciones-card .card-body .table-responsive table tbody tr td strong {
+  color: #333;
+  font-weight: 600;
+}
+.admin-funciones .funciones-card .card-body .table-responsive table tbody tr td .text-muted {
+  color: #6c757d;
+  font-size: 0.875em;
+}
+.admin-funciones .funciones-card .card-body .table-responsive table tbody tr td .pelicula-info .poster-thumbnail {
+  width: 50px;
+  height: 75px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 2px solid #e9ecef;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+.admin-funciones .funciones-card .card-body .table-responsive table tbody tr td .pelicula-info .poster-thumbnail:hover {
+  transform: scale(1.05);
+  border-color: #667eea;
+}
+.admin-funciones .funciones-card .card-body .table-responsive table tbody tr td .pelicula-info div {
+  flex: 1;
+  min-width: 0;
+}
+.admin-funciones .funciones-card .card-body .table-responsive table tbody tr td .pelicula-info div strong {
+  display: block;
+  line-height: 1.3;
+  margin-bottom: 2px;
+}
+.admin-funciones .funciones-card .card-body .table-responsive table tbody tr td .pelicula-info div small {
+  display: block;
+  line-height: 1.2;
+  margin-bottom: 1px;
+}
+.admin-funciones .funciones-card .card-body .table-responsive table tbody tr td .badge {
+  padding: 0.375em 0.75em;
+  font-size: 0.75em;
+  font-weight: 500;
+  border-radius: 0.375rem;
+}
+.admin-funciones .funciones-card .card-body .table-responsive table tbody tr td .badge.bg-info {
+  background-color: #0dcaf0 !important;
+  color: #000;
+}
+.admin-funciones .funciones-card .card-body .table-responsive table tbody tr td .badge.bg-success {
+  background-color: #198754 !important;
+  color: white;
+}
+.admin-funciones .funciones-card .card-body .table-responsive table tbody tr td .badge.bg-danger {
+  background-color: #dc3545 !important;
+  color: white;
+}
+.admin-funciones .funciones-card .card-body .table-responsive table tbody tr td .badge.bg-primary {
+  background-color: #0d6efd !important;
+  color: white;
+}
+.admin-funciones .funciones-card .card-body .table-responsive table tbody tr td .btn-group {
+  display: flex;
+  gap: 5px;
+}
+.admin-funciones .funciones-card .card-body .table-responsive table tbody tr td .btn-group .btn {
+  padding: 4px 8px;
+  font-size: 0.875rem;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+.admin-funciones .funciones-card .card-body .table-responsive table tbody tr td .btn-group .btn.btn-sm {
+  padding: 4px 8px;
+  font-size: 0.775rem;
+}
+.admin-funciones .funciones-card .card-body .table-responsive table tbody tr td .btn-group .btn.btn-outline-primary {
+  color: #0d6efd;
+  border-color: #0d6efd;
+  background: transparent;
+}
+.admin-funciones .funciones-card .card-body .table-responsive table tbody tr td .btn-group .btn.btn-outline-primary:hover {
+  background: #0d6efd;
+  color: white;
+}
+.admin-funciones .funciones-card .card-body .table-responsive table tbody tr td .btn-group .btn.btn-outline-warning {
+  color: #fd7e14;
+  border-color: #fd7e14;
+  background: transparent;
+}
+.admin-funciones .funciones-card .card-body .table-responsive table tbody tr td .btn-group .btn.btn-outline-warning:hover {
+  background: #fd7e14;
+  color: white;
+}
+.admin-funciones .funciones-card .card-body .table-responsive table tbody tr td .btn-group .btn.btn-outline-warning:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.admin-funciones .funciones-card .card-body .table-responsive table tbody tr td .btn-group .btn.btn-outline-danger {
+  color: #dc3545;
+  border-color: #dc3545;
+  background: transparent;
+}
+.admin-funciones .funciones-card .card-body .table-responsive table tbody tr td .btn-group .btn.btn-outline-danger:hover {
+  background: #dc3545;
+  color: white;
+}
+.admin-funciones .funciones-card .card-body .pagination {
+  display: flex;
+  padding-left: 0;
+  list-style: none;
+  border-radius: 0.375rem;
+  justify-content: center;
+  margin: 20px 0;
+}
+.admin-funciones .funciones-card .card-body .pagination .page-item.disabled .page-link {
+  color: #6c757d;
+  pointer-events: none;
+  cursor: auto;
+  background-color: #fff;
+  border-color: #dee2e6;
+}
+.admin-funciones .funciones-card .card-body .pagination .page-item.active .page-link {
+  z-index: 3;
+  color: #fff;
+  background-color: #667eea;
+  border-color: #667eea;
+}
+.admin-funciones .funciones-card .card-body .pagination .page-item .page-link {
+  position: relative;
+  display: block;
+  padding: 0.375rem 0.75rem;
+  margin-left: -1px;
+  line-height: 1.25;
+  color: #667eea;
+  text-decoration: none;
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+  cursor: pointer;
+}
+.admin-funciones .funciones-card .card-body .pagination .page-item .page-link:hover {
+  z-index: 2;
+  color: #5a6edb;
+  text-decoration: none;
+  background-color: #e9ecef;
+  border-color: #dee2e6;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1050;
+}
+.modal .modal-dialog {
+  margin: 1.75rem auto;
+  max-width: 800px;
+  width: 90%;
+}
+.modal .modal-dialog .modal-content {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.15);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+.modal .modal-dialog .modal-content .modal-header {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #dee2e6;
+}
+.modal .modal-dialog .modal-content .modal-header .modal-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+.modal .modal-dialog .modal-content .modal-header .btn-close {
+  box-sizing: content-box;
+  width: 1em;
+  height: 1em;
+  padding: 0.25em;
+  color: #000;
+  background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='m.235 1.027 1.027-.235 5.738 5.739 5.739-5.739 1.027.235-.235 1.027-5.739 5.738 5.739 5.739-.235 1.027-1.027-.235-5.739-5.739-5.738 5.739-1.027-.235.235-1.027 5.739-5.739-5.739-5.738z'/%3e%3c/svg%3e") center/1em auto no-repeat;
+  border: 0;
+  border-radius: 0.375rem;
+  opacity: 0.5;
+  cursor: pointer;
+}
+.modal .modal-dialog .modal-content .modal-header .btn-close:hover {
+  opacity: 0.75;
+}
+.modal .modal-dialog .modal-content .modal-body {
+  position: relative;
+  flex: 1 1 auto;
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+.modal .modal-dialog .modal-content .modal-body .pelicula-detalle .poster-detalle {
+  width: 120px;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid #e9ecef;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
+}
+.modal .modal-dialog .modal-content .modal-body .pelicula-detalle div {
+  flex: 1;
+}
+.modal .modal-dialog .modal-content .modal-body .pelicula-detalle div p {
+  margin-bottom: 0.75rem;
+}
+.modal .modal-dialog .modal-content .modal-body .pelicula-detalle div p strong {
+  color: #495057;
+  font-weight: 600;
+}
+.modal .modal-dialog .modal-content .modal-body .row {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 -0.75rem;
+}
+.modal .modal-dialog .modal-content .modal-body .row .col-md-6 {
+  flex: 0 0 auto;
+  width: 50%;
+  padding: 0 0.75rem;
+}
+@media (max-width: 767.98px) {
+  .modal .modal-dialog .modal-content .modal-body .row .col-md-6 {
+    width: 100%;
+  }
+}
+.modal .modal-dialog .modal-content .modal-body .row .col-md-6 .mb-3 {
+  margin-bottom: 1rem;
+}
+.modal .modal-dialog .modal-content .modal-body .row .col-md-6 .form-label {
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #212529;
+}
+.modal .modal-dialog .modal-content .modal-body .row .col-md-6 .form-control {
+  display: block;
+  width: 100%;
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #212529;
+  background-color: #fff;
+  background-image: none;
+  border: 1px solid #ced4da;
+  border-radius: 0.375rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+.modal .modal-dialog .modal-content .modal-body .row .col-md-6 .form-control:focus {
+  color: #212529;
+  background-color: #fff;
+  border-color: #86b7fe;
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+.modal .modal-dialog .modal-content .modal-body .row .col-md-6 .text-danger {
+  color: #dc3545;
+  font-size: 0.875em;
+  margin-top: 0.25rem;
+}
+.modal .modal-dialog .modal-content .modal-body .d-flex {
+  display: flex;
+}
+.modal .modal-dialog .modal-content .modal-body .d-flex.justify-content-end {
+  justify-content: flex-end;
+}
+.modal .modal-dialog .modal-content .modal-body .d-flex .btn {
+  padding: 0.375rem 0.75rem;
+  margin-bottom: 0;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: 0.375rem;
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+.modal .modal-dialog .modal-content .modal-body .d-flex .btn.me-2 {
+  margin-right: 0.5rem;
+}
+.modal .modal-dialog .modal-content .modal-body .d-flex .btn.btn-secondary {
+  color: #fff;
+  background-color: #6c757d;
+  border-color: #6c757d;
+}
+.modal .modal-dialog .modal-content .modal-body .d-flex .btn.btn-secondary:hover {
+  background-color: #5c636a;
+  border-color: #565e64;
+}
+.modal .modal-dialog .modal-content .modal-body .d-flex .btn.btn-primary {
+  color: #fff;
+  background-color: #667eea;
+  border-color: #667eea;
+}
+.modal .modal-dialog .modal-content .modal-body .d-flex .btn.btn-primary:hover {
+  background-color: #5a6edb;
+  border-color: #546de5;
+}
+.modal .modal-dialog .modal-content .modal-body .d-flex .btn.btn-primary:disabled {
+  background-color: #b7c0ea;
+  border-color: #b7c0ea;
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+.modal .modal-dialog .modal-content .modal-body .d-flex .btn .spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+  border-width: 0.2em;
+}
+.modal .modal-dialog .modal-content .modal-footer {
+  display: flex;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 1rem;
+  border-top: 1px solid #dee2e6;
+}
+.modal .modal-dialog .modal-content .modal-footer .btn {
+  margin: 0.25rem;
+}
+
+.btn-danger:hover {
+  background-color: #c82333 !important;
+  border-color: #bd2130 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+}
+.btn-danger:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(220, 53, 69, 0.2);
+}
+.btn-danger .fa-trash {
+  transition: transform 0.2s ease;
+}
+.btn-danger:hover .fa-trash {
+  transform: scale(1.1);
+}
+
+@keyframes spinner-border {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}

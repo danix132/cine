@@ -1,0 +1,193 @@
+<div class="validar-container">
+  <!-- Header -->
+  <div class="validar-header">
+    <button class="btn-volver" (click)="volver()">
+      <i class="fas fa-arrow-left"></i> Volver
+    </button>
+    <h1><i class="fas fa-candy-cane"></i> Validar Pedidos de Dulcería Web</h1>
+    <p>Escanea el código QR del pedido para entregar dulcería</p>
+  </div>
+
+  <div class="validar-content">
+    <!-- Visor de cámara -->
+    <div class="camara-section">
+      <div class="camara-container" [class.activa]="camaraActiva">
+        <video id="qr-video" autoplay playsinline></video>
+        <canvas id="qr-canvas" style="display: none;"></canvas>
+        
+        <!-- Overlay de guía -->
+        <div class="qr-overlay">
+          <div class="qr-frame"></div>
+          <p class="qr-instruccion">Coloca el código QR dentro del marco</p>
+        </div>
+
+        <!-- Estado de la cámara -->
+        <div class="camara-estado" *ngIf="!camaraActiva">
+          <i class="fas fa-camera-slash"></i>
+          <p>Cámara desactivada</p>
+        </div>
+      </div>
+
+      <!-- Controles de cámara -->
+      <div class="camara-controles">
+        <button 
+          class="btn-toggle-camara" 
+          (click)="toggleCamara()"
+          [class.activa]="camaraActiva"
+        >
+          <i class="fas" [class.fa-camera]="!camaraActiva" [class.fa-stop]="camaraActiva"></i>
+          {{ camaraActiva ? 'Detener Cámara' : 'Iniciar Cámara' }}
+        </button>
+      </div>
+
+      <!-- Input manual alternativo -->
+      <div class="input-manual">
+        <h3><i class="fas fa-keyboard"></i> Ingreso Manual</h3>
+        <p>Si no puedes escanear, ingresa el ID del pedido manualmente:</p>
+        <div class="input-group">
+          <input 
+            type="text" 
+            placeholder="ID del pedido"
+            #codigoInput
+            (keyup.enter)="escanearManual(codigoInput.value); codigoInput.value = ''"
+            [disabled]="procesando"
+          >
+          <button 
+            class="btn-validar" 
+            (click)="escanearManual(codigoInput.value); codigoInput.value = ''"
+            [disabled]="procesando"
+          >
+            <i class="fas fa-check"></i>
+            {{ procesando ? 'Validando...' : 'Validar' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resultado de validación -->
+    <div class="resultado-section" *ngIf="mostrarResultado">
+      <div 
+        class="resultado-card" 
+        [class.success]="tipoMensaje === 'success'"
+        [class.error]="tipoMensaje === 'error'"
+        [class.info]="tipoMensaje === 'info'"
+      >
+        <div class="resultado-icono">
+          <i class="fas" 
+             [class.fa-check-circle]="tipoMensaje === 'success'"
+             [class.fa-times-circle]="tipoMensaje === 'error'"
+             [class.fa-info-circle]="tipoMensaje === 'info'"
+          ></i>
+        </div>
+        
+        <h2>{{ mensaje }}</h2>
+
+        <!-- Información del pedido si es válido -->
+        <div class="pedido-info" *ngIf="pedido && tipoMensaje === 'success'">
+          <div class="info-header">
+            <h3><i class="fas fa-receipt"></i> Pedido #{{ pedido.id.substring(0, 8) }}</h3>
+            <span class="tipo-badge tipo-web">
+              <i class="fas fa-globe"></i> Compra Web
+            </span>
+          </div>
+
+          <div class="info-row">
+            <span class="label">Cliente:</span>
+            <span class="value">{{ pedido.usuario?.nombre || 'N/A' }}</span>
+          </div>
+
+          <div class="info-row">
+            <span class="label">Email:</span>
+            <span class="value">{{ pedido.usuario?.email || 'N/A' }}</span>
+          </div>
+
+          <div class="info-row">
+            <span class="label">Método de Pago:</span>
+            <span class="value">{{ pedido.metodoPago }}</span>
+          </div>
+
+          <div class="info-row">
+            <span class="label">Fecha:</span>
+            <span class="value">{{ pedido.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+
+          <!-- Debug Info (temporal) -->
+          <!-- Lista de items -->
+          <div class="items-section">
+            <h4><i class="fas fa-shopping-basket"></i> Productos a Entregar</h4>
+            
+            <div class="productos-lista">
+              <div class="producto-item" *ngFor="let item of pedido.items; let i = index">
+                <div class="producto-numero">{{ i + 1 }}</div>
+                <div class="producto-info">
+                  <h5 class="producto-nombre">
+                    <i class="fas fa-candy-cane"></i>
+                    {{ item.dulceriaItem?.nombre || 'Producto' }}
+                  </h5>
+                  <div class="producto-detalles">
+                    <span class="producto-cantidad">
+                      <strong>Cantidad: {{ item.cantidad }}</strong>
+                    </span>
+                    <span class="producto-precio">
+                      ${{ getPrecio(item).toFixed(2) }} c/u
+                    </span>
+                  </div>
+                </div>
+                <div class="producto-subtotal">
+                  ${{ getSubtotal(item).toFixed(2) }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Total -->
+          <div class="total-row">
+            <div class="total-info">
+              <span class="total-label">Total del Pedido:</span>
+              <span class="total-items">{{ pedido.items.length || 0 }} producto{{ (pedido.items.length || 0) !== 1 ? 's' : '' }}</span>
+            </div>
+            <span class="total-valor">${{ getTotal().toFixed(2) }}</span>
+          </div>
+
+          <!-- Botón para marcar como entregado -->
+          <button class="btn-entregar" (click)="marcarComoEntregado()">
+            <i class="fas fa-box-open"></i> Marcar como Entregado
+          </button>
+        </div>
+
+        <button class="btn-continuar" (click)="escanearNuevo()">
+          <i class="fas fa-qrcode"></i> Escanear Nuevo Pedido
+        </button>
+      </div>
+    </div>
+
+    <!-- Historial de escaneos -->
+    <div class="historial-section" *ngIf="historial.length > 0">
+      <h3><i class="fas fa-history"></i> Historial de Validaciones</h3>
+      <div class="historial-lista">
+        <div 
+          class="historial-item" 
+          *ngFor="let item of historial"
+          [class.valido]="item.resultado === 'valido'"
+          [class.invalido]="item.resultado === 'invalido'"
+          [class.entregado]="item.resultado === 'entregado'"
+        >
+          <div class="historial-icono">
+            <i class="fas" 
+               [class.fa-check]="item.resultado === 'valido'"
+               [class.fa-times]="item.resultado === 'invalido'"
+               [class.fa-box-open]="item.resultado === 'entregado'"
+            ></i>
+          </div>
+          <div class="historial-info">
+            <div class="historial-codigo">{{ item.pedidoId.substring(0, 20) }}...</div>
+            <div class="historial-meta">
+              <span class="historial-estado">{{ item.estado }}</span>
+              <span class="historial-tiempo">{{ item.timestamp | date:'HH:mm:ss' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

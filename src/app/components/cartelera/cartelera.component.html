@@ -1,0 +1,6 @@
+<h2>Cartelera</h2>
+<ul>
+  <li *ngFor="let pelicula of peliculas">
+    <strong>{{ pelicula.titulo }}</strong> ({{ pelicula.anio }}) - Dirigida por {{ pelicula.director }}
+  </li>
+</ul>

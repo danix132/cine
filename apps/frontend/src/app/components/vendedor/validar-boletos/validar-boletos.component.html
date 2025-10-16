@@ -1,0 +1,154 @@
+<div class="validar-container">
+  <!-- Header -->
+  <div class="validar-header">
+    <button class="btn-volver" (click)="volver()">
+      <i class="fas fa-arrow-left"></i> Volver
+    </button>
+    <h1><i class="fas fa-qrcode"></i> Validar Boletos</h1>
+    <p>Escanea el código QR del boleto</p>
+  </div>
+
+  <div class="validar-content">
+    <!-- Visor de cámara -->
+    <div class="camara-section">
+      <div class="camara-container" [class.activa]="camaraActiva">
+        <video id="qr-video" autoplay playsinline></video>
+        <canvas id="qr-canvas" style="display: none;"></canvas>
+        
+        <!-- Overlay de guía -->
+        <div class="qr-overlay">
+          <div class="qr-frame"></div>
+          <p class="qr-instruccion">Coloca el código QR dentro del marco</p>
+        </div>
+
+        <!-- Estado de la cámara -->
+        <div class="camara-estado" *ngIf="!camaraActiva">
+          <i class="fas fa-camera-slash"></i>
+          <p>Cámara desactivada</p>
+        </div>
+      </div>
+
+      <!-- Controles de cámara -->
+      <div class="camara-controles">
+        <button 
+          class="btn-toggle-camara" 
+          (click)="toggleCamara()"
+          [class.activa]="camaraActiva"
+        >
+          <i class="fas" [class.fa-camera]="!camaraActiva" [class.fa-stop]="camaraActiva"></i>
+          {{ camaraActiva ? 'Detener Cámara' : 'Iniciar Cámara' }}
+        </button>
+      </div>
+
+      <!-- Input manual alternativo -->
+      <div class="input-manual">
+        <h3><i class="fas fa-keyboard"></i> Ingreso Manual</h3>
+        <p>Si no puedes escanear, ingresa el código manualmente:</p>
+        <div class="input-group">
+          <input 
+            type="text" 
+            placeholder="Código QR del boleto"
+            #codigoInput
+            (keyup.enter)="escanearManual(codigoInput.value); codigoInput.value = ''"
+            [disabled]="procesando"
+          >
+          <button 
+            class="btn-validar" 
+            (click)="escanearManual(codigoInput.value); codigoInput.value = ''"
+            [disabled]="procesando"
+          >
+            <i class="fas fa-check"></i>
+            {{ procesando ? 'Validando...' : 'Validar' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resultado de validación -->
+    <div class="resultado-section" *ngIf="mostrarResultado">
+      <div 
+        class="resultado-card" 
+        [class.success]="tipoMensaje === 'success'"
+        [class.error]="tipoMensaje === 'error'"
+        [class.info]="tipoMensaje === 'info'"
+      >
+        <div class="resultado-icono">
+          <i class="fas" 
+             [class.fa-check-circle]="tipoMensaje === 'success'"
+             [class.fa-times-circle]="tipoMensaje === 'error'"
+             [class.fa-info-circle]="tipoMensaje === 'info'"
+          ></i>
+        </div>
+        
+        <h2>{{ mensaje }}</h2>
+
+        <!-- Información del boleto si es válido -->
+        <div class="boleto-info" *ngIf="boleto && tipoMensaje === 'success'">
+          <div class="info-row">
+            <span class="label">Película:</span>
+            <span class="value">{{ boleto.funcion.pelicula.titulo }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Sala:</span>
+            <span class="value">{{ boleto.funcion.sala.nombre }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Horario:</span>
+            <span class="value">{{ boleto.funcion.inicio | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          <div class="info-row" *ngIf="boleto.usuario">
+            <span class="label">Cliente:</span>
+            <span class="value">{{ boleto.usuario.nombre }}</span>
+          </div>
+          
+          <!-- Mostrar TODOS los asientos si hay múltiples boletos -->
+          <div class="info-row asientos-group" *ngIf="boletos.length > 1">
+            <span class="label">Asientos ({{ boletos.length }}):</span>
+            <div class="asientos-lista">
+              <span class="asiento-badge" *ngFor="let b of boletos">
+                Fila {{ b.asiento.fila }}-{{ b.asiento.numero }}
+              </span>
+            </div>
+          </div>
+          
+          <!-- Mostrar un solo asiento si es único -->
+          <div class="info-row" *ngIf="boletos.length === 1">
+            <span class="label">Asiento:</span>
+            <span class="value">Fila {{ boleto.asiento.fila }}, Asiento {{ boleto.asiento.numero }}</span>
+          </div>
+        </div>
+
+        <button class="btn-continuar" (click)="escanearNuevo()">
+          <i class="fas fa-qrcode"></i> Escanear Nuevo Boleto
+        </button>
+      </div>
+    </div>
+
+    <!-- Historial de escaneos -->
+    <div class="historial-section" *ngIf="historial.length > 0">
+      <h3><i class="fas fa-history"></i> Historial de Validaciones</h3>
+      <div class="historial-lista">
+        <div 
+          class="historial-item" 
+          *ngFor="let item of historial"
+          [class.valido]="item.resultado === 'valido'"
+          [class.invalido]="item.resultado === 'invalido'"
+        >
+          <div class="historial-icono">
+            <i class="fas" 
+               [class.fa-check]="item.resultado === 'valido'"
+               [class.fa-times]="item.resultado === 'invalido'"
+            ></i>
+          </div>
+          <div class="historial-info">
+            <div class="historial-codigo">{{ item.codigoQR.substring(0, 20) }}...</div>
+            <div class="historial-meta">
+              <span class="historial-estado">{{ item.estado }}</span>
+              <span class="historial-tiempo">{{ item.timestamp | date:'HH:mm:ss' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

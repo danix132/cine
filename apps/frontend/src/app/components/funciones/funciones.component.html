@@ -1,0 +1,57 @@
+<div class="funciones-container">
+  <div class="funciones-header">
+    <h1>Funciones Disponibles</h1>
+    <p>Selecciona la función que deseas ver</p>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando funciones...</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-container">
+    <div class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
+  </div>
+
+  <div *ngIf="!isLoading && !errorMessage" class="funciones-grid">
+    <div *ngFor="let funcion of funciones" class="funcion-card">
+      <div class="funcion-poster">
+        <img 
+          [src]="funcion.pelicula?.posterUrl || '/assets/images/default-poster.svg'" 
+          [alt]="funcion.pelicula?.titulo"
+          [title]="funcion.pelicula?.titulo"
+          (error)="onImageError($event)"
+        />
+      </div>
+      
+      <div class="funcion-info">
+        <h3 class="funcion-titulo">{{ funcion.pelicula?.titulo }}</h3>
+        <p class="funcion-sala">{{ funcion.sala?.nombre }}</p>
+        <p class="funcion-fecha">{{ getFormattedDate(funcion.inicio) }}</p>
+        <p class="funcion-hora">{{ getFormattedTime(funcion.inicio) }}</p>
+        <p class="funcion-precio">${{ funcion.precio }}</p>
+        
+        <div class="funcion-actions">
+          <button 
+            class="btn btn-primary" 
+            (click)="seleccionarAsientos(funcion)"
+            [disabled]="funcion.cancelada"
+          >
+            <i class="fas fa-ticket-alt"></i>
+            {{ funcion.cancelada ? 'Cancelada' : 'Seleccionar Asientos' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!isLoading && !errorMessage && funciones.length === 0" class="empty-state">
+    <div class="empty-icon">
+      <i class="fas fa-calendar-times"></i>
+    </div>
+    <h3>No hay funciones disponibles</h3>
+    <p>Pronto tendremos nuevas funciones disponibles</p>
+  </div>
+</div>

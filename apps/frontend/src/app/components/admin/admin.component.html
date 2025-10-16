@@ -1,0 +1,190 @@
+<div class="admin-layout">
+  <!-- Sidebar de navegación -->
+  <nav class="admin-sidebar">
+    <div class="admin-sidebar-header">
+      <h2>Panel de Admin</h2>
+    </div>
+    <ul class="admin-menu">
+      <li>
+        <a routerLink="/admin/peliculas" routerLinkActive="active">
+          <i class="fas fa-film"></i>
+          <span>Películas</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/admin/funciones" routerLinkActive="active">
+          <i class="fas fa-calendar-alt"></i>
+          <span>Funciones</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/admin/salas" routerLinkActive="active">
+          <i class="fas fa-chair"></i>
+          <span>Salas</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/admin/usuarios" routerLinkActive="active">
+          <i class="fas fa-users"></i>
+          <span>Usuarios</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/admin/boletos" routerLinkActive="active">
+          <i class="fas fa-ticket-alt"></i>
+          <span>Boletos</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/admin/reportes" routerLinkActive="active">
+          <i class="fas fa-chart-bar"></i>
+          <span>Reportes</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/admin/dulceria" routerLinkActive="active">
+          <i class="fas fa-cookie-bite"></i>
+          <span>Dulcería</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Contenido principal -->
+  <div class="admin-content">
+    <!-- Dashboard KPIs (solo visible cuando no hay router-outlet activo) -->
+    <div class="dashboard-principal" *ngIf="mostrarDashboard && !cargandoDashboard && reporteDashboard">
+      <div class="dashboard-header">
+        <h2><i class="fas fa-chart-line"></i> Dashboard Principal</h2>
+        <p class="subtitle">Resumen del último mes</p>
+      </div>
+
+      <div class="kpis-grid">
+        <!-- KPI: Total Ingresos -->
+        <div class="kpi-card primary">
+          <div class="kpi-icon">
+            <i class="fas fa-dollar-sign"></i>
+          </div>
+          <div class="kpi-content">
+            <span class="kpi-label">Total Ingresos</span>
+            <span class="kpi-value">{{ formatearMoneda(reporteDashboard.kpis.totalIngresos) }}</span>
+            <span class="kpi-detail">Último mes</span>
+          </div>
+        </div>
+
+        <!-- KPI: Boletos Vendidos -->
+        <div class="kpi-card success">
+          <div class="kpi-icon">
+            <i class="fas fa-ticket-alt"></i>
+          </div>
+          <div class="kpi-content">
+            <span class="kpi-label">Boletos Vendidos</span>
+            <span class="kpi-value">{{ reporteDashboard.kpis.totalBoletos }}</span>
+            <span class="kpi-detail">Total de entradas</span>
+          </div>
+        </div>
+
+        <!-- KPI: Ocupación Promedio -->
+        <div class="kpi-card info">
+          <div class="kpi-icon">
+            <i class="fas fa-percentage"></i>
+          </div>
+          <div class="kpi-content">
+            <span class="kpi-label">Ocupación Promedio</span>
+            <span class="kpi-value">{{ reporteDashboard.kpis.ocupacionPromedio | number:'1.1-1' }}%</span>
+            <span class="kpi-detail">De las salas</span>
+          </div>
+        </div>
+
+        <!-- KPI: Ticket Promedio -->
+        <div class="kpi-card warning">
+          <div class="kpi-icon">
+            <i class="fas fa-receipt"></i>
+          </div>
+          <div class="kpi-content">
+            <span class="kpi-label">Ticket Promedio</span>
+            <span class="kpi-value">{{ formatearMoneda(reporteDashboard.kpis.ticketPromedio) }}</span>
+            <span class="kpi-detail">Por pedido</span>
+          </div>
+        </div>
+
+        <!-- KPI: Ventas Dulcería -->
+        <div class="kpi-card danger">
+          <div class="kpi-icon">
+            <i class="fas fa-cookie-bite"></i>
+          </div>
+          <div class="kpi-content">
+            <span class="kpi-label">Ventas Dulcería</span>
+            <span class="kpi-value">{{ formatearMoneda(reporteDashboard.kpis.ventasDulceria) }}</span>
+            <span class="kpi-detail">Concesiones</span>
+          </div>
+        </div>
+
+        <!-- KPI: Clientes Únicos -->
+        <div class="kpi-card secondary">
+          <div class="kpi-icon">
+            <i class="fas fa-users"></i>
+          </div>
+          <div class="kpi-content">
+            <span class="kpi-label">Clientes Únicos</span>
+            <span class="kpi-value">{{ reporteDashboard.kpis.clientesUnicos }}</span>
+            <span class="kpi-detail">Usuarios activos</span>
+          </div>
+        </div>
+
+        <!-- KPI: Funciones Totales -->
+        <div class="kpi-card primary-light">
+          <div class="kpi-icon">
+            <i class="fas fa-film"></i>
+          </div>
+          <div class="kpi-content">
+            <span class="kpi-label">Funciones Totales</span>
+            <span class="kpi-value">{{ reporteDashboard.kpis.funcionesTotales }}</span>
+            <span class="kpi-detail">Proyecciones</span>
+          </div>
+        </div>
+
+        <!-- KPI: Total Pedidos -->
+        <div class="kpi-card success-light">
+          <div class="kpi-icon">
+            <i class="fas fa-shopping-cart"></i>
+          </div>
+          <div class="kpi-content">
+            <span class="kpi-label">Total Pedidos</span>
+            <span class="kpi-value">{{ reporteDashboard.kpis.totalPedidos }}</span>
+            <span class="kpi-detail">Transacciones</span>
+          </div>
+        </div>
+
+        <!-- KPI: Precio Promedio Boleto -->
+        <div class="kpi-card info-light">
+          <div class="kpi-icon">
+            <i class="fas fa-money-bill-wave"></i>
+          </div>
+          <div class="kpi-content">
+            <span class="kpi-label">Precio Promedio</span>
+            <span class="kpi-value">{{ formatearMoneda(reporteDashboard.kpis.precioPromedioBoleto) }}</span>
+            <span class="kpi-detail">Por boleto</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botón para ver más reportes -->
+      <div class="dashboard-actions">
+        <button class="btn btn-primary btn-lg" routerLink="/admin/reportes">
+          <i class="fas fa-chart-bar"></i> Ver Todos los Reportes
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading state -->
+    <div class="loading-dashboard" *ngIf="cargandoDashboard">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando dashboard...</span>
+      </div>
+      <p>Cargando dashboard...</p>
+    </div>
+
+    <router-outlet></router-outlet>
+  </div>
+</div>

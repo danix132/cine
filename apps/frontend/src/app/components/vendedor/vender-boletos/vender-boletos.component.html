@@ -1,0 +1,457 @@
+<div class="vender-boletos-container">
+  <!-- Header -->
+  <div class="validar-header">
+    <button class="btn-volver" (click)="volverInicio()">
+      <i class="fas fa-arrow-left"></i> Volver
+    </button>
+    <h1 *ngIf="!funcionSeleccionada"><i class="fas fa-ticket-alt"></i> Vender Boletos</h1>
+    <h1 *ngIf="funcionSeleccionada"><i class="fas fa-chair"></i> Selección de Asientos</h1>
+  </div>
+
+  <!-- Vista de lista de funciones -->
+  <div *ngIf="!funcionSeleccionada" class="funciones-view">
+    <!-- Filtros -->
+    <div class="filtros-card">
+      <div class="card-body">
+        <div class="filtros-row">
+          <div class="filtro-item">
+            <label for="filtroPelicula" class="form-label">Filtrar por película:</label>
+            <input 
+              type="text" 
+              id="filtroPelicula" 
+              class="form-control" 
+              [(ngModel)]="filtroPelicula" 
+              (input)="aplicarFiltros()"
+              placeholder="Buscar película..."
+              autocomplete="off">
+          </div>
+          <div class="filtro-item">
+            <label for="filtroSala" class="form-label">Filtrar por sala:</label>
+            <input 
+              type="text" 
+              id="filtroSala" 
+              class="form-control" 
+              [(ngModel)]="filtroSala" 
+              (input)="aplicarFiltros()"
+              placeholder="Buscar sala..."
+              autocomplete="off">
+          </div>
+          <div class="filtro-item">
+            <label for="filtroFecha" class="form-label">Filtrar por fecha:</label>
+            <input 
+              type="date" 
+              id="filtroFecha" 
+              class="form-control" 
+              [(ngModel)]="filtroFecha" 
+              (change)="aplicarFiltros()">
+          </div>
+          <div class="filtro-item">
+            <label class="form-label">&nbsp;</label>
+            <button class="btn btn-outline-secondary form-control" 
+                    (click)="limpiarFiltros()"
+                    [disabled]="!hayFiltrosActivos()"
+                    title="Limpiar filtros">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="loading" class="loading-container">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Cargando funciones...</span>
+      </div>
+      <p>Cargando funciones disponibles...</p>
+    </div>
+
+    <!-- Lista de funciones -->
+    <div *ngIf="!loading" class="funciones-grid">
+      <div class="no-results" *ngIf="funcionesFiltradas.length === 0">
+        <div *ngIf="hayFiltrosActivos()">
+          <i class="fas fa-filter text-muted fa-2x mb-2"></i>
+          <p class="text-muted mb-1">No se encontraron funciones con los filtros aplicados</p>
+          <button class="btn btn-sm btn-outline-primary" (click)="limpiarFiltros()">
+            <i class="fas fa-times"></i> Limpiar filtros
+          </button>
+        </div>
+        <div *ngIf="!hayFiltrosActivos()">
+          <i class="fas fa-calendar-times text-muted fa-2x mb-2"></i>
+          <p class="text-muted">No hay funciones disponibles para la venta</p>
+          <small class="text-muted d-block mb-2">
+            Las funciones deben estar programadas para el futuro y no estar canceladas
+          </small>
+          <div class="alert alert-info mt-3 funciones-info">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>Nota:</strong> Las funciones que ya han comenzado están ocultas automáticamente. 
+            Para buscar funciones pasadas, usa los filtros de búsqueda.
+          </div>
+        </div>
+      </div>
+
+      <div class="funcion-card" *ngFor="let funcion of funcionesFiltradas" (click)="seleccionarFuncion(funcion)">
+        <div class="funcion-header">
+          <div class="pelicula-info">
+            <h4>{{ funcion.pelicula?.titulo }}</h4>
+            <div class="detalles-pelicula">
+              <span class="clasificacion">{{ funcion.pelicula?.clasificacion }}</span>
+              <span class="duracion">{{ funcion.pelicula?.duracionMin }} min</span>
+              <span class="generos" *ngIf="funcion.pelicula?.generos?.length">
+                {{ funcion.pelicula?.generos?.join(', ') }}
+              </span>
+            </div>
+          </div>
+          <div class="precio-badge">
+            <span class="precio">{{ formatearPrecio(funcion.precio) }}</span>
+          </div>
+        </div>
+
+        <div class="funcion-body">
+          <div class="horario-info">
+            <div class="fecha">
+              <i class="fas fa-calendar"></i>
+              {{ formatearFecha(funcion.inicio) }}
+            </div>
+            <div class="hora">
+              <i class="fas fa-clock"></i>
+              {{ formatearHora(funcion.inicio) }}
+            </div>
+          </div>
+
+          <div class="sala-info">
+            <div class="sala-nombre">
+              <i class="fas fa-building"></i>
+              Sala {{ funcion.sala?.nombre }}
+            </div>
+            <div class="asientos-disponibles">
+              <i class="fas fa-users"></i>
+              {{ contarAsientosDisponiblesPorFuncion(funcion) }} asientos disponibles
+            </div>
+          </div>
+        </div>
+
+        <div class="funcion-footer">
+          <button class="btn btn-primary btn-seleccionar">
+            <i class="fas fa-mouse-pointer"></i>
+            Seleccionar Asientos
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vista de selección de asientos -->
+  <div *ngIf="funcionSeleccionada" class="asientos-view">
+    <!-- Header de selección -->
+    <div class="seleccion-header">
+      <div class="funcion-info" *ngIf="funcionSeleccionada">
+        <h3>{{ funcionSeleccionada.pelicula?.titulo }}</h3>
+        <p>{{ funcionSeleccionada.sala?.nombre }} - {{ formatearFecha(funcionSeleccionada.inicio) }} {{ formatearHora(funcionSeleccionada.inicio) }}</p>
+        <p class="precio">Precio: {{ formatearPrecio(funcionSeleccionada.precio) }}</p>
+      </div>
+    </div>
+
+    <!-- Loading sala -->
+    <div *ngIf="loadingSala" class="loading-container">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Cargando asientos...</span>
+      </div>
+      <p>Cargando mapa de asientos...</p>
+    </div>
+
+    <!-- Contenido principal con diseño de dos columnas -->
+    <div *ngIf="!loadingSala && salaDetalles" class="contenido-principal">
+      <div class="sala-container">
+        <div class="sala-info-header">
+          <h3><i class="fas fa-couch"></i> {{ salaDetalles.nombre }}</h3>
+          <div class="capacidad-info">
+            <span class="badge bg-primary">
+              <i class="fas fa-chair"></i> {{ salaDetalles.filas }} filas × {{ salaDetalles.asientosPorFila }} asientos
+            </span>
+            <span class="badge bg-success">
+              <i class="fas fa-check-circle"></i> {{ contarAsientosDisponiblesPorFuncion(funcionSeleccionada) }} disponibles
+            </span>
+          </div>
+        </div>
+
+        <div class="pantalla">
+          <div class="pantalla-text">PANTALLA</div>
+        </div>
+
+        <div class="asientos-grid">
+          <div *ngFor="let fila of getFilas()" class="fila">
+            <div class="fila-label">Fila {{ fila }}</div>
+            <div class="asientos-fila">
+              <div 
+                *ngFor="let asiento of getAsientosPorFila(fila)" 
+                [class]="getAsientoClass(asiento)"
+                (click)="toggleAsiento(asiento)"
+                [title]="getAsientoTooltip(asiento)"
+              >
+                {{ asiento.numero }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="leyenda">
+          <div class="leyenda-item">
+            <div class="asiento disponible"></div>
+            <span>Disponible</span>
+          </div>
+          <div class="leyenda-item">
+            <div class="asiento seleccionado"></div>
+            <span>Seleccionado</span>
+          </div>
+          <div class="leyenda-item">
+            <div class="asiento ocupado"></div>
+            <span>Ocupado</span>
+          </div>
+          <div class="leyenda-item">
+            <div class="asiento danado">✕</div>
+            <span>Dañado</span>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="funcionSeleccionada" class="resumen-compra">
+        <div class="resumen-info">
+          <div class="resumen-item">
+            <span>Asientos seleccionados:</span>
+            <span>{{ asientosSeleccionados.size }}</span>
+          </div>
+          <div class="resumen-item">
+            <span>Precio por asiento:</span>
+            <span>{{ formatearPrecio(funcionSeleccionada.precio) }}</span>
+          </div>
+          <div class="resumen-item total">
+            <span>Total:</span>
+            <span>{{ formatearPrecio(totalVenta) }}</span>
+          </div>
+        </div>
+        
+        <button 
+          class="btn btn-primary btn-continuar"
+          [disabled]="asientosSeleccionados.size === 0"
+          (click)="confirmarVenta()"
+        >
+          <i class="fas fa-money-bill-wave"></i>
+          Confirmar Venta en Efectivo
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de confirmación -->
+<div class="modal modal-show" *ngIf="mostrarModalConfirmacion" 
+     (click)="!procesandoVenta && cancelarVenta()">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-cash-register"></i>
+          Confirmar Venta en Efectivo
+        </h5>
+        <button type="button" class="btn-close" (click)="cancelarVenta()" aria-label="Cerrar"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label">Película</label>
+              <div class="form-control-plaintext">{{ funcionSeleccionada?.pelicula?.titulo }}</div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label">Sala</label>
+              <div class="form-control-plaintext">
+                <i class="fas fa-building me-1"></i>
+                {{ funcionSeleccionada?.sala?.nombre }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label">Fecha y Hora</label>
+              <div class="form-control-plaintext">
+                <i class="fas fa-calendar-alt me-1"></i>
+                {{ funcionSeleccionada && formatearFecha(funcionSeleccionada.inicio) }}
+                {{ funcionSeleccionada && formatearHora(funcionSeleccionada.inicio) }}
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label">Cantidad de Boletos</label>
+              <div class="form-control-plaintext fw-bold text-primary">{{ asientosSeleccionados.size }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label">Precio Unitario</label>
+              <div class="form-control-plaintext fw-bold text-success">{{ funcionSeleccionada && formatearPrecio(funcionSeleccionada.precio) }}</div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label">Total a Cobrar</label>
+              <div class="form-control-plaintext fw-bold text-primary fs-4">{{ formatearPrecio(totalVenta) }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="alert alert-success" role="alert">
+          <i class="fas fa-money-bill-wave me-2"></i>
+          <strong>Método de pago: Efectivo</strong>
+          <br>
+          <small class="text-muted">Los boletos se marcarán como pagados inmediatamente</small>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary me-2" (click)="cancelarVenta()" [disabled]="procesandoVenta">
+          <i class="fas fa-times"></i>
+          Cancelar
+        </button>
+        <button type="button" class="btn btn-primary" (click)="procesarVenta()" [disabled]="procesandoVenta">
+          <span *ngIf="procesandoVenta" class="spinner-border spinner-border-sm me-2"></span>
+          <i class="fas fa-check me-1" *ngIf="!procesandoVenta"></i>
+          {{ procesandoVenta ? 'Procesando...' : 'Confirmar Venta' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Recibo (estilo cliente) -->
+<div class="modal-overlay recibo-overlay" *ngIf="mostrarModalExito" (click)="cerrarModalExito()">
+  <div class="modal-content recibo-content" (click)="$event.stopPropagation()">
+    <div class="recibo-header">
+      <div class="recibo-titulo">
+        <i class="fas fa-receipt"></i>
+        <h2>Recibo de Venta</h2>
+      </div>
+      <button class="btn-close" (click)="cerrarModalExito()" title="Cerrar recibo">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="recibo-body">
+      <!-- Información de la orden -->
+      <div class="recibo-seccion orden-info">
+        <div class="orden-numero">
+          <span class="label">Venta N°</span>
+          <span class="valor">{{ boletosCreados.length > 0 ? boletosCreados[0].id.substring(0, 8).toUpperCase() : 'N/A' }}</span>
+        </div>
+        <div class="orden-fecha">
+          <div class="fecha-item">
+            <i class="fas fa-calendar"></i>
+            <span>{{ obtenerFechaActual() }}</span>
+          </div>
+          <div class="fecha-item">
+            <i class="fas fa-clock"></i>
+            <span>{{ obtenerHoraActual() }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Información de la película -->
+      <div class="recibo-seccion pelicula-info">
+        <h3><i class="fas fa-film"></i> Detalles de la función</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="label">Película:</span>
+            <span class="valor">{{ funcionSeleccionada?.pelicula?.titulo }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Fecha:</span>
+            <span class="valor">{{ formatearFecha(funcionSeleccionada?.inicio || '') }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Hora:</span>
+            <span class="valor">{{ formatearHora(funcionSeleccionada?.inicio || '') }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Sala:</span>
+            <span class="valor">{{ funcionSeleccionada?.sala?.nombre }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Asientos -->
+      <div class="recibo-seccion asientos-info">
+        <h3><i class="fas fa-couch"></i> Asientos vendidos</h3>
+        <div class="asientos-lista">
+          <div class="asiento-item" *ngFor="let boleto of boletosCreados">
+            <i class="fas fa-ticket-alt"></i>
+            <span>Fila {{ boleto.asiento?.fila || 'N/A' }}, Asiento {{ boleto.asiento?.numero || 'N/A' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Código QR del primer boleto -->
+      <div class="recibo-seccion qr-section" *ngIf="boletosCreados.length > 0 && boletosCreados[0].codigoQR">
+        <h3><i class="fas fa-qrcode"></i> Código QR de entrada</h3>
+        <div class="qr-container">
+          <img [src]="generarQRDataURL(boletosCreados[0].codigoQR)" alt="Código QR" class="qr-image">
+          <p class="qr-texto">Presenta este código en la entrada del cine</p>
+          <p class="qr-codigo">{{ boletosCreados[0].codigoQR }}</p>
+        </div>
+      </div>
+
+      <!-- Información de pago -->
+      <div class="recibo-seccion pago-info">
+        <h3><i class="fas fa-money-bill-wave"></i> Información de pago</h3>
+        <div class="pago-detalles">
+          <div class="pago-item">
+            <span>Método de pago:</span>
+            <span>Efectivo</span>
+          </div>
+          <div class="pago-item">
+            <span>Cantidad de boletos:</span>
+            <span>{{ boletosCreados.length }}</span>
+          </div>
+          <div class="pago-item">
+            <span>Precio por boleto:</span>
+            <span>{{ formatearPrecio(funcionSeleccionada?.precio || 0) }}</span>
+          </div>
+          <div class="pago-item total">
+            <span>TOTAL COBRADO:</span>
+            <span class="total-monto">{{ formatearPrecio(totalVenta) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mensaje de agradecimiento -->
+      <div class="recibo-seccion mensaje-gracias">
+        <div class="check-icon">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <h3>¡Venta exitosa!</h3>
+        <p>Los boletos han sido generados correctamente.</p>
+      </div>
+    </div>
+
+    <div class="recibo-footer">
+      <button class="btn btn-secondary" (click)="imprimirRecibo()">
+        <i class="fas fa-print"></i> Imprimir
+      </button>
+      <button class="btn btn-info" (click)="descargarRecibo()">
+        <i class="fas fa-download"></i> Descargar
+      </button>
+      <button class="btn btn-primary" (click)="cerrarModalExito()">
+        <i class="fas fa-check"></i> Finalizar
+      </button>
+    </div>
+  </div>
+</div>

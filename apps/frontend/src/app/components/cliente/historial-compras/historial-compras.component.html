@@ -1,0 +1,233 @@
+<div class="historial-container">
+  <!-- Header -->
+  <div class="historial-header">
+    <button class="btn-volver" (click)="volver()">
+      <i class="fas fa-arrow-left"></i> Volver
+    </button>
+    <h1><i class="fas fa-history"></i> Historial de Compras</h1>
+    <p>Consulta todos tus pedidos de boletos y dulcería</p>
+  </div>
+
+  <!-- Estadísticas -->
+  <div class="estadisticas-grid" *ngIf="!isLoading">
+    <div class="stat-card stat-total">
+      <div class="stat-icon">
+        <i class="fas fa-dollar-sign"></i>
+      </div>
+      <div class="stat-info">
+        <div class="stat-label">Total Gastado</div>
+        <div class="stat-value">${{ totalGastado.toFixed(2) }}</div>
+      </div>
+    </div>
+
+    <div class="stat-card stat-boletos">
+      <div class="stat-icon">
+        <i class="fas fa-ticket-alt"></i>
+      </div>
+      <div class="stat-info">
+        <div class="stat-label">Boletos Comprados</div>
+        <div class="stat-value">{{ totalBoletos }}</div>
+        <div class="stat-detalle">{{ boletosValidados }} validados</div>
+      </div>
+    </div>
+
+    <div class="stat-card stat-dulceria">
+      <div class="stat-icon">
+        <i class="fas fa-candy-cane"></i>
+      </div>
+      <div class="stat-info">
+        <div class="stat-label">Productos Dulcería</div>
+        <div class="stat-value">{{ totalDulceria }}</div>
+        <div class="stat-detalle">{{ dulceriasCanjeadas }} canjeados</div>
+      </div>
+    </div>
+
+    <div class="stat-card stat-compras">
+      <div class="stat-icon">
+        <i class="fas fa-shopping-bag"></i>
+      </div>
+      <div class="stat-info">
+        <div class="stat-label">Total Pedidos</div>
+        <div class="stat-value">{{ totalPedidos }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filtros-card" *ngIf="!isLoading">
+    <div class="filtros-row">
+      <div class="filtro-item">
+        <label for="filtroTipo" class="form-label">Tipo:</label>
+        <select 
+          id="filtroTipo" 
+          class="form-select" 
+          [(ngModel)]="filtroTipo"
+          (change)="aplicarFiltros()">
+          <option value="TODOS">Todos</option>
+          <option value="BOLETO">Boletos</option>
+          <option value="DULCERIA">Dulcería</option>
+        </select>
+      </div>
+
+      <div class="filtro-item">
+        <label for="filtroEstado" class="form-label">Estado:</label>
+        <select 
+          id="filtroEstado" 
+          class="form-select" 
+          [(ngModel)]="filtroEstado"
+          (change)="aplicarFiltros()">
+          <option value="TODOS">Todos</option>
+          <option value="CANJEADO">Canjeados</option>
+          <option value="PENDIENTE">Pendientes</option>
+        </select>
+      </div>
+
+      <div class="filtro-item flex-grow">
+        <label for="filtroBusqueda" class="form-label">Buscar:</label>
+        <input 
+          type="text" 
+          id="filtroBusqueda"
+          class="form-control" 
+          placeholder="Buscar por pedido o descripción..."
+          [(ngModel)]="filtroBusqueda"
+          (input)="aplicarFiltros()">
+      </div>
+
+      <div class="filtro-item" *ngIf="hayFiltrosActivos()">
+        <label class="form-label invisible">.</label>
+        <button class="btn btn-secondary" (click)="limpiarFiltros()">
+          <i class="fas fa-times"></i> Limpiar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando historial...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="errorMessage && !isLoading" class="alert alert-danger">
+    <i class="fas fa-exclamation-circle"></i> {{ errorMessage }}
+  </div>
+
+  <!-- Lista de pedidos -->
+  <div *ngIf="!isLoading && !errorMessage" class="historial-lista">
+    <!-- Sin resultados -->
+    <div *ngIf="pedidosFiltrados.length === 0" class="empty-state">
+      <i class="fas fa-inbox"></i>
+      <h3>No hay pedidos</h3>
+      <p *ngIf="hayFiltrosActivos()">No se encontraron pedidos con los filtros aplicados</p>
+      <p *ngIf="!hayFiltrosActivos()">Aún no has realizado ninguna compra</p>
+      <button class="btn btn-primary" (click)="volver()" *ngIf="!hayFiltrosActivos()">
+        <i class="fas fa-shopping-cart"></i> Ir a Comprar
+      </button>
+    </div>
+
+    <!-- Pedidos del historial -->
+    <div class="pedido-card" *ngFor="let pedido of pedidosFiltrados">
+      <!-- Header del pedido -->
+      <div class="pedido-header">
+        <div class="pedido-info">
+          <h3 class="pedido-numero">
+            <i class="fas fa-receipt"></i> Pedido {{ pedido.numeroPedido }}
+          </h3>
+          <div class="pedido-meta">
+            <span class="pedido-fecha">
+              <i class="fas fa-calendar-alt"></i>
+              {{ pedido.fecha | date:'dd/MM/yyyy HH:mm' }}
+            </span>
+            <span class="pedido-tipo" [class.tipo-web]="pedido.tipo === 'WEB'" 
+                  [class.tipo-mostrador]="pedido.tipo === 'MOSTRADOR'">
+              <i class="fas" [class.fa-globe]="pedido.tipo === 'WEB'" 
+                 [class.fa-store]="pedido.tipo === 'MOSTRADOR'"></i>
+              {{ pedido.tipo === 'WEB' ? 'Compra Web' : 'Compra en Mostrador' }}
+            </span>
+          </div>
+        </div>
+        <div class="pedido-total">
+          <div class="total-label">Total</div>
+          <div class="total-valor">${{ pedido.total.toFixed(2) }}</div>
+          <div class="total-items">{{ getTotalItemsPedido(pedido) }} item{{ getTotalItemsPedido(pedido) !== 1 ? 's' : '' }}</div>
+        </div>
+      </div>
+
+      <!-- Items del pedido -->
+      <div class="pedido-items">
+        <div class="item-row" *ngFor="let item of pedido.items">
+          <div class="item-left">
+            <div class="item-tipo-icon" [class.tipo-boleto]="item.tipo === 'BOLETO'" 
+                 [class.tipo-dulceria]="item.tipo === 'DULCERIA'">
+              <i class="fas" [class.fa-ticket-alt]="item.tipo === 'BOLETO'" 
+                 [class.fa-candy-cane]="item.tipo === 'DULCERIA'"></i>
+            </div>
+            <div class="item-info">
+              <h4>{{ item.descripcion }}</h4>
+              <div class="item-meta">
+                <span><i class="fas fa-box"></i> Cantidad: <strong>{{ item.cantidad }}</strong></span>
+                <span><i class="fas fa-dollar-sign"></i> Precio: <strong>${{ item.precio.toFixed(2) }}</strong></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Código QR (solo para boletos) -->
+          <div class="item-qr" *ngIf="item.codigoQR && item.qrCodeUrl">
+            <div class="qr-mini" (click)="mostrarQRModal(item)">
+              <img [src]="item.qrCodeUrl" alt="QR" />
+              <div class="qr-hover">
+                <i class="fas fa-search-plus"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="item-right">
+            <div class="item-subtotal">${{ item.subtotal.toFixed(2) }}</div>
+            <div class="item-estado">
+              <!-- Mostrar estado del boleto/pedido -->
+              <span class="estado-badge" [ngClass]="getEstadoClass(item.estado || pedido.estado)">
+                {{ getEstadoTexto(item.estado || pedido.estado) }}
+              </span>
+              <!-- Para dulcería: mostrar "Entregado" adicional solo si está completado -->
+              <span class="canjeado-badge" *ngIf="item.tipo === 'DULCERIA' && item.canjeado">
+                <i class="fas fa-box-open"></i> Entregado
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer del pedido -->
+      <div class="pedido-footer">
+        <div class="pedido-tags">
+          <span class="tag-boleto" *ngIf="tieneBoletos(pedido)">
+            <i class="fas fa-ticket-alt"></i> Boletos
+          </span>
+          <span class="tag-dulceria" *ngIf="tieneDulceria(pedido)">
+            <i class="fas fa-candy-cane"></i> Dulcería
+          </span>
+        </div>
+        <div class="pedido-actions">
+          <div class="pedido-metodo-pago" *ngIf="pedido.metodoPago">
+            <i class="fas fa-credit-card"></i> {{ pedido.metodoPago }}
+          </div>
+          <button class="btn-ticket" (click)="descargarTicket(pedido)" title="Descargar ticket">
+            <i class="fas fa-receipt"></i> Ver Ticket
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resumen de resultados -->
+    <div class="resultados-info" *ngIf="pedidosFiltrados.length > 0">
+      <p>
+        Mostrando <strong>{{ pedidosFiltrados.length }}</strong> 
+        {{ pedidosFiltrados.length === 1 ? 'pedido' : 'pedidos' }}
+        <span *ngIf="pedidosFiltrados.length !== pedidos.length">
+          de <strong>{{ pedidos.length }}</strong> total{{ pedidos.length !== 1 ? 'es' : '' }}
+        </span>
+      </p>
+    </div>
+  </div>
+</div>

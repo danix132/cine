@@ -1,0 +1,48 @@
+<div class="cliente-container">
+  <div class="cliente-header">
+    <h1>Mi Cuenta</h1>
+    <p>Gestiona tu cuenta y compras</p>
+  </div>
+
+  <div class="cliente-grid">
+    <!-- 1. Mis Boletos -->
+    <div class="cliente-card">
+      <div class="card-icon">
+        <i class="fas fa-ticket-alt"></i>
+      </div>
+      <h3>Comprar Boletos</h3>
+      <p>Consulta las funciones activas para comprar boletos</p>
+      <button class="btn btn-primary" (click)="navegarFunciones()">Ver Funciones</button>
+    </div>
+
+    <!-- 2. Dulcería -->
+    <div class="cliente-card">
+      <div class="card-icon">
+        <i class="fas fa-candy-cane"></i>
+      </div>
+      <h3>Dulcería</h3>
+      <p>Productos de dulcería</p>
+      <button class="btn btn-primary" routerLink="/dulceria">Ver Dulcería</button>
+    </div>
+
+    <!-- 3. Historial de Compras -->
+    <div class="cliente-card">
+      <div class="card-icon">
+        <i class="fas fa-history"></i>
+      </div>
+      <h3>Historial de Compras</h3>
+      <p>Consulta todos tus boletos y productos comprados</p>
+      <button class="btn btn-primary" routerLink="/cliente/historial">Ver Historial</button>
+    </div>
+
+    <!-- 4. Mi Carrito -->
+    <div class="cliente-card">
+      <div class="card-icon">
+        <i class="fas fa-shopping-cart"></i>
+      </div>
+      <h3>Mi Carrito</h3>
+      <p>Revisa los items en tu carrito</p>
+      <button class="btn btn-primary" routerLink="/carrito">Ver Carrito</button>
+    </div>
+  </div>
+</div>

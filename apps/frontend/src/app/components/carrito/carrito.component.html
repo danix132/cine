@@ -1,0 +1,49 @@
+<div class="carrito-container">
+  <div class="carrito-header">
+    <h1>Mi Carrito</h1>
+    <p>Revisa los items en tu carrito de compras</p>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando carrito...</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-container">
+    <div class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
+  </div>
+
+  <div *ngIf="!isLoading && !errorMessage" class="carrito-content">
+    <div *ngIf="carrito && carrito.items && carrito.items.length > 0" class="carrito-items">
+      <div *ngFor="let item of carrito.items" class="carrito-item">
+        <div class="item-info">
+          <h3>{{ item.tipo }}</h3>
+          <p>Cantidad: {{ item.cantidad }}</p>
+          <p>Precio unitario: ${{ item.precioUnitario }}</p>
+        </div>
+        <div class="item-total">
+          <p>${{ item.precioUnitario * item.cantidad }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!carrito || !carrito.items || carrito.items.length === 0" class="empty-cart">
+      <div class="empty-icon">
+        <i class="fas fa-shopping-cart"></i>
+      </div>
+      <h3>Tu carrito está vacío</h3>
+      <p>Agrega algunos productos para continuar</p>
+    </div>
+
+    <div *ngIf="carrito && carrito.items && carrito.items.length > 0" class="carrito-summary">
+      <div class="total">
+        <h3>Total: ${{ getTotal() }}</h3>
+      </div>
+      <button class="btn btn-primary btn-checkout">
+        Proceder al Pago
+      </button>
+    </div>
+  </div>
+</div>

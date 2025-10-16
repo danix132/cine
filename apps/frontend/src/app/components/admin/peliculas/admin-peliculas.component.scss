@@ -1,0 +1,394 @@
+.admin-peliculas {
+  padding: 20px;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+
+    h2 {
+      margin: 0;
+      font-size: 24px;
+    }
+  }
+
+  .peliculas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+  }
+
+  .pelicula-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.2s;
+
+    &:hover {
+      transform: translateY(-5px);
+    }
+
+    img {
+      width: 100%;
+      height: 300px;
+      object-fit: cover;
+    }
+
+    .pelicula-info {
+      padding: 15px;
+
+      h3 {
+        margin: 0 0 10px;
+        font-size: 18px;
+      }
+
+      .duracion, .clasificacion {
+        color: #666;
+        margin: 5px 0;
+      }
+
+      .estado {
+        color: #444;
+        margin: 5px 0;
+        font-weight: 500;
+      }
+
+      .acciones {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+
+        button {
+          flex: 1;
+          font-size: 0.9rem;
+          padding: 6px 12px;
+        }
+      }
+    }
+  }
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+
+  .modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+
+    h3 {
+      margin: 0 0 20px;
+    }
+  }
+}
+
+.form-group {
+  margin-bottom: 15px;
+
+  label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+
+    &:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+  }
+
+  textarea.form-control {
+    min-height: 100px;
+    resize: vertical;
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+
+  button {
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+
+    &.btn-secondary {
+      background: #6c757d;
+      color: white;
+      border: none;
+
+      &:hover {
+        background: #5a6268;
+      }
+    }
+
+    &.btn-info {
+      background: #17a2b8;
+      color: white;
+      border: none;
+
+      &:hover {
+        background: #138496;
+      }
+
+      &:disabled {
+        background: #7cc7d2;
+        cursor: not-allowed;
+      }
+    }
+
+    &.btn-warning {
+      background: #ffc107;
+      color: #212529;
+      border: none;
+
+      &:hover {
+        background: #e0a800;
+      }
+    }
+
+    &.btn-primary {
+      background: #667eea;
+      color: white;
+      border: none;
+
+      &:hover {
+        background: #5a6edb;
+      }
+
+      &:disabled {
+        background: #b7c0ea;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+.alert {
+  padding: 10px 15px;
+  margin: 15px 0;
+  border: 1px solid transparent;
+  border-radius: 4px;
+
+  &.alert-success {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+  }
+
+  &.alert-warning {
+    background-color: #fff3cd;
+    border-color: #ffeaa7;
+    color: #856404;
+  }
+
+  &.alert-danger {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+  }
+
+  pre {
+    margin: 0;
+    white-space: pre-wrap;
+    font-family: inherit;
+    font-size: 0.9rem;
+  }
+}
+
+.debug-info {
+  background: #f8f9fa;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  border: 1px solid #e9ecef;
+
+  .debug-errors {
+    color: #dc3545;
+    margin-top: 5px;
+  }
+}
+
+// Estilos para filtros y sugerencias
+.filtros-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  
+  .card-body {
+    padding: 20px;
+  }
+
+  // Separación de 1cm entre filtros
+  .filtros-row {
+    display: flex;
+    gap: 1cm;
+    align-items: end;
+    
+    .filtro-pelicula {
+      flex: 1 1 40%;
+    }
+    
+    .filtro-estado {
+      flex: 1 1 25%;
+    }
+    
+    .filtro-genero {
+      flex: 1 1 25%;
+    }
+  }
+
+  // Asegurar que las columnas estén en línea horizontal (fallback)
+  .row {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: end;
+    
+    > div {
+      flex: 0 0 auto;
+    }
+    
+    .col-md-3 {
+      width: 25%;
+    }
+    
+    .col-md-4 {
+      width: 33.333333%;
+    }
+    
+    .col-md-1 {
+      width: 8.333333%;
+    }
+  }
+}
+
+.position-relative {
+  position: relative;
+}
+
+.sugerencias-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+
+  .sugerencia-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s;
+
+    &:hover,
+    &.active {
+      background-color: #f8f9fa;
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .sugerencia-poster {
+      width: 40px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 4px;
+      margin-right: 12px;
+      flex-shrink: 0;
+    }
+
+    .sugerencia-info {
+      flex: 1;
+      min-width: 0; // Para permitir que el texto se corte con ellipsis
+
+      .sugerencia-titulo {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .sugerencia-detalles {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 4px;
+        flex-wrap: wrap;
+
+        .badge {
+          font-size: 0.75rem;
+          padding: 2px 6px;
+        }
+
+        .text-muted {
+          font-size: 0.85rem;
+        }
+      }
+
+      .sugerencia-generos {
+        font-size: 0.8rem;
+        color: #6c757d;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+
+  .no-sugerencias {
+    padding: 20px;
+    text-align: center;
+    color: #6c757d;
+
+    i {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 1.5rem;
+    }
+  }
+}
+
+// Mensajes de estado
+.no-results,
+.no-movies {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}

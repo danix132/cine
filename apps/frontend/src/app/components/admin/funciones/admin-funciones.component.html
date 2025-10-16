@@ -1,0 +1,359 @@
+<div class="admin-funciones">
+  <div class="header">
+    <h2>🎬 Gestión de Funciones</h2>
+    <button class="btn btn-success" (click)="abrirModalCrear()">
+      <i class="fas fa-plus"></i> Nueva Función
+    </button>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filtros-card">
+    <div class="card-body">
+          <div class="row">
+            <div class="col-md-3">
+              <label for="filtroFecha" class="form-label">Filtrar por fecha:</label>
+              <input 
+                type="date" 
+                id="filtroFecha" 
+                class="form-control" 
+                [(ngModel)]="filtroFecha" 
+                (change)="aplicarFiltros()">
+            </div>
+            <div class="col-md-4">
+              <label for="filtroPelicula" class="form-label">Filtrar por película:</label>
+              <select id="filtroPelicula" class="form-control" [(ngModel)]="filtroPeliculaId" (change)="aplicarFiltros()">
+                <option value="">Todas las películas</option>
+                <option *ngFor="let pelicula of peliculas" [value]="pelicula.id">{{pelicula.titulo}}</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label for="filtroSala" class="form-label">Filtrar por sala:</label>
+              <select id="filtroSala" class="form-control" [(ngModel)]="filtroSalaId" (change)="aplicarFiltros()">
+                <option value="">Todas las salas</option>
+                <option *ngFor="let sala of salas" [value]="sala.id">{{sala.nombre}}</option>
+              </select>
+            </div>
+            <div class="col-md-1">
+              <label class="form-label">&nbsp;</label>
+              <button class="btn btn-outline-secondary form-control" 
+                      (click)="limpiarFiltros()"
+                      [disabled]="!hayFiltrosActivos()"
+                      title="Limpiar filtros">
+                <i class="fas fa-times"></i>
+                <span *ngIf="hayFiltrosActivos()" class="badge bg-danger position-absolute top-0 start-100 translate-middle">{{contarFiltrosActivos()}}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+  </div>
+
+  <!-- Tabla de funciones -->
+  <div *ngIf="!loading" class="funciones-card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">
+        <i class="fas fa-list"></i> Lista de Funciones
+        <span class="badge bg-primary ms-2">{{funcionesPaginadas.total || 0}} resultados</span>
+      </h5>
+      <div *ngIf="hayFiltrosActivos()" class="text-muted">
+        <small>
+          <i class="fas fa-filter"></i> {{contarFiltrosActivos()}} filtro(s) aplicado(s)
+        </small>
+      </div>
+    </div>
+    <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-striped table-hover">
+              <thead class="table-dark">
+                <tr>
+                  <th>Fecha</th>
+                  <th>Hora</th>
+                  <th>Película</th>
+                  <th>Sala</th>
+                  <th>Precio</th>
+                  <th>Estado</th>
+                  <th>Boletos Vendidos</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngIf="funcionesPaginadas.data?.length === 0 && !loading">
+                  <td colspan="8" class="text-center py-4">
+                    <div *ngIf="hayFiltrosActivos()">
+                      <i class="fas fa-filter text-muted fa-2x mb-2"></i>
+                      <p class="text-muted mb-1">No se encontraron funciones con los filtros aplicados</p>
+                      <button class="btn btn-sm btn-outline-primary" (click)="limpiarFiltros()">
+                        <i class="fas fa-times"></i> Limpiar filtros
+                      </button>
+                    </div>
+                    <div *ngIf="!hayFiltrosActivos()">
+                      <i class="fas fa-calendar text-muted fa-2x mb-2"></i>
+                      <p class="text-muted">No hay funciones registradas</p>
+                    </div>
+                  </td>
+                </tr>
+                <tr *ngFor="let funcion of funcionesPaginadas.data" [class.table-danger]="funcion.cancelada">
+                  <td>{{ formatearFecha(funcion.inicio) }}</td>
+                  <td>{{ formatearHora(funcion.inicio) }}</td>
+                  <td>
+                    <strong>{{ funcion.pelicula?.titulo || 'N/A' }}</strong>
+                    <br>
+                    <small class="text-muted">{{ funcion.pelicula?.generos?.join(', ') || 'N/A' }}</small>
+                  </td>
+                  <td>
+                    <span class="badge bg-info">{{ funcion.sala?.nombre || 'N/A' }}</span>
+                    <br>
+                    <small class="text-muted">{{ (funcion.sala?.filas || 0) * (funcion.sala?.asientosPorFila || 0) }} asientos</small>
+                  </td>
+                  <td>
+                    <strong>${{ funcion.precio }}</strong>
+                  </td>
+                  <td>
+                    <span class="badge" 
+                          [ngClass]="{
+                            'bg-success': !funcion.cancelada,
+                            'bg-danger': funcion.cancelada
+                          }">
+                      {{ funcion.cancelada ? 'CANCELADA' : 'ACTIVA' }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge" 
+                          [ngClass]="{
+                            'bg-success': calcularPorcentajeOcupacion(funcion) >= 70,
+                            'bg-warning': calcularPorcentajeOcupacion(funcion) >= 30 && calcularPorcentajeOcupacion(funcion) < 70,
+                            'bg-danger': calcularPorcentajeOcupacion(funcion) < 30
+                          }">
+                      {{ getBoletosVendidos(funcion) }} / {{ getCapacidadTotal(funcion) }}
+                    </span>
+                    <br>
+                    <small class="text-muted">{{ calcularPorcentajeOcupacion(funcion) }}%</small>
+                  </td>
+                  <td>
+                    <div class="btn-group" role="group">
+                      <button class="btn btn-sm btn-outline-primary" 
+                              (click)="verDetalles(funcion)" 
+                              title="Ver detalles">
+                        <i class="fas fa-eye"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-warning" 
+                              (click)="editarFuncion(funcion)"
+                              [disabled]="funcion.cancelada"
+                              title="Editar">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-danger" 
+                              (click)="cambiarEstado(funcion)"
+                              title="{{ !funcion.cancelada ? 'Cancelar' : 'Activar' }}">
+                        <i class="fas" [ngClass]="!funcion.cancelada ? 'fa-ban' : 'fa-check'"></i>
+                      </button>
+                      <button class="btn btn-sm btn-danger" 
+                              (click)="eliminarFuncion(funcion)"
+                              title="Eliminar permanentemente">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Paginación -->
+          <nav *ngIf="funcionesPaginadas.totalPages > 1">
+            <ul class="pagination justify-content-center">
+              <li class="page-item" [class.disabled]="funcionesPaginadas.page === 1">
+                <a class="page-link" (click)="cambiarPagina(funcionesPaginadas.page - 1)">Anterior</a>
+              </li>
+              <li class="page-item" 
+                  *ngFor="let page of getPaginas()" 
+                  [class.active]="page === funcionesPaginadas.page">
+                <a class="page-link" (click)="cambiarPagina(page)">{{ page }}</a>
+              </li>
+              <li class="page-item" [class.disabled]="funcionesPaginadas.page === funcionesPaginadas.totalPages">
+                <a class="page-link" (click)="cambiarPagina(funcionesPaginadas.page + 1)">Siguiente</a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+  </div>
+
+<!-- Modal para crear/editar función -->
+<div class="modal" *ngIf="mostrarModalFuncion" (click)="cerrarModal($event)">
+  <div class="modal-dialog modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ modoEdicion ? 'Editar' : 'Crear' }} Función</h5>
+        <button type="button" class="btn-close" (click)="cerrarModal()" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="funcionForm" (ngSubmit)="guardarFuncion()">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="pelicula" class="form-label">Película *</label>
+                <select id="pelicula" class="form-control" formControlName="pelicula_id" required>
+                  <option value="">Seleccione una película</option>
+                  <option *ngFor="let pelicula of peliculas" [value]="pelicula.id">
+                    {{ pelicula.titulo }} ({{ pelicula.duracionMin }} min)
+                  </option>
+                </select>
+                <div *ngIf="funcionForm.get('pelicula_id')?.touched && funcionForm.get('pelicula_id')?.errors?.['required']" 
+                     class="text-danger small">
+                  La película es requerida
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="sala" class="form-label">Sala *</label>
+                <select id="sala" class="form-control" formControlName="sala_id" required>
+                  <option value="">Seleccione una sala</option>
+                  <option *ngFor="let sala of salas" [value]="sala.id">
+                    {{ sala.nombre }} ({{ sala.filas * sala.asientosPorFila }} asientos)
+                  </option>
+                </select>
+                <div *ngIf="funcionForm.get('sala_id')?.touched && funcionForm.get('sala_id')?.errors?.['required']" 
+                     class="text-danger small">
+                  La sala es requerida
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="fecha" class="form-label">Fecha *</label>
+                <input type="date" id="fecha" class="form-control" formControlName="fecha" required>
+                <div *ngIf="funcionForm.get('fecha')?.touched && funcionForm.get('fecha')?.errors?.['required']" 
+                     class="text-danger small">
+                  La fecha es requerida
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="hora" class="form-label">Hora *</label>
+                <input type="time" id="hora" class="form-control" formControlName="hora" required>
+                <div *ngIf="funcionForm.get('hora')?.touched && funcionForm.get('hora')?.errors?.['required']" 
+                     class="text-danger small">
+                  La hora es requerida
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="precio" class="form-label">Precio *</label>
+                <input type="number" id="precio" class="form-control" formControlName="precio" 
+                       min="0" step="0.01" required>
+                <div *ngIf="funcionForm.get('precio')?.touched && funcionForm.get('precio')?.errors?.['required']" 
+                     class="text-danger small">
+                  El precio es requerido
+                </div>
+                <div *ngIf="funcionForm.get('precio')?.touched && funcionForm.get('precio')?.errors?.['min']" 
+                     class="text-danger small">
+                  El precio debe ser mayor a 0
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6" *ngIf="modoEdicion">
+              <div class="mb-3">
+                <label for="estado" class="form-label">Estado</label>
+                <select id="estado" class="form-control" formControlName="estado">
+                  <option value="ACTIVA">Activa</option>
+                  <option value="CANCELADA">Cancelada</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end">
+            <button type="button" class="btn btn-secondary me-2" (click)="cerrarModal()">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary" [disabled]="!funcionForm.valid || guardando">
+              <span *ngIf="guardando" class="spinner-border spinner-border-sm me-2"></span>
+              {{ modoEdicion ? 'Actualizar' : 'Crear' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de detalles -->
+<div class="modal" *ngIf="mostrarModalDetalles" (click)="cerrarModalDetalles($event)">
+  <div class="modal-dialog modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Detalles de la Función</h5>
+        <button type="button" class="btn-close" (click)="cerrarModalDetalles()" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body" *ngIf="funcionSeleccionada">
+        <div class="row">
+          <div class="col-md-6">
+            <h6>Información de la Función</h6>
+            <p><strong>Fecha:</strong> {{ formatearFecha(funcionSeleccionada.inicio) }}</p>
+            <p><strong>Hora:</strong> {{ formatearHora(funcionSeleccionada.inicio) }}</p>
+            <p><strong>Precio:</strong> ${{ funcionSeleccionada.precio }}</p>
+            <p><strong>Estado:</strong> 
+              <span class="badge" 
+                    [ngClass]="{
+                      'bg-success': !funcionSeleccionada.cancelada,
+                      'bg-danger': funcionSeleccionada.cancelada
+                    }">
+                {{ funcionSeleccionada.cancelada ? 'CANCELADA' : 'ACTIVA' }}
+              </span>
+            </p>
+          </div>
+          <div class="col-md-6">
+            <h6>Película</h6>
+            <div class="pelicula-detalle d-flex align-items-start mb-3">
+              <img [src]="funcionSeleccionada.pelicula?.posterUrl || 'assets/images/default-poster.svg'" 
+                   [alt]="funcionSeleccionada.pelicula?.titulo"
+                   class="poster-detalle me-3"
+                   onerror="this.src='assets/images/default-poster.svg'">
+              <div>
+                <p><strong>Título:</strong> {{ funcionSeleccionada.pelicula?.titulo || 'N/A' }}</p>
+                <p><strong>Géneros:</strong> {{ funcionSeleccionada.pelicula?.generos?.join(', ') || 'Sin géneros asignados' }}</p>
+                <p><strong>Duración:</strong> {{ funcionSeleccionada.pelicula?.duracionMin || 'N/A' }} minutos</p>
+                <p><strong>Clasificación:</strong> {{ funcionSeleccionada.pelicula?.clasificacion || 'N/A' }}</p>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="row mt-3">
+          <div class="col-md-6">
+            <h6>Sala</h6>
+            <p><strong>Nombre:</strong> {{ funcionSeleccionada.sala?.nombre }}</p>
+            <p><strong>Capacidad:</strong> {{ (funcionSeleccionada.sala?.filas || 0) * (funcionSeleccionada.sala?.asientosPorFila || 0) }} asientos</p>
+            <p><strong>Configuración:</strong> {{ funcionSeleccionada.sala?.filas }} filas x {{ funcionSeleccionada.sala?.asientosPorFila }} asientos</p>
+          </div>
+          <div class="col-md-6">
+            <h6>Ventas</h6>
+            <p><strong>Boletos vendidos:</strong> {{ getBoletosVendidos(funcionSeleccionada) }} / {{ getCapacidadTotal(funcionSeleccionada) }} ({{ calcularPorcentajeOcupacion(funcionSeleccionada) }}%)</p>
+            <p><strong>Asientos disponibles:</strong> {{ (funcionSeleccionada.sala?.filas || 0) * (funcionSeleccionada.sala?.asientosPorFila || 0) }}</p>
+            <p><strong>Ocupación:</strong> 0%</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="cerrarModalDetalles()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,741 @@
+<div class="admin-reportes">
+  <!-- Mensaje de permisos insuficientes -->
+  <div *ngIf="!tienePermisos" class="permission-error">
+    <div class="alert alert-warning" role="alert">
+      <h4 class="alert-heading">Acceso Restringido</h4>
+      <p>{{ mensajeError }}</p>
+      <hr>
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary" (click)="volverAlInicio()">
+          Volver al Inicio
+        </button>
+        <button class="btn btn-secondary" (click)="volverAlAdmin()">
+          Panel Admin
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenido principal cuando se tienen permisos -->
+  <div *ngIf="tienePermisos">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-content">
+        <div class="header-text">
+          <h2><i class="fas fa-chart-line"></i> Gestión de Reportes</h2>
+          <p class="header-subtitle">Analiza el rendimiento de tu negocio con reportes detallados</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-success" (click)="exportarExcel()" [disabled]="!reporteActual || cargando">
+            <i class="fas fa-file-excel"></i> Exportar a Excel
+          </button>
+          <button class="btn btn-secondary" routerLink="/admin">
+            <i class="fas fa-arrow-left"></i> Volver
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filtros-card">
+      <div class="filtros-header">
+        <h4><i class="fas fa-filter"></i> Configuración del Reporte</h4>
+        <p class="text-muted">Selecciona el tipo de reporte y el período que deseas analizar</p>
+      </div>
+      <div class="card-body">
+        <form [formGroup]="reporteForm" (ngSubmit)="generarReporte()">
+          <div class="filtros-row">
+            <div class="filtro-item filtro-tipo">
+              <label for="tipoReporte" class="form-label">
+                <i class="fas fa-chart-pie"></i> Tipo de Reporte
+              </label>
+              <select class="form-control" id="tipoReporte" formControlName="tipoReporte">
+                <optgroup label="REPORTES PRINCIPALES">
+                  <option value="serie-temporal">Ventas por Día</option>
+                  <option value="ocupacion">Ocupación de Salas</option>
+                  <option value="ingresos-por-pelicula">Ingresos por Película</option>
+                  <option value="ventas-por-canal">Métodos de Pago</option>
+                  <option value="ventas-dulceria">Ventas de Dulcería</option>
+                  <option value="ventas-por-vendedor">Top Clientes</option>
+                </optgroup>
+                <optgroup label="REPORTES ADICIONALES">
+                  <option value="descuentos-promociones">Descuentos</option>
+                  <option value="horarios-pico">Horarios Pico</option>
+                  <option value="top-peliculas">Top Películas</option>
+                </optgroup>
+                <optgroup label="OTROS REPORTES">
+                  <option value="ventas">Listado de Ventas</option>
+                </optgroup>
+              </select>
+            </div>
+            <div class="filtro-item filtro-desde">
+              <label for="desde" class="form-label">
+                <i class="fas fa-calendar-alt"></i> Fecha Inicio
+              </label>
+              <input type="date" class="form-control" id="desde" formControlName="desde">
+            </div>
+            <div class="filtro-item filtro-hasta">
+              <label for="hasta" class="form-label">
+                <i class="fas fa-calendar-check"></i> Fecha Fin
+              </label>
+              <input type="date" class="form-control" id="hasta" formControlName="hasta">
+            </div>
+            <div class="filtro-item filtro-limite" *ngIf="reporteForm.get('tipoReporte')?.value === 'top-peliculas'">
+              <label for="limite" class="form-label">
+                <i class="fas fa-list-ol"></i> Cantidad
+              </label>
+              <input type="number" class="form-control" id="limite" formControlName="limite" min="1" max="50" placeholder="10">
+            </div>
+            <div class="filtro-item filtro-boton">
+              <label class="form-label">&nbsp;</label>
+              <button type="submit" class="btn btn-primary btn-generar" [disabled]="cargando || !reporteForm.valid">
+                <i class="fas fa-chart-bar" *ngIf="!cargando"></i>
+                <i class="fas fa-spinner fa-spin" *ngIf="cargando"></i>
+                <span>{{ cargando ? 'Generando...' : 'Generar Reporte' }}</span>
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <!-- Mensaje de error -->
+        <div *ngIf="error" class="alert alert-danger mt-3" role="alert">
+          <i class="fas fa-exclamation-triangle"></i>
+          <strong>Error:</strong> {{ error }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Grid de reportes -->
+    <div class="reportes-grid" *ngIf="reporteActual && !cargando">
+      
+      <!-- ============ SERIE TEMPORAL ============ -->
+      <div class="reporte-card full-width" *ngIf="reporteSerieTemporal && reporteActual === 'serie-temporal'">
+        <div class="reporte-header">
+          <h3><i class="fas fa-chart-line"></i> Ventas por Día</h3>
+          <span class="badge bg-primary">{{ reporteSerieTemporal.serie.length }} días registrados</span>
+        </div>
+
+        <!-- Resumen Total -->
+        <div class="reporte-stats">
+          <div class="stat-item">
+            <span class="stat-label">Total Período</span>
+            <span class="stat-value">{{ formatearMoneda(calcularTotalSerie()) }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Transacciones</span>
+            <span class="stat-value">{{ calcularTotalPedidosSerie() }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Promedio Diario</span>
+            <span class="stat-value">{{ formatearMoneda(calcularPromedioDiario()) }}</span>
+          </div>
+        </div>
+
+        <!-- Desglose Boletos vs Dulcería -->
+        <div class="reporte-stats desglose-stats">
+          <div class="stat-item">
+            <span class="stat-label"><i class="fas fa-ticket-alt"></i> Boletos Vendidos</span>
+            <span class="stat-value text-primary">{{ calcularCantidadBoletosSerie() }}</span>
+            <small class="stat-detail">{{ formatearMoneda(calcularTotalBoletosSerie()) }}</small>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label"><i class="fas fa-candy-cane"></i> Items Dulcería</span>
+            <span class="stat-value text-success">{{ calcularCantidadDulceriaSerie() }}</span>
+            <small class="stat-detail">{{ formatearMoneda(calcularTotalDulceriaSerie()) }}</small>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Proporción (ingresos)</span>
+            <span class="stat-value">
+              {{ calcularTotalSerie() > 0 ? ((calcularTotalBoletosSerie() / calcularTotalSerie() * 100).toFixed(1)) : 0 }}% / 
+              {{ calcularTotalSerie() > 0 ? ((calcularTotalDulceriaSerie() / calcularTotalSerie() * 100).toFixed(1)) : 0 }}%
+            </span>
+          </div>
+        </div>
+
+        <!-- Lista de Ventas Diarias -->
+        <div class="reporte-data serie-temporal-lista">
+          <div class="serie-temporal-item" *ngFor="let dia of reporteSerieTemporal.serie; let i = index">
+            <div class="dia-numero">
+              <span class="numero">{{ i + 1 }}</span>
+            </div>
+            <div class="dia-info">
+              <div class="dia-fecha">
+                <i class="fas fa-calendar"></i>
+                <strong>{{ formatearFecha(dia.fecha) }}</strong>
+              </div>
+              <div class="dia-stats">
+                <span class="stat-item-small">
+                  <i class="fas fa-shopping-cart"></i>
+                  {{ dia.pedidos }} {{ dia.pedidos === 1 ? 'venta' : 'ventas' }}
+                </span>
+                <span class="stat-item-small">
+                  <i class="fas fa-chart-bar"></i>
+                  {{ calcularPorcentajeDelTotal(dia.ingresos) }}% del total
+                </span>
+              </div>
+              <div class="dia-desglose">
+                <span class="desglose-item boletos">
+                  <i class="fas fa-ticket-alt"></i>
+                  {{ dia.cantidadBoletos || 0 }} {{ (dia.cantidadBoletos || 0) === 1 ? 'boleto' : 'boletos' }}
+                  <small>{{ formatearMoneda(dia.ingresosBoletos || 0) }}</small>
+                </span>
+                <span class="desglose-item dulceria">
+                  <i class="fas fa-candy-cane"></i>
+                  {{ dia.cantidadDulceria || 0 }} {{ (dia.cantidadDulceria || 0) === 1 ? 'item' : 'items' }}
+                  <small>{{ formatearMoneda(dia.ingresosDulceria || 0) }}</small>
+                </span>
+              </div>
+            </div>
+            <div class="dia-ingresos">
+              <span class="monto">{{ formatearMoneda(dia.ingresos) }}</span>
+              <span class="badge" [ngClass]="{
+                'bg-success': dia.ingresos > calcularPromedioDiario(),
+                'bg-warning': dia.ingresos >= calcularPromedioDiario() * 0.7 && dia.ingresos <= calcularPromedioDiario(),
+                'bg-danger': dia.ingresos < calcularPromedioDiario() * 0.7
+              }">
+                {{ dia.ingresos > calcularPromedioDiario() ? 'Sobre promedio' : 
+                   dia.ingresos >= calcularPromedioDiario() * 0.7 ? 'Normal' : 'Bajo promedio' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reporte Ventas por Canal -->
+      <div class="reporte-card full-width" *ngIf="reporteVentasPorCanal && reporteActual === 'ventas-por-canal'">
+        <div class="reporte-header">
+          <h3><i class="fas fa-chart-line"></i> Análisis de Ventas por Canal de Venta</h3>
+          <span class="badge bg-info">2 canales activos</span>
+        </div>
+        
+        <!-- Resumen por Canal -->
+        <div class="canales-grid">
+          <div class="canal-card">
+            <div class="canal-header">
+              <h4>
+                <i class="fas fa-globe"></i>
+                Ventas Online
+              </h4>
+            </div>
+            <div class="canal-stats">
+              <div class="canal-stat">
+                <span class="label">Ventas</span>
+                <span class="value">{{ formatearMoneda(reporteVentasPorCanal.ventasPorCanal.online.total) }}</span>
+              </div>
+              <div class="canal-stat">
+                <span class="label">Pedidos</span>
+                <span class="value">{{ reporteVentasPorCanal.ventasPorCanal.online.cantidad }}</span>
+              </div>
+              <div class="canal-stat">
+                <span class="label">Porcentaje</span>
+                <span class="value">{{ (reporteVentasPorCanal.ventasPorCanal.online.total / reporteVentasPorCanal.totalVentas * 100) | number:'1.1-1' }}%</span>
+              </div>
+              <div class="canal-stat">
+                <span class="label">Ticket Promedio</span>
+                <span class="value">{{ formatearMoneda(reporteVentasPorCanal.ventasPorCanal.online.total / reporteVentasPorCanal.ventasPorCanal.online.cantidad) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="canal-card">
+            <div class="canal-header">
+              <h4>
+                <i class="fas fa-ticket-alt"></i>
+                Venta en Taquilla
+              </h4>
+            </div>
+            <div class="canal-stats">
+              <div class="canal-stat">
+                <span class="label">Ventas</span>
+                <span class="value">{{ formatearMoneda(reporteVentasPorCanal.ventasPorCanal.taquilla.total) }}</span>
+              </div>
+              <div class="canal-stat">
+                <span class="label">Pedidos</span>
+                <span class="value">{{ reporteVentasPorCanal.ventasPorCanal.taquilla.cantidad }}</span>
+              </div>
+              <div class="canal-stat">
+                <span class="label">Porcentaje</span>
+                <span class="value">{{ (reporteVentasPorCanal.ventasPorCanal.taquilla.total / reporteVentasPorCanal.totalVentas * 100) | number:'1.1-1' }}%</span>
+              </div>
+              <div class="canal-stat">
+                <span class="label">Ticket Promedio</span>
+                <span class="value">{{ formatearMoneda(reporteVentasPorCanal.ventasPorCanal.taquilla.total / reporteVentasPorCanal.ventasPorCanal.taquilla.cantidad) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reporte Descuentos y Promociones -->
+      <div class="reporte-card full-width" *ngIf="reporteDescuentos && reporteActual === 'descuentos-promociones'">
+        <div class="reporte-header">
+          <h3><i class="fas fa-tags"></i> Análisis de Descuentos y Promociones</h3>
+          <span class="badge bg-warning">{{ reporteDescuentos.pedidosConDescuento }} pedidos con descuento</span>
+        </div>
+
+        <!-- KPIs de Descuentos -->
+        <div class="descuentos-kpis">
+          <div class="descuento-kpi">
+            <i class="fas fa-percentage kpi-icon"></i>
+            <div class="kpi-content">
+              <span class="kpi-label">% Pedidos con Descuento</span>
+              <span class="kpi-value">{{ reporteDescuentos.porcentajeDescuento | number:'1.1-1' }}%</span>
+            </div>
+          </div>
+          <div class="descuento-kpi">
+            <i class="fas fa-money-bill-wave kpi-icon"></i>
+            <div class="kpi-content">
+              <span class="kpi-label">Total Descontado</span>
+              <span class="kpi-value">{{ formatearMoneda(reporteDescuentos.totalDescuentos) }}</span>
+            </div>
+          </div>
+          <div class="descuento-kpi">
+            <i class="fas fa-receipt kpi-icon"></i>
+            <div class="kpi-content">
+              <span class="kpi-label">Pedidos con Descuento</span>
+              <span class="kpi-value">{{ reporteDescuentos.pedidosConDescuento }}</span>
+            </div>
+          </div>
+          <div class="descuento-kpi">
+            <i class="fas fa-dollar-sign kpi-icon"></i>
+            <div class="kpi-content">
+              <span class="kpi-label">Descuento Promedio</span>
+              <span class="kpi-value">{{ formatearMoneda(reporteDescuentos.promedioDescuento) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resumen Simple -->
+        <div class="descuentos-resumen">
+          <div class="reporte-stats">
+            <div class="stat-item">
+              <span class="stat-label">Total de Pedidos</span>
+              <span class="stat-value">{{ reporteDescuentos.totalPedidos }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Pedidos con Descuento</span>
+              <span class="stat-value">{{ reporteDescuentos.pedidosConDescuento }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Pedidos sin Descuento</span>
+              <span class="stat-value">{{ reporteDescuentos.totalPedidos - reporteDescuentos.pedidosConDescuento }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reporte Horarios Pico -->
+      <div class="reporte-card full-width" *ngIf="reporteHorariosPico && reporteActual === 'horarios-pico'">
+        <div class="reporte-header">
+          <h3><i class="fas fa-clock"></i> Análisis de Horarios Pico y Demanda</h3>
+          <span class="badge bg-primary">{{ reporteHorariosPico.horariosPico.length }} franjas horarias</span>
+        </div>
+
+        <div class="horarios-info" *ngIf="reporteHorariosPico.horaMasPopular !== null">
+          <p class="hora-popular">
+            <i class="fas fa-star"></i>
+            <strong>Horario Más Popular:</strong> {{ reporteHorariosPico.horaMasPopular }}:00 - {{ reporteHorariosPico.horaMasPopular + 1 }}:00
+          </p>
+        </div>
+
+        <div class="horarios-grid">
+          <div class="horario-item" *ngFor="let horario of reporteHorariosPico.horariosPico" 
+               [ngClass]="{
+                 'horario-alto': horario.ocupacionPromedio >= 80,
+                 'horario-medio': horario.ocupacionPromedio >= 50 && horario.ocupacionPromedio < 80,
+                 'horario-bajo': horario.ocupacionPromedio < 50
+               }">
+            <div class="horario-header">
+              <h4>
+                <i class="fas fa-clock"></i>
+                {{ horario.hora }}:00 - {{ horario.hora + 1 }}:00
+              </h4>
+              <span class="badge" 
+                    [ngClass]="{
+                      'bg-danger': horario.ocupacionPromedio >= 80,
+                      'bg-warning': horario.ocupacionPromedio >= 50 && horario.ocupacionPromedio < 80,
+                      'bg-success': horario.ocupacionPromedio < 50
+                    }">
+                {{ horario.ocupacionPromedio | number:'1.1-1' }}% ocupación
+              </span>
+            </div>
+            <div class="horario-stats">
+              <div class="horario-stat">
+                <i class="fas fa-film"></i>
+                <span>{{ horario.funciones }} funciones</span>
+              </div>
+              <div class="horario-stat">
+                <i class="fas fa-ticket-alt"></i>
+                <span>{{ horario.totalBoletos }} boletos</span>
+              </div>
+              <div class="horario-stat">
+                <i class="fas fa-users"></i>
+                <span>{{ (horario.totalBoletos / horario.funciones) | number:'1.0-0' }} promedio/función</span>
+              </div>
+            </div>
+            <div class="horario-bar">
+              <div class="bar-fill" 
+                   [style.width.%]="horario.ocupacionPromedio"
+                   [ngClass]="{
+                     'bar-alto': horario.ocupacionPromedio >= 80,
+                     'bar-medio': horario.ocupacionPromedio >= 50 && horario.ocupacionPromedio < 80,
+                     'bar-bajo': horario.ocupacionPromedio < 50
+                   }">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reporte Ingresos por Película -->
+      <div class="reporte-card full-width" *ngIf="reporteIngresosPorPelicula && reporteActual === 'ingresos-por-pelicula'">
+        <div class="reporte-header">
+          <h3><i class="fas fa-film"></i> Análisis Detallado de Ingresos por Película</h3>
+          <span class="badge bg-success">{{ reporteIngresosPorPelicula.peliculas.length }} películas</span>
+        </div>
+
+        <div class="reporte-stats">
+          <div class="stat-item">
+            <span class="stat-label">Ingresos Totales</span>
+            <span class="stat-value">{{ formatearMoneda(reporteIngresosPorPelicula.totalIngresos) }}</span>
+          </div>
+        </div>
+
+        <div class="peliculas-ingresos">
+          <div class="pelicula-item" *ngFor="let pelicula of reporteIngresosPorPelicula.peliculas; let i = index">
+            <div class="pelicula-header">
+              <div class="pelicula-ranking">
+                <span class="badge" 
+                      [ngClass]="{
+                        'bg-gold': i === 0,
+                        'bg-silver': i === 1,
+                        'bg-bronze': i === 2,
+                        'bg-secondary': i > 2
+                      }">
+                  #{{ i + 1 }}
+                </span>
+              </div>
+              <div class="pelicula-info">
+                <h4>🎬 {{ pelicula.titulo }}</h4>
+                <p class="pelicula-generos" *ngIf="pelicula.generos && pelicula.generos.length > 0">
+                  <i class="fas fa-tags"></i> {{ pelicula.generos.join(', ') }}
+                </p>
+              </div>
+              <div class="pelicula-total">
+                <span class="total-label">Ingresos</span>
+                <span class="total-value">{{ formatearMoneda(pelicula.ingresoTotal) }}</span>
+              </div>
+            </div>
+
+            <div class="pelicula-stats">
+              <div class="stat-box">
+                <i class="fas fa-ticket-alt"></i>
+                <span class="stat-value">{{ pelicula.totalBoletos }}</span>
+                <span class="stat-label">Boletos</span>
+              </div>
+              <div class="stat-box">
+                <i class="fas fa-film"></i>
+                <span class="stat-value">{{ pelicula.totalFunciones }}</span>
+                <span class="stat-label">Funciones</span>
+              </div>
+              <div class="stat-box">
+                <i class="fas fa-dollar-sign"></i>
+                <span class="stat-value">{{ formatearMoneda(pelicula.ingresoPromedioPorFuncion) }}</span>
+                <span class="stat-label">Promedio/Función</span>
+              </div>
+              <div class="stat-box">
+                <i class="fas fa-money-check-alt"></i>
+                <span class="stat-value">{{ formatearMoneda(pelicula.precioPromedioBoleto) }}</span>
+                <span class="stat-label">Precio Promedio</span>
+              </div>
+            </div>
+
+            <!-- Funciones de la Película (Expandible) -->
+            <div class="funciones-detalle" *ngIf="pelicula.funciones && pelicula.funciones.length > 0">
+              <details>
+                <summary>
+                  <i class="fas fa-list"></i>
+                  Ver {{ pelicula.funciones.length }} funciones programadas
+                </summary>
+                <div class="funciones-lista">
+                  <div class="funcion-item" *ngFor="let funcion of pelicula.funciones">
+                    <div class="funcion-info">
+                      <strong>{{ formatearFecha(funcion.inicio) }}</strong>
+                      <p>
+                        Sala {{ funcion.sala }} | 
+                        {{ funcion.boletos }} boletos vendidos
+                      </p>
+                    </div>
+                    <div class="funcion-ingresos">
+                      {{ formatearMoneda(funcion.ingreso) }}
+                    </div>
+                  </div>
+                </div>
+              </details>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reporte de Compras de Clientes -->
+      <div class="reporte-card" *ngIf="reporteVentas && reporteActual === 'ventas'">
+        <div class="reporte-header">
+          <h3><i class="fas fa-users"></i> Compras Realizadas por Clientes</h3>
+          <span class="badge bg-primary">{{ reporteVentas.ventas.length }} cliente(s)</span>
+        </div>
+        <div class="reporte-stats">
+          <div class="stat-item">
+            <span class="stat-label">Total Compras</span>
+            <span class="stat-value">{{ formatearMoneda(reporteVentas.totalVentas) }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Transacciones</span>
+            <span class="stat-value">{{ reporteVentas.cantidadPedidos }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Ticket Promedio</span>
+            <span class="stat-value">{{ formatearMoneda(reporteVentas.totalVentas / reporteVentas.cantidadPedidos) }}</span>
+          </div>
+        </div>
+        <div class="reporte-data">
+          <div class="data-item" *ngFor="let venta of reporteVentas.ventas.slice(0, 5)">
+            <div class="data-info">
+              <strong>{{ venta.usuario.nombre || 'Cliente sin nombre' }}</strong>
+              <p>{{ venta.usuario.email || 'Sin email' }}</p>
+              <small>{{ formatearFecha(venta.createdAt) }} | 
+                {{ contarBoletos(venta) }} boleto(s) | 
+                {{ contarDulceria(venta) }} producto(s)
+              </small>
+            </div>
+            <div class="data-value">{{ formatearMoneda(venta.total) }}</div>
+          </div>
+          <div class="ver-mas" *ngIf="reporteVentas.ventas.length > 5">
+            <small class="text-muted">Y {{ reporteVentas.ventas.length - 5 }} clientes más...</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reporte de Ocupación -->
+      <div class="reporte-card" *ngIf="reporteOcupacion && reporteActual === 'ocupacion'">
+        <div class="reporte-header">
+          <h3><i class="fas fa-chair"></i> Ocupación de Salas</h3>
+          <span class="badge bg-info">{{ reporteOcupacion.totalFunciones }} funciones</span>
+        </div>
+        <div class="reporte-stats">
+          <div class="stat-item">
+            <span class="stat-label">Total Funciones</span>
+            <span class="stat-value">{{ reporteOcupacion.totalFunciones }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Ocupación Promedio</span>
+            <span class="stat-value">{{ calcularPromedioOcupacion() }}%</span>
+          </div>
+        </div>
+        <div class="reporte-data">
+          <div class="data-item" *ngFor="let funcion of reporteOcupacion.ocupacionPorFuncion.slice(0, 5)">
+            <div class="data-info">
+              <strong>{{ funcion.pelicula }}</strong>
+              <p>{{ funcion.sala }} - {{ formatearFecha(funcion.inicio) }}</p>
+              <small>{{ funcion.asientosOcupados }}/{{ funcion.totalAsientos }} asientos</small>
+            </div>
+            <div class="data-value">
+              <span class="badge" 
+                    [ngClass]="{ 
+                      'bg-danger': funcion.porcentajeOcupacion < 30,
+                      'bg-warning': funcion.porcentajeOcupacion >= 30 && funcion.porcentajeOcupacion < 70,
+                      'bg-success': funcion.porcentajeOcupacion >= 70
+                    }">
+                {{ funcion.porcentajeOcupacion }}%
+              </span>
+            </div>
+          </div>
+          <div class="ver-mas" *ngIf="reporteOcupacion.ocupacionPorFuncion.length > 5">
+            <small class="text-muted">Y {{ reporteOcupacion.ocupacionPorFuncion.length - 5 }} funciones más...</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reporte Top Películas -->
+      <div class="reporte-card" *ngIf="reporteTopPeliculas && reporteActual === 'top-peliculas'">
+        <div class="reporte-header">
+          <h3><i class="fas fa-trophy"></i> Top Películas Más Vistas por Clientes</h3>
+          <span class="badge bg-warning">{{ reporteTopPeliculas.topPeliculas.length }} películas</span>
+        </div>
+        <div class="reporte-data">
+          <div class="data-item ranking" *ngFor="let pelicula of reporteTopPeliculas.topPeliculas; let i = index">
+            <div class="ranking-position">
+              <span class="badge" 
+                    [ngClass]="{
+                      'bg-gold': i === 0,
+                      'bg-silver': i === 1,
+                      'bg-bronze': i === 2,
+                      'bg-secondary': i > 2
+                    }">
+                {{ i + 1 }}
+              </span>
+            </div>
+            <div class="data-info">
+              <strong>{{ pelicula.titulo }}</strong>
+              <p>{{ pelicula.totalBoletos }} cliente(s) la vieron | 🎞️ {{ pelicula.totalFunciones }} funciones</p>
+              <small>Promedio: {{ pelicula.promedioBoletosPorFuncion | number:'1.1-1' }} clientes por función</small>
+            </div>
+            <div class="data-value">
+              <span class="badge bg-primary">{{ pelicula.totalBoletos }} 🎫</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reporte Top Clientes (Clientes Frecuentes) -->
+      <div class="reporte-card" *ngIf="reporteVentasPorVendedor && reporteActual === 'ventas-por-vendedor'">
+        <div class="reporte-header">
+          <h3><i class="fas fa-star"></i> Top Clientes Frecuentes</h3>
+          <span class="badge bg-success">{{ reporteVentasPorVendedor.ventasPorVendedor.length }} clientes activos</span>
+        </div>
+        <div class="reporte-stats">
+          <div class="stat-item">
+            <span class="stat-label">Clientes Activos</span>
+            <span class="stat-value">{{ reporteVentasPorVendedor.ventasPorVendedor.length }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Total Compras</span>
+            <span class="stat-value">{{ formatearMoneda(calcularTotalVentasVendedores()) }}</span>
+          </div>
+        </div>
+        <div class="reporte-data">
+          <div class="data-item" *ngFor="let cliente of reporteVentasPorVendedor.ventasPorVendedor; let i = index">
+            <div class="data-info">
+              <strong>{{ cliente.nombre }}</strong>
+              <p>{{ cliente.email }}</p>
+              <small>{{ cliente.cantidadPedidos }} compra(s) | 💳 Promedio: {{ formatearMoneda(cliente.totalVentas / cliente.cantidadPedidos) }}</small>
+            </div>
+            <div class="data-value">{{ formatearMoneda(cliente.totalVentas) }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reporte Compras de Dulcería por Clientes -->
+      <div class="reporte-card" *ngIf="reporteVentasDulceria && reporteActual === 'ventas-dulceria'">
+        <div class="reporte-header">
+          <h3><i class="fas fa-candy-cane"></i> Ventas de Dulcería</h3>
+          <span class="badge bg-warning">{{ reporteVentasDulceria.ventasPorProducto.length }} productos diferentes</span>
+        </div>
+        
+        <!-- KPIs Principales con diseño mejorado -->
+        <div class="reporte-stats">
+          <div class="stat-item highlight">
+            <div class="stat-icon">
+              <i class="fas fa-dollar-sign"></i>
+            </div>
+            <div class="stat-content">
+              <span class="stat-label">Ingresos Totales</span>
+              <span class="stat-value">{{ formatearMoneda(reporteVentasDulceria.totalVentas) }}</span>
+            </div>
+          </div>
+          <div class="stat-item highlight">
+            <div class="stat-icon">
+              <i class="fas fa-shopping-basket"></i>
+            </div>
+            <div class="stat-content">
+              <span class="stat-label">Total Productos Vendidos</span>
+              <span class="stat-value">{{ reporteVentasDulceria.totalProductosVendidos }}</span>
+            </div>
+          </div>
+          <div class="stat-item highlight">
+            <div class="stat-icon">
+              <i class="fas fa-receipt"></i>
+            </div>
+            <div class="stat-content">
+              <span class="stat-label">Precio Promedio por Producto</span>
+              <span class="stat-value">{{ formatearMoneda(reporteVentasDulceria.totalVentas / reporteVentasDulceria.totalProductosVendidos) }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Productos Más Vendidos con diseño mejorado -->
+        <div class="reporte-subsection">
+          <h5><i class="fas fa-trophy"></i> Top Productos Más Vendidos</h5>
+          <div class="reporte-data">
+            <div class="data-item ranking" *ngFor="let producto of reporteVentasDulceria.ventasPorProducto; let i = index">
+              <div class="ranking-position">
+                <span class="badge" 
+                      [ngClass]="{
+                        'bg-gold': i === 0,
+                        'bg-silver': i === 1,
+                        'bg-bronze': i === 2,
+                        'bg-secondary': i > 2
+                      }">
+                  #{{ i + 1 }}
+                </span>
+              </div>
+              <div class="data-info">
+                <strong>{{ producto.nombre }}</strong>
+                <div class="producto-detalles">
+                  <span class="badge badge-outline">{{ producto.tipo }}</span>
+                  <span class="producto-cantidad">
+                    <i class="fas fa-box"></i> {{ producto.cantidadVendida }} unidades vendidas
+                  </span>
+                </div>
+              </div>
+              <div class="data-value">
+                <div class="value-principal">{{ formatearMoneda(producto.totalVentas) }}</div>
+                <small class="value-secundario">{{ formatearMoneda(producto.totalVentas / producto.cantidadVendida) }} c/u</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ventas por Día con diseño mejorado -->
+        <div class="reporte-subsection" *ngIf="reporteVentasDulceria.ventasPorDia.length > 0">
+          <h5><i class="fas fa-chart-line"></i> Evolución de Ventas por Día</h5>
+          <div class="reporte-data">
+            <div class="data-item timeline" *ngFor="let dia of reporteVentasDulceria.ventasPorDia.slice(0, 10)">
+              <div class="data-info">
+                <strong>{{ formatearFecha(dia.fecha) }}</strong>
+                <div class="dia-estadisticas">
+                  <span class="badge badge-pill bg-info">
+                    <i class="fas fa-shopping-cart"></i> {{ dia.cantidadProductos }} productos
+                  </span>
+                </div>
+              </div>
+              <div class="data-value">
+                <div class="value-principal">{{ formatearMoneda(dia.totalVentas) }}</div>
+                <div class="progress-bar-container" style="width: 100%; max-width: 150px;">
+                  <div class="progress" style="height: 8px; background-color: #e9ecef;">
+                    <div class="progress-bar bg-success" 
+                         [style.width.%]="(dia.totalVentas / getMaxVentaDulceriaDia() * 100)"
+                         style="transition: width 0.3s ease;">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="ver-mas" *ngIf="reporteVentasDulceria.ventasPorDia.length > 10">
+              <small class="text-muted">
+                <i class="fas fa-ellipsis-h"></i> Y {{ reporteVentasDulceria.ventasPorDia.length - 10 }} días más...
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mensaje cuando no hay reporte generado -->
+    <div class="no-results" *ngIf="!reporteActual && !cargando">
+      <div class="text-center py-5">
+        <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+        <h4 class="text-muted">Selecciona un reporte</h4>
+        <p class="text-muted">Configura los filtros y genera tu primer reporte</p>
+      </div>
+    </div>
+
+    <!-- Mensaje de carga -->
+    <div class="loading-state" *ngIf="cargando">
+      <div class="text-center py-5">
+        <i class="fas fa-spinner fa-spin fa-3x text-primary mb-3"></i>
+        <h4 class="text-primary">Generando reporte...</h4>
+        <p class="text-muted">Por favor espera mientras procesamos los datos</p>
+      </div>
+    </div>
+  </div>
+</div>

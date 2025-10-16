@@ -1,0 +1,275 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  nombre       String
+  email        String   @unique
+  passwordHash String
+  rol          UserRole @default(CLIENTE)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relaciones
+  boletos      Boleto[]
+  carritos     Carrito[]
+  pedidos      Pedido[]
+  ventas       Pedido[] @relation("VendedorPedidos")
+  carritosVendidos Carrito[] @relation("VendedorCarritos")
+
+  @@map("users")
+}
+
+model Sala {
+  id             String   @id @default(cuid())
+  nombre         String   @unique
+  filas          Int
+  asientosPorFila Int
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relaciones
+  asientos       Asiento[]
+  funciones      Funcion[]
+
+  @@map("salas")
+}
+
+model Asiento {
+  id     String @id @default(cuid())
+  salaId String
+  fila   Int
+  numero Int
+  estado AsientoEstado @default(DISPONIBLE)
+
+  // Relaciones
+  sala   Sala    @relation(fields: [salaId], references: [id], onDelete: Cascade)
+  boletos Boleto[]
+
+  @@unique([salaId, fila, numero])
+  @@map("asientos")
+}
+
+model Pelicula {
+  id           String   @id @default(cuid())
+  titulo       String
+  sinopsis     String?
+  duracionMin  Int
+  clasificacion String
+  posterUrl    String?
+  trailerUrl   String?
+  generos      String[]
+  estado       PeliculaEstado @default(ACTIVA)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relaciones
+  funciones    Funcion[]
+
+  @@map("peliculas")
+}
+
+model Funcion {
+  id         String   @id @default(cuid())
+  peliculaId String
+  salaId     String
+  inicio     DateTime
+  cancelada  Boolean  @default(false)
+  precio     Decimal  @db.Decimal(10, 2)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relaciones
+  pelicula   Pelicula @relation(fields: [peliculaId], references: [id], onDelete: Cascade)
+  sala       Sala     @relation(fields: [salaId], references: [id], onDelete: Cascade)
+  boletos    Boleto[]
+
+  @@map("funciones")
+}
+
+model Boleto {
+  id               String    @id @default(cuid())
+  funcionId        String
+  asientoId        String
+  usuarioId        String?
+  pedidoId         String?   // Relación con pedido para reportes
+  estado           BoletoEstado @default(RESERVADO)
+  codigoQR         String    // QUITADO @unique para permitir múltiples boletos con mismo QR
+  fechaValidacion  DateTime? // Fecha y hora cuando el boleto fue validado/escaneado
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Relaciones
+  funcion    Funcion @relation(fields: [funcionId], references: [id], onDelete: Cascade)
+  asiento    Asiento @relation(fields: [asientoId], references: [id], onDelete: Cascade)
+  usuario    User?   @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+  pedido     Pedido? @relation(fields: [pedidoId], references: [id], onDelete: SetNull)
+
+  @@unique([funcionId, asientoId])
+  @@index([codigoQR]) // Agregado índice para optimizar búsquedas por QR
+  @@map("boletos")
+}
+
+model Carrito {
+  id         String   @id @default(cuid())
+  usuarioId  String?
+  vendedorId String?
+  tipo       CarritoTipo
+  expiracion DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relaciones
+  usuario    User?         @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+  vendedor   User?         @relation("VendedorCarritos", fields: [vendedorId], references: [id], onDelete: SetNull)
+  items      CarritoItem[]
+
+  @@map("carritos")
+}
+
+model CarritoItem {
+  id             String        @id @default(cuid())
+  carritoId      String
+  tipo           CarritoItemTipo
+  referenciaId   String        // ID del boleto o item de dulcería
+  cantidad       Int
+  precioUnitario Decimal       @db.Decimal(10, 2)
+  createdAt      DateTime      @default(now())
+
+  // Relaciones
+  carrito        Carrito       @relation(fields: [carritoId], references: [id], onDelete: Cascade)
+
+  @@map("carrito_items")
+}
+
+model Pedido {
+  id         String   @id @default(cuid())
+  usuarioId  String?
+  vendedorId String?
+  total      Decimal  @db.Decimal(10, 2)
+  tipo       PedidoTipo
+  estado     PedidoEstado @default(PENDIENTE)
+  metodoPago String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relaciones
+  usuario    User?         @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+  vendedor   User?         @relation("VendedorPedidos", fields: [vendedorId], references: [id], onDelete: SetNull)
+  items      PedidoItem[]
+  boletos    Boleto[]
+
+  @@map("pedidos")
+}
+
+model PedidoItem {
+  id             String      @id @default(cuid())
+  pedidoId       String
+  tipo           PedidoItemTipo
+  referenciaId   String      // ID del boleto o item de dulcería
+  descripcion    String?
+  cantidad       Int
+  precio         Decimal     @db.Decimal(10, 2) // Precio unitario
+  precioUnitario Decimal     @db.Decimal(10, 2) // Para compatibilidad
+  subtotal       Decimal     @db.Decimal(10, 2)
+  createdAt      DateTime    @default(now())
+
+  // Relaciones
+  pedido         Pedido      @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+
+  @@map("pedido_items")
+}
+
+model DulceriaItem {
+  id          String   @id @default(cuid())
+  nombre      String
+  tipo        DulceriaItemTipo
+  descripcion String?
+  precio      Decimal  @db.Decimal(10, 2)
+  imagenUrl   String?
+  activo      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relaciones
+  movimientos InventarioMov[]
+
+  @@map("dulceria_items")
+}
+
+model InventarioMov {
+  id              String   @id @default(cuid())
+  dulceriaItemId  String
+  delta           Int      // Cambio en inventario (positivo o negativo)
+  motivo          String
+  createdAt       DateTime @default(now())
+
+  // Relaciones
+  dulceriaItem    DulceriaItem @relation(fields: [dulceriaItemId], references: [id], onDelete: Cascade)
+
+  @@map("inventario_mov")
+}
+
+// Enums
+enum UserRole {
+  ADMIN
+  VENDEDOR
+  CLIENTE
+}
+
+enum AsientoEstado {
+  DISPONIBLE
+  DANADO
+}
+
+enum PeliculaEstado {
+  ACTIVA
+  INACTIVA
+}
+
+enum BoletoEstado {
+  RESERVADO
+  PAGADO
+  VALIDADO
+  CANCELADO
+}
+
+enum CarritoTipo {
+  CLIENTE
+  MOSTRADOR
+}
+
+enum CarritoItemTipo {
+  BOLETO
+  DULCERIA
+}
+
+enum PedidoTipo {
+  WEB
+  MOSTRADOR
+}
+
+enum PedidoItemTipo {
+  BOLETO
+  DULCERIA
+}
+
+enum PedidoEstado {
+  PENDIENTE
+  COMPLETADO
+  CANCELADO
+}
+
+enum DulceriaItemTipo {
+  COMBO
+  DULCE
+}

@@ -1,0 +1,414 @@
+<div class="seleccion-asientos-container">
+  <div class="seleccion-header">
+    <button class="btn-volver" (click)="volver()">
+      <i class="fas fa-arrow-left"></i> Volver
+    </button>
+    <h2><i class="fas fa-chair"></i> Selecciona tus Asientos</h2>
+    <div class="funcion-info" *ngIf="funcion">
+      <h3>{{ funcion.pelicula?.titulo }}</h3>
+      <p>{{ funcion.sala?.nombre }} - {{ funcion.inicio | date:'short' }}</p>
+      <p class="precio">Precio: ${{ funcion.precio }}</p>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando asientos...</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-container">
+    <div class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
+  </div>
+
+  <div *ngIf="!isLoading && !errorMessage && sala" class="contenido-principal">
+    <div class="sala-container">
+      <div class="sala-info-header">
+        <h3><i class="fas fa-couch"></i> {{ sala.nombre }}</h3>
+        <div class="capacidad-info">
+          <span class="badge bg-primary">
+            <i class="fas fa-chair"></i> {{ sala.filas }} filas × {{ sala.asientosPorFila }} asientos
+          </span>
+          <span class="badge bg-success">
+            <i class="fas fa-check-circle"></i> {{ asientos.length - asientosOcupados.length - asientosDanados.length }} disponibles
+          </span>
+        </div>
+      </div>
+
+      <div class="pantalla">
+        <div class="pantalla-text">PANTALLA</div>
+      </div>
+
+      <div class="asientos-grid">
+        <div *ngFor="let fila of getFilas()" class="fila">
+          <div class="fila-label">Fila {{ fila }}</div>
+          <div class="asientos-fila">
+            <div 
+              *ngFor="let asiento of getAsientosPorFila(fila)" 
+              [class]="getAsientoClass(asiento)"
+              (click)="toggleAsiento(asiento.id)"
+              [title]="getAsientoTooltip(asiento)"
+            >
+              {{ asiento.numero }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="leyenda">
+        <div class="leyenda-item">
+          <div class="asiento disponible"></div>
+          <span>Disponible</span>
+        </div>
+        <div class="leyenda-item">
+          <div class="asiento seleccionado"></div>
+          <span>Seleccionado</span>
+        </div>
+        <div class="leyenda-item">
+          <div class="asiento ocupado"></div>
+          <span>Ocupado</span>
+        </div>
+        <div class="leyenda-item">
+          <div class="asiento danado">✕</div>
+          <span>Dañado</span>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!isLoading && !errorMessage && funcion" class="resumen-compra">
+      <div class="resumen-info">
+        <div class="resumen-item">
+          <span>Asientos seleccionados:</span>
+          <span>{{ getTotalSeleccionado() }}</span>
+        </div>
+        <div class="resumen-item">
+          <span>Precio por asiento:</span>
+          <span>${{ funcion.precio }}</span>
+        </div>
+        <div class="resumen-item total">
+          <span>Total:</span>
+          <span>${{ getPrecioTotal() }}</span>
+        </div>
+      </div>
+      
+      <button 
+        class="btn btn-primary btn-continuar"
+        [disabled]="getTotalSeleccionado() === 0"
+        (click)="continuarCompra()"
+      >
+        Continuar Compra
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de confirmación de compra -->
+<div class="modal-overlay" *ngIf="mostrarModalCompra" (click)="cerrarModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2><i class="fas fa-shopping-cart"></i> Confirmar Compra</h2>
+      <button class="btn-close" (click)="cerrarModal()" title="Cerrar modal">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Resumen de la compra -->
+      <div class="seccion-resumen">
+        <h3><i class="fas fa-ticket-alt"></i> Resumen de tu compra</h3>
+        
+        <div class="pelicula-info">
+          <h4>{{ funcion?.pelicula?.titulo }}</h4>
+          <div class="detalles">
+            <span><i class="fas fa-calendar"></i> {{ funcion?.inicio | date:'EEEE, d MMMM yyyy':'':'es' }}</span>
+            <span><i class="fas fa-clock"></i> {{ funcion?.inicio | date:'h:mm a' }}</span>
+            <span><i class="fas fa-building"></i> {{ funcion?.sala?.nombre }}</span>
+          </div>
+        </div>
+
+        <div class="asientos-seleccionados">
+          <h5><i class="fas fa-couch"></i> Asientos seleccionados:</h5>
+          <div class="lista-asientos">
+            <span class="asiento-tag" *ngFor="let asientoId of asientosSeleccionados">
+              Fila {{ getAsientoInfo(asientoId).fila }}, Asiento {{ getAsientoInfo(asientoId).numero }}
+            </span>
+          </div>
+        </div>
+
+        <div class="resumen-precio">
+          <div class="linea-precio">
+            <span>{{ getTotalSeleccionado() }} × ${{ funcion?.precio }}</span>
+            <span class="precio">${{ getPrecioTotal() }}</span>
+          </div>
+          <div class="linea-total">
+            <span>Total a pagar</span>
+            <span class="total">${{ getPrecioTotal() }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Método de pago con tarjeta -->
+      <div class="seccion-pago">
+        <h3><i class="fas fa-credit-card"></i> Información de pago</h3>
+        
+        <!-- Tarjetas guardadas -->
+        <div class="tarjetas-guardadas" *ngIf="tarjetasGuardadas.length > 0">
+          <h4><i class="fas fa-wallet"></i> Tarjetas guardadas</h4>
+          <div class="lista-tarjetas">
+            <label 
+              *ngFor="let tarjeta of tarjetasGuardadas" 
+              class="tarjeta-guardada-item"
+              [class.selected]="tarjetaSeleccionada === tarjeta.id"
+            >
+              <input 
+                type="radio" 
+                name="tarjetaSeleccionada" 
+                [value]="tarjeta.id" 
+                [(ngModel)]="tarjetaSeleccionada"
+                (click)="$event.stopPropagation()"
+              >
+              <div class="tarjeta-info">
+                <i [class]="'fab fa-cc-' + tarjeta.tipo"></i>
+                <div class="tarjeta-detalles">
+                  <span class="tarjeta-nombre">{{ tarjeta.nombre }}</span>
+                  <span class="tarjeta-numero">**** **** **** {{ tarjeta.ultimos4 }}</span>
+                </div>
+              </div>
+              <button 
+                class="btn-eliminar-tarjeta" 
+                (click)="eliminarTarjeta(tarjeta.id); $event.stopPropagation()"
+                title="Eliminar tarjeta"
+              >
+                <i class="fas fa-trash"></i>
+              </button>
+            </label>
+          </div>
+        </div>
+
+        <!-- Nueva tarjeta -->
+        <div class="nueva-tarjeta-section">
+          <label class="nueva-tarjeta-radio" [class.selected]="tarjetaSeleccionada === 'nueva'">
+            <input 
+              type="radio" 
+              name="tarjetaSeleccionada" 
+              value="nueva" 
+              [(ngModel)]="tarjetaSeleccionada"
+              (click)="$event.stopPropagation()"
+            >
+            <span><i class="fas fa-plus-circle"></i> Usar nueva tarjeta</span>
+          </label>
+
+          <div class="formulario-tarjeta" *ngIf="tarjetaSeleccionada === 'nueva'">
+            <div class="form-group">
+              <label for="numeroTarjeta">
+                <i class="fas fa-credit-card"></i> Número de tarjeta
+              </label>
+              <input 
+                type="text" 
+                id="numeroTarjeta"
+                class="form-control"
+                [(ngModel)]="nuevaTarjeta.numero"
+                placeholder="1234 5678 9012 3456"
+                maxlength="19"
+                (input)="formatearNumeroTarjeta($event)"
+                (keypress)="soloNumeros($event)"
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="nombreTarjeta">
+                <i class="fas fa-user"></i> Nombre del titular
+              </label>
+              <input 
+                type="text" 
+                id="nombreTarjeta"
+                class="form-control nombre-titular"
+                [(ngModel)]="nuevaTarjeta.nombre"
+                (input)="formatearNombreTitular($event)"
+                (keypress)="soloLetras($event)"
+                placeholder="NOMBRE APELLIDO"
+              >
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="vencimiento">
+                  <i class="fas fa-calendar"></i> Vencimiento
+                </label>
+                <input 
+                  type="text" 
+                  id="vencimiento"
+                  class="form-control"
+                  [(ngModel)]="nuevaTarjeta.vencimiento"
+                  placeholder="MM/AA"
+                  maxlength="5"
+                  (input)="formatearVencimiento($event)"
+                  (keypress)="soloNumeros($event)"
+                >
+              </div>
+
+              <div class="form-group">
+                <label for="cvv">
+                  <i class="fas fa-lock"></i> CVV
+                </label>
+                <input 
+                  type="text" 
+                  id="cvv"
+                  class="form-control"
+                  [(ngModel)]="nuevaTarjeta.cvv"
+                  (input)="formatearCVV($event)"
+                  (keypress)="soloNumeros($event)"
+                  placeholder="123"
+                  maxlength="4"
+                >
+              </div>
+            </div>
+
+            <div class="form-check">
+              <input 
+                type="checkbox" 
+                id="guardarTarjeta"
+                [(ngModel)]="nuevaTarjeta.guardar"
+              >
+              <label for="guardarTarjeta">
+                <i class="fas fa-save"></i> Guardar esta tarjeta para futuras compras
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="cerrarModal()">
+        <i class="fas fa-arrow-left"></i> Volver
+      </button>
+      <button class="btn btn-primary" (click)="confirmarCompra()" [disabled]="!validarFormularioTarjeta()">
+        <i class="fas fa-check"></i> Confirmar y Pagar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Recibo -->
+<div class="modal-overlay recibo-overlay" *ngIf="mostrarRecibo" (click)="cerrarRecibo()">
+  <div class="modal-content recibo-content" (click)="$event.stopPropagation()">
+    <div class="recibo-header">
+      <div class="recibo-titulo">
+        <i class="fas fa-receipt"></i>
+        <h2>Recibo de Compra</h2>
+      </div>
+      <button class="btn-close" (click)="cerrarRecibo()" title="Cerrar recibo">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="recibo-body">
+      <!-- Información de la orden -->
+      <div class="recibo-seccion orden-info">
+        <div class="orden-numero">
+          <span class="label">Orden N°</span>
+          <span class="valor">{{ recibo.numeroOrden }}</span>
+        </div>
+        <div class="orden-fecha">
+          <div class="fecha-item">
+            <i class="fas fa-calendar"></i>
+            <span>{{ recibo.fecha }}</span>
+          </div>
+          <div class="fecha-item">
+            <i class="fas fa-clock"></i>
+            <span>{{ recibo.hora }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Información de la película -->
+      <div class="recibo-seccion pelicula-info">
+        <h3><i class="fas fa-film"></i> Detalles de la función</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="label">Película:</span>
+            <span class="valor">{{ funcion?.pelicula?.titulo }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Fecha:</span>
+            <span class="valor">{{ getFechaFuncion() }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Hora:</span>
+            <span class="valor">{{ getHoraFuncion() }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Sala:</span>
+            <span class="valor">{{ funcion?.sala?.nombre }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Asientos -->
+      <div class="recibo-seccion asientos-info">
+        <h3><i class="fas fa-couch"></i> Asientos</h3>
+        <div class="asientos-lista">
+          <div class="asiento-item" *ngFor="let asiento of recibo.asientos">
+            <i class="fas fa-ticket-alt"></i>
+            <span>Fila {{ asiento.fila }}, Asiento {{ asiento.numero }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Código QR -->
+      <div class="recibo-seccion qr-section" *ngIf="recibo.qrCode">
+        <h3><i class="fas fa-qrcode"></i> Código QR de entrada</h3>
+        <div class="qr-container">
+          <img [src]="recibo.qrCode" alt="Código QR" class="qr-image">
+          <p class="qr-texto">Presenta este código en la entrada del cine</p>
+        </div>
+      </div>
+
+      <!-- Información de pago -->
+      <div class="recibo-seccion pago-info">
+        <h3><i class="fas fa-credit-card"></i> Información de pago</h3>
+        <div class="pago-detalles">
+          <div class="pago-item">
+            <span>Tarjeta:</span>
+            <span>{{ recibo.tarjeta }}</span>
+          </div>
+          <div class="pago-item">
+            <span>Cantidad de boletos:</span>
+            <span>{{ getTotalSeleccionado() }}</span>
+          </div>
+          <div class="pago-item">
+            <span>Precio por boleto:</span>
+            <span>${{ funcion?.precio }}</span>
+          </div>
+          <div class="pago-item total">
+            <span>TOTAL PAGADO:</span>
+            <span class="total-monto">${{ getPrecioTotal() }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mensaje de agradecimiento -->
+      <div class="recibo-seccion mensaje-gracias">
+        <div class="check-icon">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <h3>¡Compra exitosa!</h3>
+        <p>Gracias por su compra. Disfrute de la función.</p>
+      </div>
+    </div>
+
+    <div class="recibo-footer">
+      <button class="btn btn-secondary" (click)="imprimirRecibo()">
+        <i class="fas fa-print"></i> Imprimir
+      </button>
+      <button class="btn btn-info" (click)="descargarRecibo()">
+        <i class="fas fa-download"></i> Descargar
+      </button>
+      <button class="btn btn-primary" (click)="cerrarRecibo()">
+        <i class="fas fa-check"></i> Finalizar
+      </button>
+    </div>
+  </div>
+</div>

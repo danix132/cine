@@ -1,0 +1,50 @@
+{
+  "name": "cine-app",
+  "version": "1.0.0",
+  "description": "Sistema completo de gestión de cine con Angular 17 y NestJS",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "shared/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd apps/backend && npm run start:dev",
+    "dev:frontend": "cd apps/frontend && npm run start",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "cd apps/backend && npm run build",
+    "build:frontend": "cd apps/frontend && npm run build",
+    "install:all": "npm install && cd apps/backend && npm install && cd ../frontend && npm install",
+    "db:setup": "cd apps/backend && npm run db:generate && npm run db:push && npm run db:seed",
+    "db:seed": "cd apps/backend && npm run db:seed",
+    "db:studio": "cd apps/backend && npm run db:studio",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "cd apps/backend && npm run test",
+    "test:frontend": "cd apps/frontend && npm run test",
+    "lint": "npm run lint:backend && npm run lint:frontend",
+    "lint:backend": "cd apps/backend && npm run lint",
+    "lint:frontend": "cd apps/frontend && npm run lint",
+    "format": "npm run format:backend && npm run format:frontend",
+    "format:backend": "cd apps/backend && npm run format",
+    "format:frontend": "cd apps/frontend && npm run format"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "keywords": [
+    "cine",
+    "angular",
+    "nestjs",
+    "prisma",
+    "typescript",
+    "cinema",
+    "tickets",
+    "booking"
+  ],
+  "author": "Cine App Team",
+  "license": "MIT"
+}

@@ -1,0 +1,293 @@
+<div class="admin-peliculas">
+  <div class="header">
+    <h2>Gestión de Películas</h2>
+    <button class="btn btn-primary" (click)="nuevaPelicula()">
+      <i class="fas fa-plus"></i> Agregar Película
+    </button>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filtros-card">
+    <div class="card-body">
+        <div class="filtros-row">
+          <div class="filtro-pelicula position-relative">
+          <label for="buscarPelicula" class="form-label">Filtrar por película:</label>
+          <input 
+            type="text" 
+            id="buscarPelicula" 
+            class="form-control" 
+            [(ngModel)]="filtroBusqueda" 
+            (input)="onBusquedaInput($event)"
+            (focus)="mostrarSugerencias = true"
+            (blur)="ocultarSugerencias()"
+            placeholder="Buscar por título..."
+            autocomplete="off">
+          
+          <!-- Dropdown de sugerencias -->
+          <div class="sugerencias-dropdown" *ngIf="mostrarSugerencias && sugerenciasPeliculas.length > 0">
+            <div class="sugerencia-item" 
+                 *ngFor="let pelicula of sugerenciasPeliculas; let i = index"
+                 (mousedown)="seleccionarSugerencia(pelicula)"
+                 [class.active]="i === sugerenciaSeleccionada">
+              <img [src]="pelicula.posterUrl || 'assets/images/default-poster.svg'" 
+                   [alt]="pelicula.titulo"
+                   class="sugerencia-poster"
+                   onerror="this.src='assets/images/default-poster.svg'">
+              <div class="sugerencia-info">
+                <div class="sugerencia-titulo">{{ pelicula.titulo }}</div>
+                <div class="sugerencia-detalles">
+                  <span class="badge bg-secondary me-1">{{ pelicula.clasificacion }}</span>
+                  <span class="text-muted">{{ pelicula.duracionMin }} min</span>
+                  <span class="badge ms-1" [ngClass]="{
+                    'bg-success': pelicula.estado === 'ACTIVA',
+                    'bg-danger': pelicula.estado === 'INACTIVA'
+                  }">{{ pelicula.estado }}</span>
+                </div>
+                <div class="sugerencia-generos" *ngIf="pelicula.generos && pelicula.generos.length > 0">
+                  <small class="text-muted">{{ pelicula.generos.slice(0, 3).join(', ') }}</small>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Mensaje cuando no hay sugerencias -->
+            <div class="no-sugerencias" *ngIf="filtroBusqueda && sugerenciasPeliculas.length === 0">
+              <i class="fas fa-search text-muted"></i>
+              <small class="text-muted">No se encontraron películas con "{{ filtroBusqueda }}"</small>
+            </div>
+          </div>
+        </div>
+        <div class="filtro-estado">
+          <label for="filtroEstado" class="form-label">Filtrar por estado:</label>
+          <select id="filtroEstado" class="form-control" [(ngModel)]="filtroEstado" (change)="aplicarFiltroBusqueda()">
+            <option value="">Todos los estados</option>
+            <option value="ACTIVA">Activas</option>
+            <option value="INACTIVA">Inactivas</option>
+          </select>
+        </div>
+        <div class="filtro-genero">
+          <label for="filtroGenero" class="form-label">Filtrar por género:</label>
+          <select id="filtroGenero" class="form-control" [(ngModel)]="filtroGenero" (change)="aplicarFiltroBusqueda()">
+            <option value="">Todos los géneros</option>
+            <option *ngFor="let genero of generosDisponibles" [value]="genero">{{genero}}</option>
+          </select>
+        </div>
+        <div class="col-md-1">
+          <label class="form-label">&nbsp;</label>
+          <button class="btn btn-outline-secondary form-control" 
+                  (click)="limpiarFiltros()"
+                  [disabled]="!hayFiltrosActivos()"
+                  title="Limpiar filtros">
+            <i class="fas fa-times"></i>
+            <span *ngIf="hayFiltrosActivos()" class="badge bg-danger position-absolute top-0 start-100 translate-middle">{{contarFiltrosActivos()}}</span>
+          </button>
+        </div>
+        </div>
+      </div>
+  </div>
+
+  <!-- Modal/Form para película -->
+  <div class="modal" *ngIf="mostrarFormulario">
+    <div class="modal-content">
+      <h3>{{ peliculaSeleccionada ? 'Editar' : 'Nueva' }} Película</h3>
+      <form [formGroup]="peliculaForm" (ngSubmit)="guardarPelicula()">
+        <div class="form-group">
+          <label for="titulo">Título</label>
+          <input type="text" id="titulo" formControlName="titulo" class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label for="sinopsis">Sinopsis</label>
+          <textarea id="sinopsis" formControlName="sinopsis" class="form-control"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="duracionMin">Duración (minutos)</label>
+          <input type="number" id="duracionMin" formControlName="duracionMin" class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label for="clasificacion">Clasificación</label>
+          <input type="text" id="clasificacion" formControlName="clasificacion" class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label for="posterUrl">URL del Póster</label>
+          <input type="text" id="posterUrl" formControlName="posterUrl" class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label for="trailerUrl">URL del Trailer</label>
+          <input type="text" id="trailerUrl" formControlName="trailerUrl" class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label for="generos">Géneros (separados por coma)</label>
+          <input type="text" id="generos" formControlName="generos" class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label for="estado">Estado</label>
+          <select id="estado" formControlName="estado" class="form-control">
+            <option value="ACTIVA">Activa</option>
+            <option value="INACTIVA">Inactiva</option>
+          </select>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="mostrarFormulario = false">Cancelar</button>
+          <button type="submit" class="btn btn-primary" [disabled]="peliculaForm.invalid">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Grid de películas -->
+  <div class="peliculas-grid" *ngIf="peliculasFiltradas.length > 0">
+    <div class="pelicula-card" *ngFor="let pelicula of peliculasFiltradas">
+      <img [src]="pelicula.posterUrl || 'assets/images/default-poster.svg'" 
+           [alt]="pelicula.titulo"
+           [title]="pelicula.titulo">
+      <div class="pelicula-info">
+        <h3>{{ pelicula.titulo }}</h3>
+        <p class="duracion">{{ pelicula.duracionMin }} minutos</p>
+        <p class="clasificacion">{{ pelicula.clasificacion }}</p>
+        <p class="estado">Estado: {{ pelicula.estado }}</p>
+        <div class="acciones">
+          <button class="btn btn-sm btn-warning" (click)="editarPelicula(pelicula)">
+            <i class="fas fa-edit"></i> Editar
+          </button>
+          <button class="btn btn-sm btn-danger" (click)="eliminarPelicula(pelicula.id)">
+            <i class="fas fa-trash"></i> Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mensaje cuando no hay resultados -->
+  <div class="no-results" *ngIf="peliculasFiltradas.length === 0 && todasLasPeliculas.length > 0">
+    <div class="text-center py-5">
+      <i class="fas fa-search fa-3x text-muted mb-3"></i>
+      <h4 class="text-muted">No se encontraron películas</h4>
+      <p class="text-muted">No hay películas que coincidan con los filtros aplicados</p>
+      <button class="btn btn-outline-primary" (click)="limpiarFiltros()">
+        <i class="fas fa-times"></i> Limpiar filtros
+      </button>
+    </div>
+  </div>
+
+  <!-- Mensaje cuando no hay películas -->
+  <div class="no-movies" *ngIf="todasLasPeliculas.length === 0">
+    <div class="text-center py-5">
+      <i class="fas fa-film fa-3x text-muted mb-3"></i>
+      <h4 class="text-muted">No hay películas registradas</h4>
+      <p class="text-muted">Comienza agregando tu primera película</p>
+      <button class="btn btn-primary" (click)="nuevaPelicula()">
+        <i class="fas fa-plus"></i> Agregar primera película
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal para crear función -->
+  <div class="modal" *ngIf="funcionForm.get('peliculaId')?.value">
+    <div class="modal-content">
+      <h3>Nueva Función</h3>
+      
+      <!-- Info de debug -->
+      <div class="debug-info">
+        <strong>Debug Info:</strong><br>
+        Película ID: {{ funcionForm.get('peliculaId')?.value }}<br>
+        Salas disponibles: {{ salas.length }}<br>
+        Formulario válido: {{ funcionForm.valid ? '✅' : '❌' }}<br><br>
+        
+        <strong>Estado de campos:</strong><br>
+        • Sala: {{ funcionForm.get('salaId')?.value || 'Sin seleccionar' }} 
+        {{ funcionForm.get('salaId')?.valid ? '✅' : '❌' }}<br>
+        • Fecha/Hora: {{ funcionForm.get('inicio')?.value || 'Sin seleccionar' }} 
+        {{ funcionForm.get('inicio')?.valid ? '✅' : '❌' }}<br>
+        • Precio: {{ funcionForm.get('precio')?.value || 'Sin ingresar' }} 
+        {{ funcionForm.get('precio')?.valid ? '✅' : '❌' }}<br>
+        
+        <div *ngIf="!funcionForm.valid" class="debug-errors">
+          <strong>Errores:</strong><br>
+          <div *ngIf="funcionForm.get('salaId')?.errors">
+            • Sala: {{ funcionForm.get('salaId')?.errors | json }}
+          </div>
+          <div *ngIf="funcionForm.get('inicio')?.errors">
+            • Fecha: {{ funcionForm.get('inicio')?.errors | json }}
+          </div>
+          <div *ngIf="funcionForm.get('precio')?.errors">
+            • Precio: {{ funcionForm.get('precio')?.errors | json }}
+          </div>
+        </div>
+      </div>
+      
+      <form [formGroup]="funcionForm" (ngSubmit)="guardarFuncion()">
+        <div class="form-group">
+          <label for="salaId">Sala</label>
+          <select id="salaId" formControlName="salaId" class="form-control">
+            <option value="">Selecciona una sala</option>
+            <option *ngFor="let sala of salas" [value]="sala.id">
+              {{ sala.nombre }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="inicio">Fecha y Hora</label>
+          <input type="datetime-local" id="inicio" formControlName="inicio" class="form-control" 
+                 (change)="verificarDisponibilidadSala()">
+          <small class="form-text text-muted">
+            Se verificará automáticamente la disponibilidad al cambiar la fecha/hora
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label for="precio">Precio</label>
+          <input type="number" id="precio" formControlName="precio" class="form-control" 
+                 min="0" step="0.01" placeholder="Ej: 150.00">
+        </div>
+
+        <!-- Información de disponibilidad -->
+        <div class="alert" *ngIf="disponibilidadInfo" 
+             [ngClass]="{
+               'alert-success': disponibilidadInfo.includes('✅'),
+               'alert-warning': disponibilidadInfo.includes('⚠️'),
+               'alert-danger': disponibilidadInfo.includes('❌')
+             }">
+          <pre>{{ disponibilidadInfo }}</pre>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-info" 
+                  (click)="verificarDisponibilidadSala()"
+                  [disabled]="!funcionForm.get('salaId')?.value || !funcionForm.get('inicio')?.value">
+            🔍 Verificar Disponibilidad
+          </button>
+          <button type="button" class="btn btn-info" 
+                  (click)="analizarConflicto()"
+                  [disabled]="!funcionForm.get('salaId')?.value || !funcionForm.get('inicio')?.value">
+            🔍 Analizar Conflictos
+          </button>
+          <button type="button" class="btn btn-info" (click)="mostrarTodasLasFunciones()">
+            📋 Ver Todas las Funciones
+          </button>
+          <button type="button" class="btn btn-info" (click)="limpiarBaseDatos()">
+            📅 Buscar por Fecha
+          </button>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="btn btn-warning" (click)="debugFormulario()">
+            🐛 Debug Formulario
+          </button>
+          <button type="button" class="btn btn-warning" (click)="simularCreacion()">
+            🧪 Simular Creación
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="cancelarFuncion()">Cancelar</button>
+          <button type="submit" class="btn btn-primary" [disabled]="funcionForm.invalid">Crear Función</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

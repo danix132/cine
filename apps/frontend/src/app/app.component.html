@@ -1,0 +1,47 @@
+
+<header class="app-header">
+  <div class="header-container">
+    <div class="logo">
+      <h1>{{ title }}</h1>
+    </div>
+    <nav class="nav-menu">
+      <a routerLink="/peliculas" class="nav-link">Películas</a>
+      <a routerLink="/funciones" class="nav-link">Funciones</a>
+      <a routerLink="/dulceria" class="nav-link">Dulcería</a>
+      <a routerLink="/cliente" class="nav-link">
+        <i class="fas fa-user"></i> Cliente Demo
+      </a>
+      
+      <!-- Botón de administrador según rol -->
+      <ng-container *ngIf="isAuthenticated()">
+        <a *ngIf="isAdmin()" routerLink="/admin" class="nav-link admin-link" title="Panel de Administrador">
+          <i class="fas fa-cogs"></i> Administrador
+        </a>
+        <a *ngIf="isVendedor() && !isAdmin()" routerLink="/vendedor" class="nav-link vendedor-link" title="Panel de Vendedor">
+          <i class="fas fa-store"></i> Vendedor
+        </a>
+      </ng-container>
+      
+      <ng-container *ngIf="isAuthenticated(); else loginLink">
+        <div class="user-menu" *ngIf="currentUser">
+          <span class="user-name">{{ currentUser.nombre }}</span>
+          <span class="user-role">{{ currentUser.rol }}</span>
+          <button class="btn-logout" (click)="logout()">Cerrar Sesión</button>
+        </div>
+      </ng-container>
+      <ng-template #loginLink>
+        <a routerLink="/login" class="nav-link">Iniciar sesión</a>
+      </ng-template>
+    </nav>
+  </div>
+</header>
+
+<main class="app-main">
+  <router-outlet></router-outlet>
+</main>
+
+<footer class="app-footer" *ngIf="isAuthenticated()">
+  <div class="footer-container">
+    <p>&copy; 2024 Cine App. Todos los derechos reservados.</p>
+  </div>
+</footer>

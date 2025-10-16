@@ -1,0 +1,481 @@
+.admin-dulceria {
+  padding: 20px;
+
+  // Mensaje de permisos insuficientes
+  .permission-error {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+
+    .alert {
+      max-width: 600px;
+      text-align: center;
+    }
+  }
+
+  // Header principal
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+
+    h2 {
+      margin: 0;
+      color: #333;
+    }
+
+    .btn-primary {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  }
+
+  // Tarjeta de filtros
+  .filtros-card {
+    background-color: white;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    .filtros-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto auto auto;
+      gap: 20px;
+      align-items: end;
+
+      @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+        gap: 15px;
+      }
+
+      .filtro-item {
+        .position-relative {
+          position: relative;
+        }
+
+        .sugerencias-dropdown {
+          position: absolute;
+          top: 100%;
+          left: 0;
+          right: 0;
+          background: white;
+          border: 1px solid #dee2e6;
+          border-top: none;
+          border-radius: 0 0 8px 8px;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          z-index: 1000;
+          max-height: 300px;
+          overflow-y: auto;
+
+          .sugerencia-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f8f9fa;
+            transition: all 0.2s;
+
+            &:hover,
+            &.active {
+              background-color: #f8f9fa;
+            }
+
+            &:last-child {
+              border-bottom: none;
+            }
+
+            .sugerencia-imagen {
+              width: 50px;
+              height: 50px;
+              margin-right: 12px;
+              flex-shrink: 0;
+              border-radius: 8px;
+              overflow: hidden;
+
+              img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+              }
+            }
+
+            .sugerencia-info {
+              flex: 1;
+
+              .sugerencia-titulo {
+                font-weight: 500;
+                color: #333;
+                margin-bottom: 4px;
+              }
+
+              .sugerencia-detalles {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 4px;
+
+                .badge {
+                  font-size: 0.7em;
+                }
+              }
+
+              .sugerencia-descripcion {
+                line-height: 1.3;
+              }
+            }
+          }
+
+          .no-sugerencias {
+            padding: 20px;
+            text-align: center;
+            color: #6c757d;
+
+            i {
+              margin-bottom: 8px;
+            }
+          }
+        }
+      }
+
+      .form-label {
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 5px;
+      }
+
+      .form-control {
+        border-radius: 8px;
+        border: 1px solid #ced4da;
+        padding: 8px 12px;
+
+        &:focus {
+          border-color: #007bff;
+          box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+      }
+
+      .btn {
+        border-radius: 8px;
+        position: relative;
+      }
+    }
+  }
+
+  // Modal para formulario
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1050;
+
+    .modal-content {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+
+      h3 {
+        margin-bottom: 20px;
+        color: #333;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+
+        label {
+          font-weight: 500;
+          color: #495057;
+          margin-bottom: 5px;
+          display: block;
+        }
+
+        .form-control {
+          width: 100%;
+          padding: 10px;
+          border: 1px solid #ced4da;
+          border-radius: 8px;
+          font-size: 14px;
+
+          &:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+            outline: none;
+          }
+        }
+
+        .form-text {
+          font-size: 12px;
+          margin-top: 5px;
+        }
+
+        .form-check {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+
+          .form-check-input {
+            margin: 0;
+          }
+        }
+
+        .imagen-preview {
+          margin-top: 10px;
+
+          .preview-container {
+            width: 120px;
+            height: 120px;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            .preview-image {
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+            }
+          }
+        }
+      }
+
+      .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #dee2e6;
+
+        .btn {
+          padding: 10px 20px;
+          border-radius: 8px;
+        }
+      }
+    }
+  }
+
+  // Grid de items
+  .items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+
+    @media (max-width: 768px) {
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
+
+    @media (max-width: 480px) {
+      grid-template-columns: 1fr;
+    }
+
+    .item-card {
+      background: white;
+      border: 1px solid #dee2e6;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+
+      &:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        transform: translateY(-2px);
+      }
+
+      .item-imagen {
+        position: relative;
+        height: 200px;
+        overflow: hidden;
+
+        .imagen-item {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          transition: transform 0.3s ease;
+        }
+
+        &:hover .imagen-item {
+          transform: scale(1.05);
+        }
+
+        .tipo-badge {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          background: rgba(0, 0, 0, 0.8);
+          color: white;
+          padding: 6px 10px;
+          border-radius: 20px;
+          font-size: 12px;
+          display: flex;
+          align-items: center;
+          gap: 5px;
+
+          i {
+            font-size: 14px;
+          }
+        }
+      }
+
+      .item-info {
+        padding: 20px;
+        flex: 1;
+
+        h3 {
+          margin: 0 0 10px 0;
+          font-size: 18px;
+          font-weight: 600;
+          color: #333;
+          line-height: 1.2;
+        }
+
+        .precio {
+          margin: 0 0 10px 0;
+          font-size: 20px;
+          font-weight: 700;
+          color: #28a745;
+        }
+
+        .descripcion {
+          margin: 0 0 10px 0;
+          color: #6c757d;
+          font-size: 14px;
+          line-height: 1.4;
+        }
+
+        .estado {
+          margin: 0 0 15px 0;
+          font-size: 14px;
+          color: #495057;
+
+          .badge {
+            font-size: 0.75em;
+            margin-left: 5px;
+          }
+        }
+
+        .acciones {
+          display: flex;
+          gap: 8px;
+          margin-top: 15px;
+
+          .btn {
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+          }
+        }
+      }
+    }
+  }
+
+  // Estados sin contenido
+  .no-results,
+  .no-items,
+  .loading-state {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    margin-top: 20px;
+
+    .text-center {
+      padding: 60px 20px;
+
+      i {
+        margin-bottom: 20px;
+      }
+
+      h4 {
+        margin-bottom: 10px;
+      }
+
+      p {
+        margin-bottom: 20px;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 8px;
+      }
+    }
+  }
+
+  .loading-state {
+    .fa-spin {
+      animation: spin 1s linear infinite;
+    }
+  }
+
+  // Colores de tipo de item
+  .item-card {
+    &[data-tipo="DULCE"] .item-icon {
+      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    }
+
+    &[data-tipo="COMBO"] .item-icon {
+      background: linear-gradient(135deg, #4834d4 0%, #686de0 100%);
+    }
+  }
+
+  // Responsive
+  @media (max-width: 768px) {
+    padding: 15px;
+
+    .header {
+      flex-direction: column;
+      gap: 15px;
+      text-align: center;
+
+      .btn-primary {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    .filtros-card {
+      padding: 15px;
+    }
+
+    .modal {
+      .modal-content {
+        padding: 20px;
+        margin: 20px;
+      }
+    }
+  }
+}
+
+// Animaciones
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// Clases de utilidad para badges
+.bg-success { background-color: #28a745 !important; }
+.bg-danger { background-color: #dc3545 !important; }
+.bg-secondary { background-color: #6c757d !important; }
+.bg-primary { background-color: #007bff !important; }

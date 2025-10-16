@@ -1,0 +1,247 @@
+<div class="admin-dulceria">
+  <!-- Mensaje de permisos insuficientes -->
+  <div *ngIf="!tienePermisos" class="permission-error">
+    <div class="alert alert-warning" role="alert">
+      <h4 class="alert-heading">Acceso Restringido</h4>
+      <p>{{ mensajeError }}</p>
+      <hr>
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary" (click)="volverAlInicio()">
+          Volver al Inicio
+        </button>
+        <button class="btn btn-secondary" (click)="volverAlAdmin()">
+          Panel Admin
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenido principal cuando se tienen permisos -->
+  <div *ngIf="tienePermisos">
+    <!-- Header -->
+    <div class="header">
+      <h2>Gestión de Dulcería</h2>
+      <button class="btn btn-primary" (click)="nuevoItem()">
+        <i class="fas fa-plus"></i> Agregar Item
+      </button>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filtros-card">
+      <div class="card-body">
+        <div class="filtros-row">
+          <div class="filtro-item position-relative">
+            <label for="buscarItem" class="form-label">Filtrar por item:</label>
+            <input 
+              type="text" 
+              id="buscarItem" 
+              class="form-control" 
+              [(ngModel)]="filtroBusqueda" 
+              (input)="onBusquedaInput($event)"
+              (focus)="mostrarSugerencias = true"
+              (blur)="ocultarSugerencias()"
+              placeholder="Buscar por nombre..."
+              autocomplete="off">
+            
+            <!-- Dropdown de sugerencias -->
+            <div class="sugerencias-dropdown" *ngIf="mostrarSugerencias && sugerenciasItems.length > 0">
+            <div class="sugerencia-item" 
+                 *ngFor="let item of sugerenciasItems; let i = index"
+                 (mousedown)="seleccionarSugerencia(item)"
+                 [class.active]="i === sugerenciaSeleccionada">
+              <div class="sugerencia-imagen">
+                <img [src]="item.imagenUrl || 'assets/images/default-dulceria.svg'" 
+                     [alt]="item.nombre"
+                     [title]="item.nombre"
+                     (error)="onImagenError($event)">
+              </div>
+              <div class="sugerencia-info">
+                <div class="sugerencia-titulo">{{ item.nombre }}</div>
+                <div class="sugerencia-detalles">
+                  <span class="badge bg-secondary me-1">{{ getTipoLabel(item.tipo) }}</span>
+                  <span class="text-muted">{{ formatearPrecio(item.precio) }}</span>
+                  <span class="badge ms-1" [ngClass]="{
+                    'bg-success': item.activo,
+                    'bg-danger': !item.activo
+                  }">{{ item.activo ? 'ACTIVO' : 'INACTIVO' }}</span>
+                </div>
+                <div class="sugerencia-descripcion" *ngIf="item.descripcion">
+                  <small class="text-muted">{{ item.descripcion.substring(0, 50) }}{{ item.descripcion.length > 50 ? '...' : '' }}</small>
+                </div>
+              </div>
+            </div>              <!-- Mensaje cuando no hay sugerencias -->
+              <div class="no-sugerencias" *ngIf="filtroBusqueda && sugerenciasItems.length === 0">
+                <i class="fas fa-search text-muted"></i>
+                <small class="text-muted">No se encontraron items con "{{ filtroBusqueda }}"</small>
+              </div>
+            </div>
+          </div>
+          <div class="filtro-tipo">
+            <label for="filtroTipo" class="form-label">Filtrar por tipo:</label>
+            <select id="filtroTipo" class="form-control" [(ngModel)]="filtroTipo" (change)="aplicarFiltroBusqueda()">
+              <option value="">Todos los tipos</option>
+              <option *ngFor="let tipo of tiposDisponibles" [value]="tipo">{{getTipoLabel(tipo)}}</option>
+            </select>
+          </div>
+          <div class="filtro-estado">
+            <label for="filtroEstado" class="form-label">Filtrar por estado:</label>
+            <select id="filtroEstado" class="form-control" [(ngModel)]="filtroEstado" (change)="aplicarFiltroBusqueda()">
+              <option value="">Todos los estados</option>
+              <option value="ACTIVO">Activos</option>
+              <option value="INACTIVO">Inactivos</option>
+            </select>
+          </div>
+          <div class="col-md-1">
+            <label class="form-label">&nbsp;</label>
+            <button class="btn btn-outline-secondary form-control" 
+                    (click)="limpiarFiltros()"
+                    [disabled]="!hayFiltrosActivos()"
+                    title="Limpiar filtros">
+              <i class="fas fa-times"></i>
+              <span *ngIf="hayFiltrosActivos()" class="badge bg-danger position-absolute top-0 start-100 translate-middle">{{contarFiltrosActivos()}}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal/Form para item -->
+    <div class="modal" *ngIf="mostrarFormulario">
+      <div class="modal-content">
+        <h3>{{ itemSeleccionado ? 'Editar' : 'Nuevo' }} Item de Dulcería</h3>
+        <form [formGroup]="itemForm" (ngSubmit)="guardarItem()">
+          <div class="form-group">
+            <label for="nombre">Nombre</label>
+            <input type="text" id="nombre" formControlName="nombre" class="form-control" placeholder="Ej: Combo Nachos Grande">
+            <small class="form-text text-muted">Mínimo 2 caracteres, máximo 100</small>
+          </div>
+
+          <div class="form-group">
+            <label for="tipo">Tipo</label>
+            <select id="tipo" formControlName="tipo" class="form-control">
+              <option value="">Selecciona un tipo</option>
+              <option *ngFor="let tipo of tiposDisponibles" [value]="tipo">{{ getTipoLabel(tipo) }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="descripcion">Descripción</label>
+            <textarea id="descripcion" formControlName="descripcion" class="form-control" rows="3" placeholder="Descripción opcional del item..."></textarea>
+            <small class="form-text text-muted">Máximo 500 caracteres</small>
+          </div>
+
+          <div class="form-group">
+            <label for="precio">Precio (MXN)</label>
+            <input type="number" id="precio" formControlName="precio" class="form-control" min="0" step="0.01" placeholder="0.00">
+            <small class="form-text text-muted">Precio en pesos mexicanos</small>
+          </div>
+
+          <div class="form-group">
+            <label for="imagenUrl">URL de la Imagen</label>
+            <input type="text" id="imagenUrl" formControlName="imagenUrl" class="form-control" placeholder="https://ejemplo.com/imagen.jpg">
+            <small class="form-text text-muted">URL de la imagen del item (opcional)</small>
+            
+            <!-- Preview de la imagen -->
+            <div class="imagen-preview" *ngIf="itemForm.get('imagenUrl')?.value">
+              <label class="form-label">Vista previa:</label>
+              <div class="preview-container">
+                <img [src]="itemForm.get('imagenUrl')?.value" 
+                     [alt]="itemForm.get('nombre')?.value || 'Preview'"
+                     [title]="itemForm.get('nombre')?.value || 'Preview'"
+                     class="preview-image"
+                     (error)="onImagenError($event)">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group" *ngIf="itemSeleccionado">
+            <div class="form-check">
+              <input type="checkbox" id="activo" formControlName="activo" class="form-check-input">
+              <label for="activo" class="form-check-label">Item activo</label>
+            </div>
+          </div>
+
+          <!-- Mensaje de error -->
+          <div *ngIf="error" class="alert alert-danger" role="alert">
+            {{ error }}
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" (click)="mostrarFormulario = false">Cancelar</button>
+            <button type="submit" class="btn btn-primary" [disabled]="itemForm.invalid">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Grid de items -->
+    <div class="items-grid" *ngIf="itemsFiltrados.length > 0">
+      <div class="item-card" *ngFor="let item of itemsFiltrados">
+        <div class="item-imagen">
+          <img [src]="item.imagenUrl || 'assets/images/default-dulceria.svg'" 
+               [alt]="item.nombre"
+               [title]="item.nombre"
+               class="imagen-item"
+               (error)="onImagenError($event)">
+          <div class="tipo-badge">
+            <i [class]="getTipoIcon(item.tipo)"></i>
+            <span>{{ getTipoLabel(item.tipo) }}</span>
+          </div>
+        </div>
+        <div class="item-info">
+          <h3>{{ item.nombre }}</h3>
+          <p class="precio">{{ formatearPrecio(item.precio) }}</p>
+          <p class="descripcion" *ngIf="item.descripcion">{{ item.descripcion }}</p>
+          <p class="estado">
+            Estado: 
+            <span class="badge" [ngClass]="{
+              'bg-success': item.activo,
+              'bg-danger': !item.activo
+            }">{{ item.activo ? 'ACTIVO' : 'INACTIVO' }}</span>
+          </p>
+          <div class="acciones">
+            <button class="btn btn-sm btn-warning" (click)="editarItem(item)">
+              <i class="fas fa-edit"></i> Editar
+            </button>
+            <button class="btn btn-sm btn-danger" (click)="eliminarItem(item.id)" *ngIf="item.activo">
+              <i class="fas fa-trash"></i> Desactivar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mensaje cuando no hay resultados -->
+    <div class="no-results" *ngIf="itemsFiltrados.length === 0 && todosLosItems.length > 0">
+      <div class="text-center py-5">
+        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+        <h4 class="text-muted">No se encontraron items</h4>
+        <p class="text-muted">No hay items que coincidan con los filtros aplicados</p>
+        <button class="btn btn-outline-primary" (click)="limpiarFiltros()">
+          <i class="fas fa-times"></i> Limpiar filtros
+        </button>
+      </div>
+    </div>
+
+    <!-- Mensaje cuando no hay items -->
+    <div class="no-items" *ngIf="todosLosItems.length === 0 && !cargando">
+      <div class="text-center py-5">
+        <i class="fas fa-candy-cane fa-3x text-muted mb-3"></i>
+        <h4 class="text-muted">No hay items registrados</h4>
+        <p class="text-muted">Comienza agregando tu primer item de dulcería</p>
+        <button class="btn btn-primary" (click)="nuevoItem()">
+          <i class="fas fa-plus"></i> Agregar primer item
+        </button>
+      </div>
+    </div>
+
+    <!-- Estado de carga -->
+    <div class="loading-state" *ngIf="cargando">
+      <div class="text-center py-5">
+        <i class="fas fa-spinner fa-spin fa-3x text-primary mb-3"></i>
+        <h4 class="text-primary">Cargando items...</h4>
+        <p class="text-muted">Por favor espera mientras cargamos los items de dulcería</p>
+      </div>
+    </div>
+  </div>
+</div>

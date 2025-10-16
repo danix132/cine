@@ -1,0 +1,481 @@
+.validar-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+.validar-container .validar-header {
+  text-align: center;
+  color: white;
+  margin-bottom: 30px;
+  position: relative;
+}
+.validar-container .validar-header .btn-volver {
+  position: absolute;
+  left: 0;
+  top: 0;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s;
+}
+.validar-container .validar-header .btn-volver:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateX(-5px);
+}
+.validar-container .validar-header .btn-volver i {
+  font-size: 16px;
+}
+.validar-container .validar-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+  font-weight: 700;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+}
+.validar-container .validar-header h1 i {
+  font-size: 2.2rem;
+}
+.validar-container .validar-header p {
+  font-size: 1.1rem;
+  opacity: 0.95;
+}
+.validar-container .validar-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+@media (max-width: 968px) {
+  .validar-container .validar-content {
+    grid-template-columns: 1fr;
+  }
+}
+.validar-container .camara-section {
+  background: white;
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+.validar-container .camara-section .camara-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.validar-container .camara-section .camara-container video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.validar-container .camara-section .camara-container #qr-canvas {
+  display: none;
+}
+.validar-container .camara-section .camara-container .qr-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.validar-container .camara-section .camara-container .qr-overlay .qr-frame {
+  width: 60%;
+  height: 60%;
+  border: 3px solid #00ff00;
+  border-radius: 12px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+  animation: pulse 2s infinite;
+}
+.validar-container .camara-section .camara-container .qr-overlay .qr-instruccion {
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 20px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+.validar-container .camara-section .camara-container .camara-estado {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #1a1a1a;
+  color: #666;
+}
+.validar-container .camara-section .camara-container .camara-estado i {
+  font-size: 60px;
+  margin-bottom: 15px;
+}
+.validar-container .camara-section .camara-container .camara-estado p {
+  font-size: 16px;
+  margin: 0;
+}
+.validar-container .camara-section .camara-controles {
+  margin-bottom: 25px;
+}
+.validar-container .camara-section .camara-controles .btn-toggle-camara {
+  width: 100%;
+  padding: 15px;
+  background: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.3s;
+}
+.validar-container .camara-section .camara-controles .btn-toggle-camara:hover {
+  background: #5a6268;
+  transform: translateY(-2px);
+}
+.validar-container .camara-section .camara-controles .btn-toggle-camara.activa {
+  background: #dc3545;
+}
+.validar-container .camara-section .camara-controles .btn-toggle-camara.activa:hover {
+  background: #c82333;
+}
+.validar-container .camara-section .camara-controles .btn-toggle-camara i {
+  font-size: 18px;
+}
+.validar-container .camara-section .input-manual {
+  border-top: 2px solid #f0f0f0;
+  padding-top: 25px;
+}
+.validar-container .camara-section .input-manual h3 {
+  color: #333;
+  font-size: 18px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.validar-container .camara-section .input-manual h3 i {
+  color: #667eea;
+}
+.validar-container .camara-section .input-manual p {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 15px;
+}
+.validar-container .camara-section .input-manual .input-group {
+  display: flex;
+  gap: 10px;
+}
+.validar-container .camara-section .input-manual .input-group input {
+  flex: 1;
+  padding: 12px 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+.validar-container .camara-section .input-manual .input-group input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+.validar-container .camara-section .input-manual .input-group input:disabled {
+  background: #f5f5f5;
+  cursor: not-allowed;
+}
+.validar-container .camara-section .input-manual .input-group .btn-validar {
+  padding: 12px 25px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+.validar-container .camara-section .input-manual .input-group .btn-validar:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+.validar-container .camara-section .input-manual .input-group .btn-validar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.validar-container .camara-section .input-manual .input-group .btn-validar i {
+  font-size: 16px;
+}
+.validar-container .resultado-section .resultado-card {
+  background: white;
+  border-radius: 15px;
+  padding: 40px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  animation: slideIn 0.3s ease;
+}
+.validar-container .resultado-section .resultado-card .resultado-icono {
+  margin-bottom: 20px;
+}
+.validar-container .resultado-section .resultado-card .resultado-icono i {
+  font-size: 80px;
+}
+.validar-container .resultado-section .resultado-card h2 {
+  font-size: 24px;
+  margin-bottom: 25px;
+  font-weight: 700;
+}
+.validar-container .resultado-section .resultado-card.success {
+  border-left: 6px solid #28a745;
+}
+.validar-container .resultado-section .resultado-card.success .resultado-icono i {
+  color: #28a745;
+}
+.validar-container .resultado-section .resultado-card.success h2 {
+  color: #28a745;
+}
+.validar-container .resultado-section .resultado-card.error {
+  border-left: 6px solid #dc3545;
+}
+.validar-container .resultado-section .resultado-card.error .resultado-icono i {
+  color: #dc3545;
+}
+.validar-container .resultado-section .resultado-card.error h2 {
+  color: #dc3545;
+}
+.validar-container .resultado-section .resultado-card.info {
+  border-left: 6px solid #17a2b8;
+}
+.validar-container .resultado-section .resultado-card.info .resultado-icono i {
+  color: #17a2b8;
+}
+.validar-container .resultado-section .resultado-card.info h2 {
+  color: #17a2b8;
+}
+.validar-container .resultado-section .resultado-card .boleto-info {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 25px;
+  text-align: left;
+}
+.validar-container .resultado-section .resultado-card .boleto-info .info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+.validar-container .resultado-section .resultado-card .boleto-info .info-row:last-child {
+  border-bottom: none;
+}
+.validar-container .resultado-section .resultado-card .boleto-info .info-row .label {
+  font-weight: 600;
+  color: #666;
+}
+.validar-container .resultado-section .resultado-card .boleto-info .info-row .value {
+  color: #333;
+  font-weight: 500;
+}
+.validar-container .resultado-section .resultado-card .btn-continuar {
+  padding: 18px 40px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: all 0.3s;
+  width: 100%;
+  margin-top: 20px;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.validar-container .resultado-section .resultado-card .btn-continuar:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+.validar-container .resultado-section .resultado-card .btn-continuar:active {
+  transform: translateY(-1px);
+}
+.validar-container .resultado-section .resultado-card .btn-continuar i {
+  font-size: 20px;
+  animation: pulse 2s infinite;
+}
+.validar-container .historial-section {
+  background: white;
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+.validar-container .historial-section h3 {
+  color: #333;
+  font-size: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.validar-container .historial-section h3 i {
+  color: #667eea;
+}
+.validar-container .historial-section .historial-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+.validar-container .historial-section .historial-lista .historial-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid transparent;
+  transition: all 0.3s;
+}
+.validar-container .historial-section .historial-lista .historial-item:hover {
+  background: #e9ecef;
+  transform: translateX(5px);
+}
+.validar-container .historial-section .historial-lista .historial-item.valido {
+  border-left-color: #28a745;
+}
+.validar-container .historial-section .historial-lista .historial-item.valido .historial-icono {
+  background: #28a745;
+}
+.validar-container .historial-section .historial-lista .historial-item.invalido {
+  border-left-color: #dc3545;
+}
+.validar-container .historial-section .historial-lista .historial-item.invalido .historial-icono {
+  background: #dc3545;
+}
+.validar-container .historial-section .historial-lista .historial-item .historial-icono {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+.validar-container .historial-section .historial-lista .historial-item .historial-icono i {
+  font-size: 18px;
+}
+.validar-container .historial-section .historial-lista .historial-item .historial-info {
+  flex: 1;
+}
+.validar-container .historial-section .historial-lista .historial-item .historial-info .historial-codigo {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 5px;
+  font-family: monospace;
+}
+.validar-container .historial-section .historial-lista .historial-item .historial-info .historial-meta {
+  display: flex;
+  gap: 15px;
+  font-size: 12px;
+  color: #666;
+}
+.validar-container .historial-section .historial-lista .historial-item .historial-info .historial-meta .historial-estado {
+  font-weight: 600;
+}
+.validar-container .historial-section .historial-lista .historial-item .historial-info .historial-meta .historial-tiempo {
+  opacity: 0.7;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (max-width: 768px) {
+  .validar-container {
+    padding: 15px;
+  }
+  .validar-container .validar-header {
+    margin-bottom: 20px;
+  }
+  .validar-container .validar-header .btn-volver {
+    position: static;
+    margin-bottom: 15px;
+    display: inline-flex;
+  }
+  .validar-container .validar-header h1 {
+    font-size: 1.8rem;
+  }
+  .validar-container .validar-header h1 i {
+    font-size: 1.6rem;
+  }
+  .validar-container .validar-header p {
+    font-size: 0.95rem;
+  }
+  .validar-container .camara-section {
+    padding: 20px;
+  }
+  .validar-container .camara-section .input-manual .input-group {
+    flex-direction: column;
+  }
+  .validar-container .camara-section .input-manual .input-group .btn-validar {
+    width: 100%;
+    justify-content: center;
+  }
+  .validar-container .resultado-section .resultado-card {
+    padding: 25px;
+  }
+  .validar-container .resultado-section .resultado-card .resultado-icono i {
+    font-size: 60px;
+  }
+  .validar-container .resultado-section .resultado-card h2 {
+    font-size: 20px;
+  }
+}

@@ -1,0 +1,484 @@
+.mis-ventas-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 40px 20px;
+}
+.mis-ventas-container .mis-ventas-header {
+  text-align: center;
+  color: white;
+  margin-bottom: 40px;
+  position: relative;
+}
+.mis-ventas-container .mis-ventas-header .btn-volver {
+  position: absolute;
+  left: 0;
+  top: 0;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s;
+}
+.mis-ventas-container .mis-ventas-header .btn-volver:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateX(-5px);
+}
+.mis-ventas-container .mis-ventas-header .btn-volver i {
+  font-size: 16px;
+}
+.mis-ventas-container .mis-ventas-header h1 {
+  font-size: 3rem;
+  margin-bottom: 10px;
+  font-weight: 700;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+}
+.mis-ventas-container .mis-ventas-header h1 i {
+  font-size: 2.5rem;
+}
+.mis-ventas-container .mis-ventas-header p {
+  font-size: 1.2rem;
+  opacity: 0.95;
+}
+.mis-ventas-container .filtros-section {
+  max-width: 1200px;
+  margin: 0 auto 30px;
+}
+.mis-ventas-container .filtros-section .filtros-card {
+  background: white;
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+.mis-ventas-container .filtros-section .filtros-card h3 {
+  color: #333;
+  font-size: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mis-ventas-container .filtros-section .filtros-card h3 i {
+  color: #667eea;
+}
+.mis-ventas-container .filtros-section .filtros-card .filtros-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+}
+.mis-ventas-container .filtros-section .filtros-card .filtros-grid .filtro-grupo label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-weight: 600;
+  color: #555;
+  font-size: 14px;
+}
+.mis-ventas-container .filtros-section .filtros-card .filtros-grid .filtro-grupo label i {
+  margin-right: 5px;
+  color: #667eea;
+}
+.mis-ventas-container .filtros-section .filtros-card .filtros-grid .filtro-grupo .input-fecha {
+  padding: 12px 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s;
+  background: white;
+  width: 100%;
+}
+.mis-ventas-container .filtros-section .filtros-card .filtros-grid .filtro-grupo .input-fecha:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+.mis-ventas-container .filtros-section .filtros-card .filtros-grid .filtro-grupo select.input-fecha {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23667eea' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 35px;
+}
+.mis-ventas-container .filtros-section .filtros-card .filtros-grid .filtro-grupo select.input-fecha:hover {
+  border-color: #667eea;
+}
+.mis-ventas-container .filtros-section .filtros-card .filtro-acciones {
+  display: flex;
+  gap: 15px;
+  justify-content: flex-end;
+}
+.mis-ventas-container .filtros-section .filtros-card .filtro-acciones button {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mis-ventas-container .filtros-section .filtros-card .filtro-acciones button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.mis-ventas-container .filtros-section .filtros-card .filtro-acciones button i {
+  font-size: 14px;
+}
+.mis-ventas-container .filtros-section .filtros-card .filtro-acciones .btn-aplicar {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+.mis-ventas-container .filtros-section .filtros-card .filtro-acciones .btn-aplicar:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+.mis-ventas-container .filtros-section .filtros-card .filtro-acciones .btn-aplicar:active:not(:disabled) {
+  transform: translateY(0);
+}
+.mis-ventas-container .filtros-section .filtros-card .filtro-acciones .btn-limpiar {
+  background: #6c757d;
+  color: white;
+}
+.mis-ventas-container .filtros-section .filtros-card .filtro-acciones .btn-limpiar:hover:not(:disabled) {
+  background: #5a6268;
+  transform: translateY(-2px);
+}
+.mis-ventas-container .filtros-section .filtros-card .filtro-acciones .btn-limpiar:active:not(:disabled) {
+  transform: translateY(0);
+}
+.mis-ventas-container .loading-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 15px;
+  padding: 60px 20px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+.mis-ventas-container .loading-container .spinner {
+  width: 60px;
+  height: 60px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+.mis-ventas-container .loading-container p {
+  color: #666;
+  font-size: 18px;
+  font-weight: 500;
+}
+.mis-ventas-container .ventas-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 15px;
+  padding: 40px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+.mis-ventas-container .ventas-content .periodo-info {
+  background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
+  padding: 20px 25px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #667eea;
+  font-weight: 600;
+  font-size: 16px;
+  border-left: 4px solid #667eea;
+}
+.mis-ventas-container .ventas-content .periodo-info i {
+  font-size: 20px;
+}
+.mis-ventas-container .ventas-content .stats-section,
+.mis-ventas-container .ventas-content .desglose-section,
+.mis-ventas-container .ventas-content .desglose-filtrado {
+  margin-bottom: 35px;
+}
+.mis-ventas-container .ventas-content .stats-section h3,
+.mis-ventas-container .ventas-content .desglose-section h3,
+.mis-ventas-container .ventas-content .desglose-filtrado h3 {
+  color: #333;
+  font-size: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mis-ventas-container .ventas-content .stats-section h3 i,
+.mis-ventas-container .ventas-content .desglose-section h3 i,
+.mis-ventas-container .ventas-content .desglose-filtrado h3 i {
+  color: #667eea;
+}
+.mis-ventas-container .ventas-content .ventas-stats,
+.mis-ventas-container .ventas-content .desglose-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+.mis-ventas-container .ventas-content .stat-card {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s;
+  border-left: 4px solid transparent;
+}
+.mis-ventas-container .ventas-content .stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+.mis-ventas-container .ventas-content .stat-card .stat-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: white;
+  flex-shrink: 0;
+}
+.mis-ventas-container .ventas-content .stat-card .stat-info {
+  flex: 1;
+}
+.mis-ventas-container .ventas-content .stat-card .stat-info .stat-label {
+  font-size: 13px;
+  color: #999;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.mis-ventas-container .ventas-content .stat-card .stat-info .stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #333;
+}
+.mis-ventas-container .ventas-content .stat-card .stat-info .stat-detalle {
+  font-size: 13px;
+  color: #999;
+  margin-top: 5px;
+}
+.mis-ventas-container .ventas-content .stat-card.stat-total {
+  border-left-color: #28a745;
+}
+.mis-ventas-container .ventas-content .stat-card.stat-total .stat-icon {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+.mis-ventas-container .ventas-content .stat-card.stat-cantidad {
+  border-left-color: #667eea;
+}
+.mis-ventas-container .ventas-content .stat-card.stat-cantidad .stat-icon {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+.mis-ventas-container .ventas-content .stat-card.stat-promedio {
+  border-left-color: #ffc107;
+}
+.mis-ventas-container .ventas-content .stat-card.stat-promedio .stat-icon {
+  background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+}
+.mis-ventas-container .ventas-content .stat-card.stat-boletos {
+  border-left-color: #667eea;
+}
+.mis-ventas-container .ventas-content .stat-card.stat-boletos .stat-icon {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+.mis-ventas-container .ventas-content .stat-card.stat-dulceria {
+  border-left-color: #f093fb;
+}
+.mis-ventas-container .ventas-content .stat-card.stat-dulceria .stat-icon {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+.mis-ventas-container .ventas-content .stat-card.stat-boletos-full, .mis-ventas-container .ventas-content .stat-card.stat-dulceria-full {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 30px;
+}
+.mis-ventas-container .ventas-content .stat-card.stat-boletos-full .stat-icon, .mis-ventas-container .ventas-content .stat-card.stat-dulceria-full .stat-icon {
+  width: 70px;
+  height: 70px;
+  font-size: 32px;
+}
+.mis-ventas-container .ventas-content .stat-card.stat-boletos-full .stat-label, .mis-ventas-container .ventas-content .stat-card.stat-dulceria-full .stat-label {
+  font-size: 16px;
+}
+.mis-ventas-container .ventas-content .stat-card.stat-boletos-full .stat-value, .mis-ventas-container .ventas-content .stat-card.stat-dulceria-full .stat-value {
+  font-size: 36px;
+}
+.mis-ventas-container .ventas-content .stat-card.stat-boletos-full .stat-detalle, .mis-ventas-container .ventas-content .stat-card.stat-dulceria-full .stat-detalle {
+  font-size: 15px;
+  margin-top: 8px;
+}
+.mis-ventas-container .ventas-content .stat-card.stat-boletos-full {
+  border-left-color: #667eea;
+}
+.mis-ventas-container .ventas-content .stat-card.stat-boletos-full .stat-icon {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+.mis-ventas-container .ventas-content .stat-card.stat-dulceria-full {
+  border-left-color: #f093fb;
+}
+.mis-ventas-container .ventas-content .stat-card.stat-dulceria-full .stat-icon {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+.mis-ventas-container .ventas-content .vendedor-info {
+  background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
+  padding: 25px;
+  border-radius: 12px;
+  margin-top: 30px;
+}
+.mis-ventas-container .ventas-content .vendedor-info h3 {
+  color: #333;
+  font-size: 18px;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mis-ventas-container .ventas-content .vendedor-info h3 i {
+  color: #667eea;
+}
+.mis-ventas-container .ventas-content .vendedor-info .info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+}
+.mis-ventas-container .ventas-content .vendedor-info .info-grid .info-item {
+  display: flex;
+  gap: 10px;
+}
+.mis-ventas-container .ventas-content .vendedor-info .info-grid .info-item .info-label {
+  font-weight: 600;
+  color: #666;
+}
+.mis-ventas-container .ventas-content .vendedor-info .info-grid .info-item .info-value {
+  color: #333;
+  font-weight: 500;
+}
+.mis-ventas-container .ventas-content .no-ventas {
+  text-align: center;
+  padding: 60px 20px;
+  color: #999;
+}
+.mis-ventas-container .ventas-content .no-ventas i {
+  font-size: 80px;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+.mis-ventas-container .ventas-content .no-ventas p {
+  font-size: 18px;
+  margin: 0;
+}
+.mis-ventas-container .error-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 15px;
+  padding: 60px 20px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  color: #dc3545;
+}
+.mis-ventas-container .error-container i {
+  font-size: 80px;
+  margin-bottom: 20px;
+}
+.mis-ventas-container .error-container p {
+  font-size: 18px;
+  margin-bottom: 25px;
+}
+.mis-ventas-container .error-container .btn {
+  padding: 12px 30px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s;
+}
+.mis-ventas-container .error-container .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+@media (max-width: 768px) {
+  .mis-ventas-container {
+    padding: 20px 10px;
+  }
+  .mis-ventas-container .mis-ventas-header {
+    margin-bottom: 30px;
+  }
+  .mis-ventas-container .mis-ventas-header .btn-volver {
+    position: static;
+    margin-bottom: 20px;
+    display: inline-flex;
+  }
+  .mis-ventas-container .mis-ventas-header h1 {
+    font-size: 2rem;
+  }
+  .mis-ventas-container .mis-ventas-header h1 i {
+    font-size: 1.8rem;
+  }
+  .mis-ventas-container .mis-ventas-header p {
+    font-size: 1rem;
+  }
+  .mis-ventas-container .filtros-section .filtros-card {
+    padding: 20px;
+  }
+  .mis-ventas-container .filtros-section .filtros-card .filtros-grid {
+    grid-template-columns: 1fr;
+  }
+  .mis-ventas-container .filtros-section .filtros-card .filtro-acciones {
+    flex-direction: column;
+  }
+  .mis-ventas-container .filtros-section .filtros-card .filtro-acciones button {
+    width: 100%;
+    justify-content: center;
+  }
+  .mis-ventas-container .ventas-content {
+    padding: 20px;
+  }
+  .mis-ventas-container .ventas-content .ventas-stats,
+.mis-ventas-container .ventas-content .desglose-stats {
+    grid-template-columns: 1fr;
+  }
+  .mis-ventas-container .ventas-content .stat-card.stat-boletos-full, .mis-ventas-container .ventas-content .stat-card.stat-dulceria-full {
+    max-width: 100%;
+  }
+}

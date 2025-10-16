@@ -1,0 +1,213 @@
+<div class="mis-ventas-container">
+  <!-- Header -->
+  <div class="mis-ventas-header">
+    <button class="btn-volver" (click)="volver()">
+      <i class="fas fa-arrow-left"></i> Volver
+    </button>
+    <h1><i class="fas fa-chart-line"></i> Mis Ventas</h1>
+    <p>Consulta el historial de tus ventas</p>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filtros-section">
+    <div class="filtros-card">
+      <h3><i class="fas fa-filter"></i> Filtros</h3>
+      
+      <div class="filtros-grid">
+        <div class="filtro-grupo">
+          <label>
+            <i class="fas fa-calendar"></i> Desde:
+            <input 
+              type="date" 
+              [(ngModel)]="periodo.desde"
+              class="input-fecha"
+            >
+          </label>
+        </div>
+        
+        <div class="filtro-grupo">
+          <label>
+            <i class="fas fa-calendar"></i> Hasta:
+            <input 
+              type="date" 
+              [(ngModel)]="periodo.hasta"
+              class="input-fecha"
+            >
+          </label>
+        </div>
+
+        <div class="filtro-grupo">
+          <label>
+            <i class="fas fa-filter"></i> Tipo:
+            <select 
+              [(ngModel)]="filtroTipo" 
+              (change)="cargarDesglose()"
+              class="input-fecha"
+            >
+              <option value="TODOS">Todos</option>
+              <option value="BOLETO">Boletos</option>
+              <option value="DULCERIA">Dulcería</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="filtro-acciones">
+        <button 
+          class="btn-aplicar" 
+          (click)="cargarMisVentas(); cargarDesglose();" 
+          [disabled]="cargandoVentas"
+        >
+          <i class="fas fa-search"></i>
+          <span *ngIf="!cargandoVentas">Buscar</span>
+          <span *ngIf="cargandoVentas">Buscando...</span>
+        </button>
+        <button 
+          class="btn-limpiar" 
+          (click)="limpiarFiltros()" 
+          [disabled]="cargandoVentas"
+        >
+          <i class="fas fa-eraser"></i> Limpiar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="cargandoVentas" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando tus ventas...</p>
+  </div>
+
+  <!-- Contenido -->
+  <div *ngIf="!cargandoVentas && misVentas" class="ventas-content">
+    <!-- Período Actual -->
+    <div class="periodo-info">
+      <i class="fas fa-calendar-alt"></i>
+      <span>Período consultado: {{ periodo.desde | date:'dd/MM/yyyy' }} - {{ periodo.hasta | date:'dd/MM/yyyy' }}</span>
+    </div>
+
+    <!-- Estadísticas Principales -->
+    <div class="stats-section">
+      <h3><i class="fas fa-chart-bar"></i> Estadísticas Generales</h3>
+      <div class="ventas-stats">
+        <div class="stat-card stat-total">
+          <div class="stat-icon">
+            <i class="fas fa-dollar-sign"></i>
+          </div>
+          <div class="stat-info">
+            <div class="stat-label">Total Ventas</div>
+            <div class="stat-value">${{ misVentas.totalVentas.toFixed(2) }}</div>
+          </div>
+        </div>
+
+        <div class="stat-card stat-cantidad">
+          <div class="stat-icon">
+            <i class="fas fa-shopping-bag"></i>
+          </div>
+          <div class="stat-info">
+            <div class="stat-label">Cantidad Pedidos</div>
+            <div class="stat-value">{{ misVentas.cantidadPedidos }}</div>
+          </div>
+        </div>
+
+        <div class="stat-card stat-promedio">
+          <div class="stat-icon">
+            <i class="fas fa-chart-bar"></i>
+          </div>
+          <div class="stat-info">
+            <div class="stat-label">Promedio por Pedido</div>
+            <div class="stat-value">${{ misVentas.cantidadPedidos > 0 ? (misVentas.totalVentas / misVentas.cantidadPedidos).toFixed(2) : '0.00' }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desglose por Tipo -->
+    <div *ngIf="desglose && filtroTipo === 'TODOS'" class="desglose-section">
+      <h3><i class="fas fa-chart-pie"></i> Desglose de Ventas</h3>
+      <div class="desglose-stats">
+        <div class="stat-card stat-boletos">
+          <div class="stat-icon">
+            <i class="fas fa-ticket-alt"></i>
+          </div>
+          <div class="stat-info">
+            <div class="stat-label">Boletos Vendidos</div>
+            <div class="stat-value">{{ desglose.boletos.cantidad }}</div>
+            <div class="stat-detalle">${{ desglose.boletos.total.toFixed(2) }}</div>
+          </div>
+        </div>
+
+        <div class="stat-card stat-dulceria">
+          <div class="stat-icon">
+            <i class="fas fa-candy-cane"></i>
+          </div>
+          <div class="stat-info">
+            <div class="stat-label">Items Dulcería</div>
+            <div class="stat-value">{{ desglose.dulceria.cantidad }}</div>
+            <div class="stat-detalle">${{ desglose.dulceria.total.toFixed(2) }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desglose Filtrado -->
+    <div *ngIf="desglose && filtroTipo === 'BOLETO'" class="desglose-filtrado">
+      <h3><i class="fas fa-ticket-alt"></i> Ventas de Boletos</h3>
+      <div class="stat-card stat-boletos-full">
+        <div class="stat-icon">
+          <i class="fas fa-ticket-alt"></i>
+        </div>
+        <div class="stat-info">
+          <div class="stat-label">Boletos Vendidos</div>
+          <div class="stat-value">{{ desglose.boletos.cantidad }}</div>
+          <div class="stat-detalle">Total: ${{ desglose.boletos.total.toFixed(2) }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="desglose && filtroTipo === 'DULCERIA'" class="desglose-filtrado">
+      <h3><i class="fas fa-candy-cane"></i> Ventas de Dulcería</h3>
+      <div class="stat-card stat-dulceria-full">
+        <div class="stat-icon">
+          <i class="fas fa-candy-cane"></i>
+        </div>
+        <div class="stat-info">
+          <div class="stat-label">Items Vendidos</div>
+          <div class="stat-value">{{ desglose.dulceria.cantidad }}</div>
+          <div class="stat-detalle">Total: ${{ desglose.dulceria.total.toFixed(2) }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Información del vendedor -->
+    <div class="vendedor-info">
+      <h3><i class="fas fa-user"></i> Información del Vendedor</h3>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-label">Nombre:</span>
+          <span class="info-value">{{ misVentas.nombre }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Email:</span>
+          <span class="info-value">{{ misVentas.email }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mensaje si no hay ventas -->
+    <div *ngIf="misVentas.cantidadPedidos === 0" class="no-ventas">
+      <i class="fas fa-inbox"></i>
+      <p>No tienes ventas registradas en este período</p>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="!cargandoVentas && !misVentas" class="error-container">
+    <i class="fas fa-exclamation-triangle"></i>
+    <p>No se pudieron cargar tus ventas</p>
+    <button class="btn btn-primary" (click)="cargarMisVentas()">
+      <i class="fas fa-redo"></i> Reintentar
+    </button>
+  </div>
+</div>
