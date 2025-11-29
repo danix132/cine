@@ -240,18 +240,7 @@ TZ="America/Mazatlan"
 4. Push a la rama (`git push origin feature/AmazingFeature`)
 5. Abre un Pull Request
 
-## 📄 Licencia
 
-Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
 
-## 📞 Soporte
-
-Si tienes preguntas o necesitas ayuda:
-
-- 📧 Email: [tu-email@ejemplo.com]
-- 🐛 Issues: [GitHub Issues]
-- 📖 Wiki: [Documentación del proyecto]
-
----
 
 **¡Disfruta construyendo tu sistema de cine! 🎬✨**
