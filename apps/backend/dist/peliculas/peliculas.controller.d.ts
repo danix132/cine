@@ -1,10 +1,12 @@
 import { PeliculasService } from './peliculas.service';
+import { RecomendacionesService } from './recomendaciones.service';
 import { CreatePeliculaDto } from './dto/create-pelicula.dto';
 import { UpdatePeliculaDto } from './dto/update-pelicula.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 export declare class PeliculasController {
     private readonly peliculasService;
-    constructor(peliculasService: PeliculasService);
+    private readonly recomendacionesService;
+    constructor(peliculasService: PeliculasService, recomendacionesService: RecomendacionesService);
     create(createPeliculaDto: CreatePeliculaDto): Promise<{
         id: string;
         createdAt: Date;
@@ -17,6 +19,8 @@ export declare class PeliculasController {
         posterUrl: string | null;
         trailerUrl: string | null;
         generos: string[];
+        esProximoEstreno: boolean;
+        fechaEstreno: Date | null;
     }>;
     findAll(paginationDto: PaginationDto): Promise<import("../common/dto/pagination.dto").PaginatedResponseDto<{
         _count: {
@@ -34,18 +38,21 @@ export declare class PeliculasController {
         posterUrl: string | null;
         trailerUrl: string | null;
         generos: string[];
+        esProximoEstreno: boolean;
+        fechaEstreno: Date | null;
     }>>;
     findActive(): Promise<({
         funciones: ({
             sala: {
-                id: string;
                 nombre: string;
-                filas: number;
-                asientosPorFila: number;
+                id: string;
                 createdAt: Date;
                 updatedAt: Date;
+                filas: number;
+                asientosPorFila: number;
             };
         } & {
+            precio: import("@prisma/client/runtime/library").Decimal;
             id: string;
             createdAt: Date;
             updatedAt: Date;
@@ -53,7 +60,6 @@ export declare class PeliculasController {
             peliculaId: string;
             inicio: Date;
             cancelada: boolean;
-            precio: import("@prisma/client/runtime/library").Decimal;
         })[];
     } & {
         id: string;
@@ -67,18 +73,21 @@ export declare class PeliculasController {
         posterUrl: string | null;
         trailerUrl: string | null;
         generos: string[];
+        esProximoEstreno: boolean;
+        fechaEstreno: Date | null;
     })[]>;
     findByGenero(genero: string): Promise<({
         funciones: ({
             sala: {
-                id: string;
                 nombre: string;
-                filas: number;
-                asientosPorFila: number;
+                id: string;
                 createdAt: Date;
                 updatedAt: Date;
+                filas: number;
+                asientosPorFila: number;
             };
         } & {
+            precio: import("@prisma/client/runtime/library").Decimal;
             id: string;
             createdAt: Date;
             updatedAt: Date;
@@ -86,7 +95,6 @@ export declare class PeliculasController {
             peliculaId: string;
             inicio: Date;
             cancelada: boolean;
-            precio: import("@prisma/client/runtime/library").Decimal;
         })[];
     } & {
         id: string;
@@ -100,30 +108,32 @@ export declare class PeliculasController {
         posterUrl: string | null;
         trailerUrl: string | null;
         generos: string[];
+        esProximoEstreno: boolean;
+        fechaEstreno: Date | null;
     })[]>;
     findOne(id: string): Promise<{
-        funciones: ({
-            sala: {
-                id: string;
-                nombre: string;
-                filas: number;
-                asientosPorFila: number;
-                createdAt: Date;
-                updatedAt: Date;
-            };
-        } & {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            salaId: string;
-            peliculaId: string;
-            inicio: Date;
-            cancelada: boolean;
-            precio: import("@prisma/client/runtime/library").Decimal;
-        })[];
         _count: {
             funciones: number;
         };
+        funciones: ({
+            sala: {
+                nombre: string;
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                filas: number;
+                asientosPorFila: number;
+            };
+        } & {
+            precio: import("@prisma/client/runtime/library").Decimal;
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            salaId: string;
+            peliculaId: string;
+            inicio: Date;
+            cancelada: boolean;
+        })[];
     } & {
         id: string;
         createdAt: Date;
@@ -136,6 +146,8 @@ export declare class PeliculasController {
         posterUrl: string | null;
         trailerUrl: string | null;
         generos: string[];
+        esProximoEstreno: boolean;
+        fechaEstreno: Date | null;
     }>;
     update(id: string, updatePeliculaDto: UpdatePeliculaDto): Promise<{
         id: string;
@@ -149,6 +161,8 @@ export declare class PeliculasController {
         posterUrl: string | null;
         trailerUrl: string | null;
         generos: string[];
+        esProximoEstreno: boolean;
+        fechaEstreno: Date | null;
     }>;
     remove(id: string): Promise<{
         message: string;
@@ -168,5 +182,84 @@ export declare class PeliculasController {
             itemsCarritoEliminados: number;
             itemsPedidoEliminados: number;
         };
+    }>;
+    getRecomendaciones(req: any): Promise<{
+        recomendacion: string;
+        peliculas: ({
+            funciones: ({
+                sala: {
+                    nombre: string;
+                    id: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    filas: number;
+                    asientosPorFila: number;
+                };
+            } & {
+                precio: import("@prisma/client/runtime/library").Decimal;
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                salaId: string;
+                peliculaId: string;
+                inicio: Date;
+                cancelada: boolean;
+            })[];
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            estado: import("@prisma/client").$Enums.PeliculaEstado;
+            titulo: string;
+            sinopsis: string | null;
+            duracionMin: number;
+            clasificacion: string;
+            posterUrl: string | null;
+            trailerUrl: string | null;
+            generos: string[];
+            esProximoEstreno: boolean;
+            fechaEstreno: Date | null;
+        })[];
+        tienePeferencias: boolean;
+        generosPreferidos?: undefined;
+    } | {
+        recomendacion: string;
+        peliculas: ({
+            funciones: ({
+                sala: {
+                    nombre: string;
+                    id: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    filas: number;
+                    asientosPorFila: number;
+                };
+            } & {
+                precio: import("@prisma/client/runtime/library").Decimal;
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                salaId: string;
+                peliculaId: string;
+                inicio: Date;
+                cancelada: boolean;
+            })[];
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            estado: import("@prisma/client").$Enums.PeliculaEstado;
+            titulo: string;
+            sinopsis: string | null;
+            duracionMin: number;
+            clasificacion: string;
+            posterUrl: string | null;
+            trailerUrl: string | null;
+            generos: string[];
+            esProximoEstreno: boolean;
+            fechaEstreno: Date | null;
+        })[];
+        tienePeferencias: boolean;
+        generosPreferidos: string[];
     }>;
 }

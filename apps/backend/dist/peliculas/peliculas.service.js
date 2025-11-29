@@ -48,7 +48,7 @@ let PeliculasService = class PeliculasService {
                 },
                 skip,
                 take: limit,
-                orderBy: { titulo: 'asc' },
+                orderBy: { createdAt: 'desc' },
             }),
             this.prisma.pelicula.count({ where }),
         ]);
@@ -223,6 +223,32 @@ let PeliculasService = class PeliculasService {
                     },
                 },
             },
+        });
+    }
+    async getPeliculasPorPreferencias(generosPreferidos) {
+        return this.prisma.pelicula.findMany({
+            where: {
+                estado: 'ACTIVA',
+                OR: generosPreferidos.map(genero => ({
+                    generos: { has: genero }
+                }))
+            },
+            include: {
+                funciones: {
+                    where: {
+                        inicio: { gt: new Date() },
+                        cancelada: false,
+                    },
+                    include: {
+                        sala: true,
+                    },
+                    orderBy: {
+                        inicio: 'asc'
+                    },
+                    take: 3
+                },
+            },
+            take: 20
         });
     }
 };

@@ -52,12 +52,21 @@ export class AdminFuncionesComponent implements OnInit {
   paginaActual = 1;
   itemsPorPagina = 10;
 
+  // Fecha mínima (hoy)
+  fechaMinima: string;
+  horaMinima: string = '';
+
   constructor(
     private funcionesService: FuncionesService,
     private peliculasService: PeliculasService,
     private salasService: SalasService,
     private fb: FormBuilder
   ) {
+    // Establecer fecha mínima como hoy en formato YYYY-MM-DD
+    const hoy = new Date();
+    this.fechaMinima = hoy.toISOString().split('T')[0];
+    
+    // Inicializar el formulario primero
     this.funcionForm = this.fb.group({
       pelicula_id: ['', [Validators.required]],
       sala_id: ['', [Validators.required]],
@@ -66,6 +75,9 @@ export class AdminFuncionesComponent implements OnInit {
       precio: ['', [Validators.required, Validators.min(0.01)]],
       estado: ['ACTIVA']
     });
+    
+    // Ahora actualizar la hora mínima
+    this.actualizarHoraMinima();
   }
 
   ngOnInit(): void {
@@ -363,14 +375,68 @@ ${this.modoOffline ? '🔴 Modo offline/demo activo' : '🟡 Intentando conectar
     this.mostrarModalFuncion = true;
   }
 
+  /**
+   * Actualiza la hora mínima según la fecha seleccionada
+   */
+  actualizarHoraMinima(): void {
+    const fechaSeleccionada = this.funcionForm.get('fecha')?.value;
+    const hoy = new Date().toISOString().split('T')[0];
+    
+    if (fechaSeleccionada === hoy) {
+      // Si la fecha es hoy, establecer hora mínima como la hora actual
+      const ahora = new Date();
+      const horas = ahora.getHours().toString().padStart(2, '0');
+      const minutos = ahora.getMinutes().toString().padStart(2, '0');
+      this.horaMinima = `${horas}:${minutos}`;
+    } else {
+      // Si la fecha es futura, no hay restricción de hora
+      this.horaMinima = '';
+    }
+  }
+
+  /**
+   * Se llama cuando cambia la fecha en el formulario
+   */
+  onFechaChange(): void {
+    this.actualizarHoraMinima();
+    
+    // Si la fecha seleccionada es hoy y la hora actual es menor a la hora mínima, limpiar la hora
+    const horaSeleccionada = this.funcionForm.get('hora')?.value;
+    if (this.horaMinima && horaSeleccionada && horaSeleccionada < this.horaMinima) {
+      this.funcionForm.patchValue({ hora: '' });
+    }
+  }
+
   guardarFuncion(): void {
     if (!this.funcionForm.valid) {
       alert('Por favor complete todos los campos requeridos');
       return;
     }
 
-    this.guardando = true;
     const formData = this.funcionForm.value;
+
+    // Validar que la fecha no sea anterior a hoy
+    const fechaSeleccionada = formData.fecha;
+    const horaSeleccionada = formData.hora;
+    const ahora = new Date();
+    const hoy = ahora.toISOString().split('T')[0];
+    
+    if (fechaSeleccionada < hoy) {
+      alert('❌ No se pueden crear funciones en fechas pasadas.\n\nPor favor selecciona una fecha de hoy en adelante.');
+      return;
+    }
+
+    // Validar que si la fecha es hoy, la hora no sea pasada
+    if (fechaSeleccionada === hoy && horaSeleccionada) {
+      const horaActual = ahora.getHours().toString().padStart(2, '0') + ':' + ahora.getMinutes().toString().padStart(2, '0');
+      
+      if (horaSeleccionada < horaActual) {
+        alert('❌ No se pueden crear funciones con horarios pasados.\n\nPor favor selecciona una hora futura (actual: ' + horaActual + ').');
+        return;
+      }
+    }
+
+    this.guardando = true;
 
     if (this.modoEdicion && this.funcionSeleccionada) {
       // Actualizar función existente

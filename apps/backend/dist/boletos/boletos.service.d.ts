@@ -5,23 +5,9 @@ export declare class BoletosService {
     private readonly prisma;
     constructor(prisma: PrismaService);
     create(createBoletoDto: CreateBoletoDto): Promise<{
-        funcion: {
-            pelicula: {
-                titulo: string;
-                posterUrl: string;
-            };
-            sala: {
-                nombre: string;
-            };
-        } & {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            peliculaId: string;
-            salaId: string;
-            inicio: Date;
-            cancelada: boolean;
-            precio: import("@prisma/client/runtime/library").Decimal;
+        usuario: {
+            nombre: string;
+            email: string;
         };
         asiento: {
             id: string;
@@ -30,76 +16,121 @@ export declare class BoletosService {
             fila: number;
             numero: number;
         };
-        usuario: {
-            nombre: string;
-            email: string;
+        funcion: {
+            sala: {
+                nombre: string;
+            };
+            pelicula: {
+                titulo: string;
+                posterUrl: string;
+            };
+        } & {
+            precio: import("@prisma/client/runtime/library").Decimal;
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            salaId: string;
+            peliculaId: string;
+            inicio: Date;
+            cancelada: boolean;
         };
     } & {
         id: string;
-        estado: import("@prisma/client").$Enums.BoletoEstado;
-        codigoQR: string;
-        fechaValidacion: Date | null;
         createdAt: Date;
         updatedAt: Date;
+        usuarioId: string | null;
+        estado: import("@prisma/client").$Enums.BoletoEstado;
+        ticketData: string | null;
+        pedidoId: string | null;
         funcionId: string;
         asientoId: string;
-        usuarioId: string | null;
-        pedidoId: string | null;
+        codigoQR: string;
+        fechaValidacion: Date | null;
     }>;
     findAll(): Promise<({
-        funcion: {
+        usuario: {
+            nombre: string;
             id: string;
-            pelicula: {
-                id: string;
-                titulo: string;
-            };
-            sala: {
-                id: string;
-                nombre: string;
-            };
-            inicio: Date;
-            precio: import("@prisma/client/runtime/library").Decimal;
+            email: string;
         };
         asiento: {
             id: string;
             fila: number;
             numero: number;
         };
-        usuario: {
+        funcion: {
+            precio: import("@prisma/client/runtime/library").Decimal;
             id: string;
-            nombre: string;
-            email: string;
+            sala: {
+                nombre: string;
+                id: string;
+            };
+            pelicula: {
+                id: string;
+                titulo: string;
+            };
+            inicio: Date;
         };
     } & {
         id: string;
-        estado: import("@prisma/client").$Enums.BoletoEstado;
-        codigoQR: string;
-        fechaValidacion: Date | null;
         createdAt: Date;
         updatedAt: Date;
+        usuarioId: string | null;
+        estado: import("@prisma/client").$Enums.BoletoEstado;
+        ticketData: string | null;
+        pedidoId: string | null;
         funcionId: string;
         asientoId: string;
-        usuarioId: string | null;
-        pedidoId: string | null;
+        codigoQR: string;
+        fechaValidacion: Date | null;
     })[]>;
     findOne(id: string): Promise<{
+        usuario: {
+            nombre: string;
+            email: string;
+        };
+        asiento: {
+            id: string;
+            estado: import("@prisma/client").$Enums.AsientoEstado;
+            salaId: string;
+            fila: number;
+            numero: number;
+        };
         funcion: {
+            sala: {
+                nombre: string;
+            };
             pelicula: {
                 titulo: string;
                 posterUrl: string;
             };
-            sala: {
-                nombre: string;
-            };
         } & {
+            precio: import("@prisma/client/runtime/library").Decimal;
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            peliculaId: string;
             salaId: string;
+            peliculaId: string;
             inicio: Date;
             cancelada: boolean;
-            precio: import("@prisma/client/runtime/library").Decimal;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        usuarioId: string | null;
+        estado: import("@prisma/client").$Enums.BoletoEstado;
+        ticketData: string | null;
+        pedidoId: string | null;
+        funcionId: string;
+        asientoId: string;
+        codigoQR: string;
+        fechaValidacion: Date | null;
+    }>;
+    update(id: string, updateBoletoDto: UpdateBoletoDto): Promise<{
+        usuario: {
+            nombre: string;
+            email: string;
         };
         asiento: {
             id: string;
@@ -108,92 +139,53 @@ export declare class BoletosService {
             fila: number;
             numero: number;
         };
-        usuario: {
-            nombre: string;
-            email: string;
-        };
-    } & {
-        id: string;
-        estado: import("@prisma/client").$Enums.BoletoEstado;
-        codigoQR: string;
-        fechaValidacion: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
-        funcionId: string;
-        asientoId: string;
-        usuarioId: string | null;
-        pedidoId: string | null;
-    }>;
-    update(id: string, updateBoletoDto: UpdateBoletoDto): Promise<{
         funcion: {
+            sala: {
+                nombre: string;
+            };
             pelicula: {
                 titulo: string;
             };
-            sala: {
-                nombre: string;
-            };
         } & {
+            precio: import("@prisma/client/runtime/library").Decimal;
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            peliculaId: string;
             salaId: string;
+            peliculaId: string;
             inicio: Date;
             cancelada: boolean;
-            precio: import("@prisma/client/runtime/library").Decimal;
-        };
-        asiento: {
-            id: string;
-            estado: import("@prisma/client").$Enums.AsientoEstado;
-            salaId: string;
-            fila: number;
-            numero: number;
-        };
-        usuario: {
-            nombre: string;
-            email: string;
         };
     } & {
         id: string;
-        estado: import("@prisma/client").$Enums.BoletoEstado;
-        codigoQR: string;
-        fechaValidacion: Date | null;
         createdAt: Date;
         updatedAt: Date;
+        usuarioId: string | null;
+        estado: import("@prisma/client").$Enums.BoletoEstado;
+        ticketData: string | null;
+        pedidoId: string | null;
         funcionId: string;
         asientoId: string;
-        usuarioId: string | null;
-        pedidoId: string | null;
+        codigoQR: string;
+        fechaValidacion: Date | null;
     }>;
     remove(id: string): Promise<{
         id: string;
-        estado: import("@prisma/client").$Enums.BoletoEstado;
-        codigoQR: string;
-        fechaValidacion: Date | null;
         createdAt: Date;
         updatedAt: Date;
+        usuarioId: string | null;
+        estado: import("@prisma/client").$Enums.BoletoEstado;
+        ticketData: string | null;
+        pedidoId: string | null;
         funcionId: string;
         asientoId: string;
-        usuarioId: string | null;
-        pedidoId: string | null;
+        codigoQR: string;
+        fechaValidacion: Date | null;
     }>;
     getBoletosPorFuncion(funcionId: string): Promise<({
-        funcion: {
-            pelicula: {
-                titulo: string;
-            };
-            sala: {
-                nombre: string;
-            };
-        } & {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            peliculaId: string;
-            salaId: string;
-            inicio: Date;
-            cancelada: boolean;
-            precio: import("@prisma/client/runtime/library").Decimal;
+        usuario: {
+            nombre: string;
+            email: string;
         };
         asiento: {
             id: string;
@@ -202,21 +194,35 @@ export declare class BoletosService {
             fila: number;
             numero: number;
         };
-        usuario: {
-            nombre: string;
-            email: string;
+        funcion: {
+            sala: {
+                nombre: string;
+            };
+            pelicula: {
+                titulo: string;
+            };
+        } & {
+            precio: import("@prisma/client/runtime/library").Decimal;
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            salaId: string;
+            peliculaId: string;
+            inicio: Date;
+            cancelada: boolean;
         };
     } & {
         id: string;
-        estado: import("@prisma/client").$Enums.BoletoEstado;
-        codigoQR: string;
-        fechaValidacion: Date | null;
         createdAt: Date;
         updatedAt: Date;
+        usuarioId: string | null;
+        estado: import("@prisma/client").$Enums.BoletoEstado;
+        ticketData: string | null;
+        pedidoId: string | null;
         funcionId: string;
         asientoId: string;
-        usuarioId: string | null;
-        pedidoId: string | null;
+        codigoQR: string;
+        fechaValidacion: Date | null;
     })[]>;
     verificarQR(codigoQR: string): Promise<{
         valido: boolean;
@@ -226,22 +232,8 @@ export declare class BoletosService {
     } | {
         valido: boolean;
         boletos: ({
-            funcion: {
-                pelicula: {
-                    titulo: string;
-                };
-                sala: {
-                    nombre: string;
-                };
-            } & {
-                id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                peliculaId: string;
-                salaId: string;
-                inicio: Date;
-                cancelada: boolean;
-                precio: import("@prisma/client/runtime/library").Decimal;
+            usuario: {
+                nombre: string;
             };
             asiento: {
                 id: string;
@@ -250,44 +242,50 @@ export declare class BoletosService {
                 fila: number;
                 numero: number;
             };
-            usuario: {
-                nombre: string;
+            funcion: {
+                sala: {
+                    nombre: string;
+                };
+                pelicula: {
+                    titulo: string;
+                };
+            } & {
+                precio: import("@prisma/client/runtime/library").Decimal;
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                salaId: string;
+                peliculaId: string;
+                inicio: Date;
+                cancelada: boolean;
             };
         } & {
             id: string;
-            estado: import("@prisma/client").$Enums.BoletoEstado;
-            codigoQR: string;
-            fechaValidacion: Date | null;
             createdAt: Date;
             updatedAt: Date;
+            usuarioId: string | null;
+            estado: import("@prisma/client").$Enums.BoletoEstado;
+            ticketData: string | null;
+            pedidoId: string | null;
             funcionId: string;
             asientoId: string;
-            usuarioId: string | null;
-            pedidoId: string | null;
+            codigoQR: string;
+            fechaValidacion: Date | null;
         })[];
         cantidad: number;
         mensaje: string;
     }>;
     validarBoleto(codigoQR: string): Promise<{
         id: string;
-        estado: import("@prisma/client").$Enums.BoletoEstado;
-        codigoQR: string;
-        fechaValidacion: Date;
         createdAt: Date;
         updatedAt: Date;
-        funcion: {
-            id: string;
-            pelicula: {
-                titulo: string;
-                posterUrl: string;
-            };
-            sala: {
-                nombre: string;
-            };
-            inicio: Date;
-            cancelada: boolean;
-            precio: import("@prisma/client/runtime/library").Decimal;
+        usuarioId: string;
+        estado: import("@prisma/client").$Enums.BoletoEstado;
+        usuario: {
+            nombre: string;
+            email: string;
         };
+        pedidoId: string;
         asiento: {
             id: string;
             estado: import("@prisma/client").$Enums.AsientoEstado;
@@ -295,14 +293,23 @@ export declare class BoletosService {
             fila: number;
             numero: number;
         };
-        usuario: {
-            nombre: string;
-            email: string;
+        funcion: {
+            precio: import("@prisma/client/runtime/library").Decimal;
+            id: string;
+            sala: {
+                nombre: string;
+            };
+            pelicula: {
+                titulo: string;
+                posterUrl: string;
+            };
+            inicio: Date;
+            cancelada: boolean;
         };
         funcionId: string;
         asientoId: string;
-        usuarioId: string;
-        pedidoId: string;
+        codigoQR: string;
+        fechaValidacion: Date;
     }[]>;
     crearBoletosCompra(data: {
         funcionId: string;

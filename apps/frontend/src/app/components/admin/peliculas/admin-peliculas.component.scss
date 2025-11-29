@@ -1,17 +1,7 @@
+@import '../shared-admin-styles.scss';
+
 .admin-peliculas {
   padding: 20px;
-
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-
-    h2 {
-      margin: 0;
-      font-size: 24px;
-    }
-  }
 
   .peliculas-grid {
     display: grid;
@@ -98,20 +88,21 @@
 }
 
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 
   label {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 4px;
     font-weight: 500;
+    font-size: 0.9rem;
   }
 
   .form-control {
     width: 100%;
-    padding: 8px;
+    padding: 6px 10px;
     border: 1px solid #ddd;
     border-radius: 4px;
-    font-size: 1rem;
+    font-size: 0.95rem;
 
     &:focus {
       outline: none;
@@ -122,6 +113,81 @@
   textarea.form-control {
     min-height: 100px;
     resize: vertical;
+  }
+
+  .input-with-button {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+
+    .form-control {
+      flex: 1;
+    }
+
+    .btn-autocompletar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      padding: 8px 16px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      cursor: pointer;
+
+      &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        background: linear-gradient(135deg, #5a6edb 0%, #6a4292 100%);
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      i {
+        font-size: 1rem;
+        margin: 0;
+      }
+
+      .fa-spinner {
+        animation: spin 1s linear infinite;
+      }
+    }
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+
+      .btn-autocompletar {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  }
+
+  .form-text {
+    display: block;
+    margin-top: 5px;
+    font-size: 0.875rem;
+    color: #6c757d;
+    
+    &.text-muted {
+      color: #6c757d;
+    }
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
 
@@ -242,13 +308,13 @@
   margin-bottom: 20px;
   
   .card-body {
-    padding: 20px;
+    padding: 15px;
   }
 
-  // Separación de 1cm entre filtros
+  // Separación más compacta entre filtros
   .filtros-row {
     display: flex;
-    gap: 1cm;
+    gap: 15px;
     align-items: end;
     
     .filtro-pelicula {
@@ -285,6 +351,13 @@
     .col-md-1 {
       width: 8.333333%;
     }
+  }
+  
+  // Hacer los labels más compactos
+  label {
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+    font-weight: 500;
   }
 }
 
@@ -391,4 +464,213 @@
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+// Estilos para select múltiple de géneros
+.form-group {
+  select[multiple] {
+    height: auto !important;
+    padding: 8px;
+    
+    option {
+      padding: 8px 12px;
+      margin: 2px 0;
+      border-radius: 4px;
+      cursor: pointer;
+      
+      &:hover {
+        background: #f0f0f0;
+      }
+      
+      &:checked {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        font-weight: 600;
+      }
+    }
+  }
+
+  // Estilos para input de duración
+  input[type="number"] {
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+      opacity: 1;
+    }
+  }
+
+  // Estilos para checkbox de próximo estreno
+  &.checkbox-group {
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      padding: 15px;
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+      border-radius: 10px;
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+
+      &:hover {
+        border-color: #667eea;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
+      }
+
+      input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        accent-color: #667eea;
+      }
+
+      span {
+        font-weight: 600;
+        color: #333;
+        font-size: 1.05rem;
+      }
+    }
+
+    .form-text {
+      margin-top: 8px;
+      padding-left: 32px;
+    }
+  }
+}
+
+// Estilos de paginación
+.pagination-section {
+  margin-top: 30px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+
+  .pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+
+    .btn-pagination {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
+
+      i {
+        font-size: 0.9rem;
+      }
+
+      &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(102, 126, 234, 0.4);
+        background: linear-gradient(135deg, #5a6edb 0%, #6a4292 100%);
+      }
+
+      &:active:not(:disabled) {
+        transform: translateY(0);
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: 0 2px 5px rgba(102, 126, 234, 0.2);
+      }
+    }
+
+    .page-numbers {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+
+      .btn-page {
+        min-width: 45px;
+        height: 45px;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        background: white;
+        color: #333;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+
+        &:hover:not(.active) {
+          border-color: #667eea;
+          color: #667eea;
+          background: rgba(102, 126, 234, 0.05);
+          transform: translateY(-2px);
+        }
+
+        &.active {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          border-color: transparent;
+          box-shadow: 0 4px 10px rgba(102, 126, 234, 0.4);
+          cursor: default;
+        }
+
+        &:active:not(.active) {
+          transform: translateY(0);
+        }
+      }
+    }
+  }
+
+  .pagination-info {
+    color: #666;
+    font-size: 0.95rem;
+    font-weight: 500;
+    padding: 10px 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    text-align: center;
+  }
+}
+
+// Responsive para paginación
+@media (max-width: 768px) {
+  .pagination-section {
+    .pagination-controls {
+      flex-direction: column;
+      gap: 12px;
+
+      .btn-pagination {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .page-numbers {
+        flex-wrap: wrap;
+        justify-content: center;
+
+        .btn-page {
+          min-width: 40px;
+          height: 40px;
+        }
+      }
+    }
+
+    .pagination-info {
+      font-size: 0.85rem;
+      width: 100%;
+    }
+  }
 }

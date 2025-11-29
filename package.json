@@ -1,5 +1,5 @@
 {
-  "name": "cine-app",
+  "name": "cimeme",
   "version": "1.0.0",
   "description": "Sistema completo de gestión de cine con Angular 17 y NestJS",
   "private": true,
@@ -45,6 +45,6 @@
     "tickets",
     "booking"
   ],
-  "author": "Cine App Team",
+  "author": "CiMeme Team",
   "license": "MIT"
 }

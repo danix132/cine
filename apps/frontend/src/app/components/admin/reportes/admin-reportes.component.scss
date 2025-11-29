@@ -1,49 +1,22 @@
+@import '../shared-admin-styles.scss';
+
 .admin-reportes {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 30px;
 
-  .header {
-    background: white;
-    border-radius: 15px;
-    padding: 25px 30px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    margin-bottom: 30px;
+  .header-actions {
+    display: flex;
+    gap: 10px;
 
-    .header-content {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 20px;
+    .btn {
+      padding: 10px 20px;
+      font-weight: 600;
+      border-radius: 8px;
+      transition: all 0.3s;
 
-      .header-text h2 {
-        margin: 0 0 8px 0;
-        font-size: 28px;
-        font-weight: 700;
-        color: #333;
-      }
-
-      .header-subtitle {
-        margin: 0;
-        color: #666;
-        font-size: 14px;
-      }
-
-      .header-actions {
-        display: flex;
-        gap: 10px;
-
-        .btn {
-          padding: 10px 20px;
-          font-weight: 600;
-          border-radius: 8px;
-          transition: all 0.3s;
-
-          &:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-          }
-        }
+      &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
       }
     }
   }

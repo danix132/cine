@@ -1,7 +1,10 @@
 <div class="admin-usuarios">
-  <div class="header">
-    <h2>👥 Gestión de Usuarios</h2>
-    <button class="btn btn-success" (click)="abrirModalCrear()">
+  <div class="admin-section-header">
+    <div>
+      <h2><i class="fas fa-users"></i> Gestión de Usuarios</h2>
+      <p class="subtitle">Administra los usuarios y sus permisos</p>
+    </div>
+    <button class="btn btn-primary" (click)="abrirModalCrear()">
       <i class="fas fa-plus"></i> Nuevo Usuario
     </button>
   </div>
@@ -328,7 +331,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" (click)="cerrarModalDetalles()">Cerrar</button>
-        <button type="button" class="btn btn-warning" (click)="editarUsuario(usuarioSeleccionado!); cerrarModalDetalles()">
+        <button type="button" class="btn btn-primary" (click)="editarUsuario(usuarioSeleccionado!); cerrarModalDetalles()">
           <i class="fas fa-edit"></i> Editar Usuario
         </button>
       </div>

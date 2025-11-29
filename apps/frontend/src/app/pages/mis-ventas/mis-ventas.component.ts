@@ -90,15 +90,23 @@ export class MisVentasComponent implements OnInit {
     const params: string[] = [];
     
     if (this.periodo.desde) {
-      params.push(`desde=${this.periodo.desde}`);
+      // Agregar T00:00:00 para asegurar que se envía al inicio del día en formato ISO
+      const fechaDesde = this.periodo.desde + 'T00:00:00';
+      params.push(`desde=${fechaDesde}`);
+      console.log('📅 FRONTEND: Fecha desde enviada:', fechaDesde);
     }
     if (this.periodo.hasta) {
-      params.push(`hasta=${this.periodo.hasta}`);
+      // Agregar T23:59:59 para asegurar que se envía al final del día en formato ISO
+      const fechaHasta = this.periodo.hasta + 'T23:59:59';
+      params.push(`hasta=${fechaHasta}`);
+      console.log('📅 FRONTEND: Fecha hasta enviada:', fechaHasta);
     }
     
     if (params.length > 0) {
       url += '?' + params.join('&');
     }
+
+    console.log('🔗 FRONTEND: URL de consulta:', url);
 
     // Crear headers con el token de autenticación
     const headers = {
@@ -148,15 +156,23 @@ export class MisVentasComponent implements OnInit {
     const params: string[] = [];
     
     if (this.periodo.desde) {
-      params.push(`desde=${this.periodo.desde}`);
+      // Agregar T00:00:00 para asegurar que se envía al inicio del día en formato ISO
+      const fechaDesde = this.periodo.desde + 'T00:00:00';
+      params.push(`desde=${fechaDesde}`);
+      console.log('📅 FRONTEND desglose: Fecha desde enviada:', fechaDesde);
     }
     if (this.periodo.hasta) {
-      params.push(`hasta=${this.periodo.hasta}`);
+      // Agregar T23:59:59 para asegurar que se envía al final del día en formato ISO
+      const fechaHasta = this.periodo.hasta + 'T23:59:59';
+      params.push(`hasta=${fechaHasta}`);
+      console.log('📅 FRONTEND desglose: Fecha hasta enviada:', fechaHasta);
     }
     
     if (params.length > 0) {
       url += '?' + params.join('&');
     }
+
+    console.log('🔗 FRONTEND desglose: URL de consulta:', url);
 
     const headers = {
       'Authorization': `Bearer ${token}`

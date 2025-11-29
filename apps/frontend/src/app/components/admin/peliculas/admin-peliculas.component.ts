@@ -6,6 +6,7 @@ import { PeliculasService } from '../../../services/peliculas.service';
 import { FuncionesService } from '../../../services/funciones.service';
 import { SalasService } from '../../../services/salas.service';
 import { AuthService } from '../../../services/auth.service';
+import { GeminiService } from '../../../services/gemini.service';
 import { Pelicula } from '../../../models/pelicula.model';
 import { Sala } from '../../../models/sala.model';
 import { PaginatedResponse } from '../../../models/common.model';
@@ -28,6 +29,12 @@ export class AdminPeliculasComponent implements OnInit {
   mostrarFormulario = false;
   disponibilidadInfo: string = '';
 
+  // Propiedades de paginación
+  paginaActual = 1;
+  peliculasPorPagina = 10;
+  totalPaginas = 1;
+  totalPeliculas = 0;
+
   // Propiedades del filtro
   filtroBusqueda = '';
   filtroEstado = '';
@@ -38,13 +45,20 @@ export class AdminPeliculasComponent implements OnInit {
   mostrarSugerencias = false;
   sugerenciasPeliculas: Pelicula[] = [];
   sugerenciaSeleccionada = -1;
+
+  // Propiedad para IA
+  cargandoIA = false;
+
+  // Fecha mínima para el campo de fecha de estreno (hoy)
+  fechaMinima: string = '';
   
   constructor(
     private fb: FormBuilder,
     private peliculasService: PeliculasService,
     private funcionesService: FuncionesService,
     private salasService: SalasService,
-    private authService: AuthService
+    private authService: AuthService,
+    private geminiService: GeminiService
   ) {
     this.peliculaForm = this.fb.group({
       titulo: ['', Validators.required],
@@ -54,7 +68,9 @@ export class AdminPeliculasComponent implements OnInit {
       posterUrl: [''],
       trailerUrl: [''],
       generos: [''],
-      estado: ['ACTIVA']
+      estado: ['ACTIVA'],
+      esProximoEstreno: [false],
+      fechaEstreno: ['']
     });
 
     this.funcionForm = this.fb.group({
@@ -67,6 +83,10 @@ export class AdminPeliculasComponent implements OnInit {
 
   ngOnInit(): void {
     console.log('=== INICIALIZANDO ADMIN PELICULAS ===');
+    
+    // Establecer fecha mínima como hoy (para el campo de fecha de estreno)
+    const today = new Date();
+    this.fechaMinima = today.toISOString().split('T')[0]; // Formato YYYY-MM-DD
     
     // Verificar estado de autenticación antes de cargar datos
     console.log('Estado de autenticación:', {
@@ -130,18 +150,25 @@ export class AdminPeliculasComponent implements OnInit {
   }
 
   cargarPeliculas() {
-    console.log('Iniciando carga de películas en admin');
+    console.log('Iniciando carga de películas en admin - Página:', this.paginaActual);
     
     // Primero probar una petición simple
     this.peliculasService.testAuthenticatedRequest().subscribe({
       next: (response) => {
         console.log('Petición autenticada exitosa:', response);
         
-        // Ahora cargar las películas normalmente
-        this.peliculasService.getPeliculas().subscribe({
+        // Cargar películas con paginación, ordenadas por más recientes primero
+        this.peliculasService.getPeliculas({ 
+          page: this.paginaActual, 
+          limit: this.peliculasPorPagina 
+        }).subscribe({
           next: (response) => {
             console.log('Películas cargadas exitosamente:', response);
             this.peliculas = response.data || [];
+            this.totalPeliculas = response.total;
+            this.totalPaginas = response.totalPages;
+            
+            // El backend ya envía las películas ordenadas por createdAt desc
             this.todasLasPeliculas = [...this.peliculas];
             this.inicializarFiltros();
             this.aplicarFiltroBusqueda();
@@ -159,6 +186,45 @@ export class AdminPeliculasComponent implements OnInit {
         console.error('Mensaje:', error.error?.message);
       }
     });
+  }
+
+  // Métodos de paginación
+  irAPaginaAnterior(): void {
+    if (this.paginaActual > 1) {
+      this.paginaActual--;
+      this.cargarPeliculas();
+    }
+  }
+
+  irAPaginaSiguiente(): void {
+    if (this.paginaActual < this.totalPaginas) {
+      this.paginaActual++;
+      this.cargarPeliculas();
+    }
+  }
+
+  irAPagina(pagina: number): void {
+    if (pagina >= 1 && pagina <= this.totalPaginas) {
+      this.paginaActual = pagina;
+      this.cargarPeliculas();
+    }
+  }
+
+  get paginasArray(): number[] {
+    const paginas = [];
+    const maxPaginas = 5; // Mostrar máximo 5 números de página
+    let inicio = Math.max(1, this.paginaActual - 2);
+    let fin = Math.min(this.totalPaginas, inicio + maxPaginas - 1);
+    
+    // Ajustar inicio si estamos cerca del final
+    if (fin - inicio < maxPaginas - 1) {
+      inicio = Math.max(1, fin - maxPaginas + 1);
+    }
+    
+    for (let i = inicio; i <= fin; i++) {
+      paginas.push(i);
+    }
+    return paginas;
   }
 
   cargarSalas() {
@@ -205,6 +271,14 @@ export class AdminPeliculasComponent implements OnInit {
 
   editarPelicula(pelicula: Pelicula) {
     this.peliculaSeleccionada = pelicula;
+    
+    // Formatear la fecha si existe
+    let fechaEstrenoFormatted = '';
+    if ((pelicula as any).fechaEstreno) {
+      const fecha = new Date((pelicula as any).fechaEstreno);
+      fechaEstrenoFormatted = fecha.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+    }
+    
     this.peliculaForm.patchValue({
       titulo: pelicula.titulo,
       sinopsis: pelicula.sinopsis,
@@ -212,10 +286,83 @@ export class AdminPeliculasComponent implements OnInit {
       clasificacion: pelicula.clasificacion,
       posterUrl: pelicula.posterUrl,
       trailerUrl: pelicula.trailerUrl,
-      generos: pelicula.generos?.join(', '),
-      estado: pelicula.estado
+      generos: pelicula.generos || [], // Ahora es un array para el select múltiple
+      estado: pelicula.estado,
+      esProximoEstreno: (pelicula as any).esProximoEstreno || false,
+      fechaEstreno: fechaEstrenoFormatted
     });
     this.mostrarFormulario = true;
+  }
+
+  async autocompletarConIA() {
+    const titulo = this.peliculaForm.get('titulo')?.value;
+    if (!titulo || titulo.trim() === '') {
+      alert('Por favor, ingresa el título de la película primero');
+      return;
+    }
+
+    this.cargandoIA = true;
+
+    try {
+      const datosIA = await this.geminiService.obtenerDatosPelicula(titulo);
+
+      // Rellenar el formulario con los datos obtenidos
+      this.peliculaForm.patchValue({
+        sinopsis: datosIA.sinopsis || '',
+        duracionMin: datosIA.duracionMin || '',
+        clasificacion: datosIA.clasificacion || '',
+        generos: Array.isArray(datosIA.generos) ? datosIA.generos : (datosIA.generos ? datosIA.generos.split(',').map((g: string) => g.trim()) : []),
+        posterUrl: datosIA.posterUrl || '',
+        trailerUrl: datosIA.trailerUrl || ''
+      });
+
+      alert('✅ Datos autocompletados con éxito!\n\nRevisa y ajusta si es necesario antes de guardar.');
+      
+    } catch (error: any) {
+      console.error('❌ Error completo al consultar Gemini:', error);
+      console.error('❌ Tipo de error:', typeof error);
+      console.error('❌ Error.name:', error?.name);
+      console.error('❌ Error.message:', error?.message);
+      console.error('❌ Error.stack:', error?.stack);
+      
+      let mensajeError = '❌ Error al consultar la IA.\n\n';
+      
+      if (error.message) {
+        if (error.message.includes('API key') || error.message.includes('API_KEY_INVALID')) {
+          mensajeError += '🔑 Tu API key no es válida o está bloqueada.\n';
+          mensajeError += 'Verifica en: https://aistudio.google.com/app/apikey\n';
+        } else if (error.message.includes('quota') || error.message.includes('RESOURCE_EXHAUSTED')) {
+          mensajeError += '📊 Límite de solicitudes alcanzado.\n';
+          mensajeError += 'Espera unos minutos e intenta de nuevo.\n';
+        } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+          mensajeError += '🌐 No se puede conectar con Gemini.\n';
+          mensajeError += 'Esto puede ser un problema de firewall o proxy.\n';
+        } else if (error.message.includes('CORS')) {
+          mensajeError += '🔒 Error de permisos (CORS).\n';
+        } else {
+          mensajeError += `📝 Detalle técnico: ${error.message}\n`;
+        }
+      } else {
+        mensajeError += '⚠️ Error desconocido sin mensaje.\n';
+      }
+      
+      mensajeError += '\n💡 Sugerencias:\n';
+      mensajeError += '1. Abre la consola del navegador (F12) para ver más detalles\n';
+      mensajeError += '2. Intenta con otro título de película\n';
+      mensajeError += '3. O completa los campos manualmente';
+      
+      alert(mensajeError);
+    } finally {
+      this.cargandoIA = false;
+    }
+  }
+
+  onProximoEstrenoChange() {
+    const esProximoEstreno = this.peliculaForm.get('esProximoEstreno')?.value;
+    if (!esProximoEstreno) {
+      // Si se desmarca, limpiar la fecha de estreno
+      this.peliculaForm.patchValue({ fechaEstreno: '' });
+    }
   }
 
   guardarPelicula() {
@@ -224,10 +371,36 @@ export class AdminPeliculasComponent implements OnInit {
       return;
     }
 
-    const peliculaData = {
+    // Manejar géneros: puede ser un array (del select múltiple) o un string (de la IA)
+    let generos = this.peliculaForm.value.generos;
+    if (typeof generos === 'string') {
+      generos = generos.split(',').map((g: string) => g.trim());
+    } else if (!Array.isArray(generos)) {
+      generos = [];
+    }
+
+    // Preparar datos de la película
+    const peliculaData: any = {
       ...this.peliculaForm.value,
-      generos: this.peliculaForm.value.generos.split(',').map((g: string) => g.trim())
+      generos: generos
     };
+
+    // Convertir esProximoEstreno a boolean explícitamente
+    peliculaData.esProximoEstreno = Boolean(peliculaData.esProximoEstreno);
+
+    // Si fechaEstreno está vacío, convertirlo a null o eliminarlo
+    if (!peliculaData.fechaEstreno || peliculaData.fechaEstreno === '') {
+      delete peliculaData.fechaEstreno;
+    } else {
+      // Convertir la fecha al formato ISO esperado por el backend
+      peliculaData.fechaEstreno = new Date(peliculaData.fechaEstreno).toISOString();
+    }
+
+    // Si esProximoEstreno es false, eliminar campos relacionados y el propio campo si es false
+    if (!peliculaData.esProximoEstreno) {
+      delete peliculaData.fechaEstreno;
+      delete peliculaData.esProximoEstreno; // No enviar si es false
+    }
 
     console.log('Datos a enviar:', peliculaData);
 
@@ -237,6 +410,7 @@ export class AdminPeliculasComponent implements OnInit {
       this.peliculasService.updatePelicula(this.peliculaSeleccionada.id, peliculaData).subscribe({
         next: (response) => {
           console.log('Película actualizada exitosamente:', response);
+          alert('✅ Película actualizada correctamente');
           this.mostrarFormulario = false;
           this.cargarPeliculas();
         },
@@ -245,16 +419,28 @@ export class AdminPeliculasComponent implements OnInit {
           if (error.error) {
             console.error('Detalles del error:', error.error);
           }
+          const mensaje = error.error?.message || error.message || 'Error desconocido';
+          alert('❌ Error al actualizar película: ' + mensaje);
         }
       });
     } else {
       // Crear nueva película
+      console.log('Creando nueva película...');
       this.peliculasService.createPelicula(peliculaData).subscribe({
-        next: () => {
+        next: (response) => {
+          console.log('Película creada exitosamente:', response);
+          alert('✅ Película creada correctamente');
           this.mostrarFormulario = false;
           this.cargarPeliculas();
         },
-        error: (error) => console.error('Error al crear película:', error)
+        error: (error) => {
+          console.error('Error al crear película:', error);
+          if (error.error) {
+            console.error('Detalles del error:', error.error);
+          }
+          const mensaje = error.error?.message || error.message || 'Error desconocido';
+          alert('❌ Error al crear película: ' + mensaje);
+        }
       });
     }
   }

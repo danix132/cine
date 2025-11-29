@@ -19,8 +19,11 @@
   <!-- Contenido principal cuando se tienen permisos -->
   <div *ngIf="tienePermisos">
     <!-- Header -->
-    <div class="header">
-      <h2>Gestión de Dulcería</h2>
+    <div class="admin-section-header">
+      <div>
+        <h2><i class="fas fa-candy-cane"></i> Gestión de Dulcería</h2>
+        <p class="subtitle">Administra productos y ventas de dulcería</p>
+      </div>
       <button class="btn btn-primary" (click)="nuevoItem()">
         <i class="fas fa-plus"></i> Agregar Item
       </button>
@@ -154,6 +157,12 @@
             </div>
           </div>
 
+          <div class="form-group">
+            <label for="stock">Stock Disponible</label>
+            <input type="number" id="stock" formControlName="stock" class="form-control" min="0" step="1" placeholder="0">
+            <small class="form-text text-muted">Cantidad disponible en inventario</small>
+          </div>
+
           <div class="form-group" *ngIf="itemSeleccionado">
             <div class="form-check">
               <input type="checkbox" id="activo" formControlName="activo" class="form-check-input">
@@ -192,6 +201,14 @@
           <h3>{{ item.nombre }}</h3>
           <p class="precio">{{ formatearPrecio(item.precio) }}</p>
           <p class="descripcion" *ngIf="item.descripcion">{{ item.descripcion }}</p>
+          <p class="stock">
+            Stock: 
+            <span class="badge" [ngClass]="{
+              'bg-success': item.stock > 10,
+              'bg-warning text-dark': item.stock > 0 && item.stock <= 10,
+              'bg-danger': item.stock === 0
+            }">{{ item.stock }} unidades</span>
+          </p>
           <p class="estado">
             Estado: 
             <span class="badge" [ngClass]="{
@@ -200,11 +217,11 @@
             }">{{ item.activo ? 'ACTIVO' : 'INACTIVO' }}</span>
           </p>
           <div class="acciones">
-            <button class="btn btn-sm btn-warning" (click)="editarItem(item)">
+            <button class="btn btn-sm btn-primary" (click)="editarItem(item)">
               <i class="fas fa-edit"></i> Editar
             </button>
             <button class="btn btn-sm btn-danger" (click)="eliminarItem(item.id)" *ngIf="item.activo">
-              <i class="fas fa-trash"></i> Desactivar
+              <i class="fas fa-trash"></i> Eliminar
             </button>
           </div>
         </div>

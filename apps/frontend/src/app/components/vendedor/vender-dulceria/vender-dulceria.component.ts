@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { DulceriaService } from '../../../services/dulceria.service';
 import { AuthService } from '../../../services/auth.service';
+import { TicketPdfService } from '../../../services/ticket-pdf.service';
 import { DulceriaItem, DulceriaItemTipo } from '../../../models/dulceria.model';
 
 interface ItemCarrito {
@@ -48,7 +49,8 @@ export class VenderDulceriaComponent implements OnInit {
   constructor(
     private dulceriaService: DulceriaService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private ticketPdfService: TicketPdfService
   ) {}
 
   ngOnInit(): void {
@@ -255,32 +257,41 @@ export class VenderDulceriaComponent implements OnInit {
     this.calcularTotales();
   }
 
-  imprimirTicket(): void {
+  async imprimirTicket(): Promise<void> {
     if (!this.ventaExitosa) {
       alert('No hay datos de venta para imprimir');
       return;
     }
     
-    console.log('🖨️ Generando ticket de venta...');
-    
-    const htmlTicket = this.generarHTMLTicket();
-    
-    const ventanaImpresion = window.open('', '_blank', 'width=800,height=600');
-    
-    if (!ventanaImpresion) {
-      alert('No se pudo abrir la ventana de impresión. Verifica que no esté bloqueada por el navegador.');
-      return;
+    try {
+      console.log('🖨️ Generando ticket PDF de venta...');
+      
+      const fecha = this.ventaExitosa.fecha;
+      const timestamp = fecha.getTime();
+      const numeroOrden = 'DULC-' + timestamp.toString().slice(-8);
+      
+      // Generar el PDF usando el servicio (sin QR para ventas de mostrador)
+      await this.ticketPdfService.generarTicketDulceria({
+        numeroOrden: numeroOrden,
+        fecha: fecha.toLocaleDateString('es-MX'),
+        hora: fecha.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }),
+        tarjeta: 'Efectivo',
+        items: this.ventaExitosa.items.map((item: any) => ({
+          nombre: item.nombre,
+          cantidad: item.cantidad,
+          precioUnitario: item.precioUnitario,
+          subtotal: item.subtotal
+        })),
+        total: this.ventaExitosa.total,
+        pedidoId: this.ventaExitosa.pedido?.id || 'N/A',
+        incluirQR: false // No incluir QR para ventas de mostrador
+      }, false); // false = descargar el PDF directamente
+      
+      console.log('✅ Ticket PDF generado y descargado exitosamente');
+    } catch (error) {
+      console.error('❌ Error al generar ticket PDF:', error);
+      alert('Error al generar el ticket PDF');
     }
-    
-    ventanaImpresion.document.write(htmlTicket);
-    ventanaImpresion.document.close();
-    ventanaImpresion.document.title = 'Ticket de Venta - Dulcería';
-    
-    ventanaImpresion.onload = () => {
-      setTimeout(() => {
-        ventanaImpresion.print();
-      }, 300);
-    };
   }
 
   private generarHTMLTicket(): string {

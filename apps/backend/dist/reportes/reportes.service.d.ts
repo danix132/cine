@@ -10,6 +10,13 @@ export declare class ReportesService {
         totalVentas: number;
         cantidadPedidos: number;
         ventas: ({
+            items: {
+                tipo: import("@prisma/client").$Enums.PedidoItemTipo;
+                descripcion: string;
+                precio: import("@prisma/client/runtime/library").Decimal;
+                cantidad: number;
+                subtotal: import("@prisma/client/runtime/library").Decimal;
+            }[];
             usuario: {
                 nombre: string;
                 email: string;
@@ -18,23 +25,20 @@ export declare class ReportesService {
                 nombre: string;
                 email: string;
             };
-            items: {
-                tipo: import("@prisma/client").$Enums.PedidoItemTipo;
-                descripcion: string;
-                cantidad: number;
-                precio: import("@prisma/client/runtime/library").Decimal;
-                subtotal: import("@prisma/client/runtime/library").Decimal;
-            }[];
         } & {
+            tipo: import("@prisma/client").$Enums.PedidoTipo;
             id: string;
+            createdAt: Date;
+            updatedAt: Date;
             usuarioId: string | null;
             vendedorId: string | null;
             total: import("@prisma/client/runtime/library").Decimal;
-            tipo: import("@prisma/client").$Enums.PedidoTipo;
             estado: import("@prisma/client").$Enums.PedidoEstado;
             metodoPago: string | null;
-            createdAt: Date;
-            updatedAt: Date;
+            entregado: boolean;
+            fechaEntrega: Date | null;
+            entregadoPorId: string | null;
+            ticketData: string | null;
         })[];
     }>;
     reporteOcupacion(desde: Date, hasta: Date): Promise<{

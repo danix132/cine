@@ -40,4 +40,10 @@ __decorate([
     (0, class_validator_1.IsEnum)(client_1.UserRole),
     __metadata("design:type", String)
 ], CreateUserDto.prototype, "rol", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ example: 'Acción,Comedia,Drama' }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateUserDto.prototype, "generosPreferidos", void 0);
 //# sourceMappingURL=create-user.dto.js.map

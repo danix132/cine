@@ -54,4 +54,10 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Number)
 ], CreateBoletoDto.prototype, "precio", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Ticket en base64 (opcional)', required: false }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateBoletoDto.prototype, "ticketData", void 0);
 //# sourceMappingURL=create-boleto.dto.js.map

@@ -26,6 +26,11 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
+    path: 'funciones/:peliculaId',
+    loadComponent: () => import('./components/funciones/funciones.component').then(m => m.FuncionesComponent),
+    canActivate: [AuthGuard]
+  },
+  {
     path: 'seleccion-asientos/:funcionId',
     loadComponent: () => import('./components/seleccion-asientos/seleccion-asientos.component').then(m => m.SeleccionAsientosComponent),
     canActivate: [AuthGuard]
@@ -67,6 +72,14 @@ export const routes: Routes = [
         loadComponent: () => import('./components/admin/reportes/admin-reportes.component').then(m => m.AdminReportesComponent)
       },
       {
+        path: 'reportes/boletos',
+        loadComponent: () => import('./components/admin/reportes/reporte-boletos/reporte-boletos.component').then(m => m.ReporteBoletosComponent)
+      },
+      {
+        path: 'reportes/dulceria',
+        loadComponent: () => import('./components/admin/reportes/reporte-dulceria/reporte-dulceria.component').then(m => m.ReporteDulceriaComponent)
+      },
+      {
         path: 'dulceria',
         loadComponent: () => import('./components/admin/dulceria/admin-dulceria.component').then(m => m.AdminDulceriaComponent)
       }
@@ -93,7 +106,8 @@ export const routes: Routes = [
   },
   {
     path: 'dulceria',
-    loadComponent: () => import('./components/dulceria/dulceria.component').then(m => m.DulceriaComponent)
+    loadComponent: () => import('./components/dulceria/dulceria.component').then(m => m.DulceriaComponent),
+    canActivate: [AuthGuard]
   },
   {
     path: 'vendedor/dulceria',
@@ -128,6 +142,18 @@ export const routes: Routes = [
   {
     path: 'cliente/historial',
     loadComponent: () => import('./components/cliente/historial-compras/historial-compras.component').then(m => m.HistorialComprasComponent),
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: ['CLIENTE', 'ADMIN'] }
+  },
+  {
+    path: 'cliente/perfil',
+    loadComponent: () => import('./components/cliente/perfil/perfil.component').then(m => m.PerfilComponent),
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: ['CLIENTE', 'ADMIN'] }
+  },
+  {
+    path: 'cliente/recomendaciones',
+    loadComponent: () => import('./components/cliente/recomendaciones/recomendaciones.component').then(m => m.RecomendacionesComponent),
     canActivate: [AuthGuard, RoleGuard],
     data: { roles: ['CLIENTE', 'ADMIN'] }
   },

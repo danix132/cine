@@ -1,15 +1,23 @@
 
 <header class="app-header">
   <div class="header-container">
-    <div class="logo">
+    <button class="menu-toggle" (click)="toggleMenu()" [class.active]="menuOpen" title="Menú" aria-label="Abrir menú de navegación">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <div class="logo" (click)="onLogoClick()">
+      <i class="fas fa-film"></i>
       <h1>{{ title }}</h1>
     </div>
-    <nav class="nav-menu">
+    <nav class="nav-menu" [class.open]="menuOpen">
       <a routerLink="/peliculas" class="nav-link">Películas</a>
       <a routerLink="/funciones" class="nav-link">Funciones</a>
       <a routerLink="/dulceria" class="nav-link">Dulcería</a>
-      <a routerLink="/cliente" class="nav-link">
-        <i class="fas fa-user"></i> Cliente Demo
+      
+      <!-- Link al panel de cliente (solo si está autenticado como cliente) -->
+      <a *ngIf="isAuthenticated() && isCliente() && currentUser" routerLink="/cliente" class="nav-link">
+        <i class="fas fa-user"></i> {{ currentUser.nombre }}
       </a>
       
       <!-- Botón de administrador según rol -->
@@ -42,6 +50,6 @@
 
 <footer class="app-footer" *ngIf="isAuthenticated()">
   <div class="footer-container">
-    <p>&copy; 2024 Cine App. Todos los derechos reservados.</p>
+    <p>&copy; 2025 o hasta que se entregue este proyecto CiMeme. Todos los derechos reservados.</p>
   </div>
 </footer>

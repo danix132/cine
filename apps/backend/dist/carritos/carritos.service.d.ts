@@ -6,135 +6,139 @@ export declare class CarritosService {
     private prisma;
     constructor(prisma: PrismaService);
     create(createCarritoDto: CreateCarritoDto, userId?: string, vendedorId?: string): Promise<{
-        usuario: {
-            id: string;
-            nombre: string;
-            createdAt: Date;
-            updatedAt: Date;
-            email: string;
-            passwordHash: string;
-            rol: import("@prisma/client").$Enums.UserRole;
-        };
-        vendedor: {
-            id: string;
-            nombre: string;
-            createdAt: Date;
-            updatedAt: Date;
-            email: string;
-            passwordHash: string;
-            rol: import("@prisma/client").$Enums.UserRole;
-        };
         items: {
+            tipo: import("@prisma/client").$Enums.CarritoItemTipo;
             id: string;
             createdAt: Date;
-            tipo: import("@prisma/client").$Enums.CarritoItemTipo;
-            carritoId: string;
             referenciaId: string;
             cantidad: number;
             precioUnitario: import("@prisma/client/runtime/library").Decimal;
+            carritoId: string;
         }[];
+        usuario: {
+            nombre: string;
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            email: string;
+            passwordHash: string;
+            rol: import("@prisma/client").$Enums.UserRole;
+            generosPreferidos: string | null;
+        };
+        vendedor: {
+            nombre: string;
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            email: string;
+            passwordHash: string;
+            rol: import("@prisma/client").$Enums.UserRole;
+            generosPreferidos: string | null;
+        };
     } & {
+        tipo: import("@prisma/client").$Enums.CarritoTipo;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         usuarioId: string | null;
-        tipo: import("@prisma/client").$Enums.CarritoTipo;
-        expiracion: Date;
         vendedorId: string | null;
+        expiracion: Date;
     }>;
     findAll(query: any): Promise<import("../common/dto/pagination.dto").PaginatedResponseDto<{
-        usuario: {
-            id: string;
-            nombre: string;
-            email: string;
-        };
-        vendedor: {
-            id: string;
-            nombre: string;
-            email: string;
-        };
         items: ({
             carrito: {
+                tipo: import("@prisma/client").$Enums.CarritoTipo;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
                 usuarioId: string | null;
-                tipo: import("@prisma/client").$Enums.CarritoTipo;
-                expiracion: Date;
                 vendedorId: string | null;
+                expiracion: Date;
             };
         } & {
+            tipo: import("@prisma/client").$Enums.CarritoItemTipo;
             id: string;
             createdAt: Date;
-            tipo: import("@prisma/client").$Enums.CarritoItemTipo;
-            carritoId: string;
             referenciaId: string;
             cantidad: number;
             precioUnitario: import("@prisma/client/runtime/library").Decimal;
+            carritoId: string;
         })[];
-    } & {
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        usuarioId: string | null;
-        tipo: import("@prisma/client").$Enums.CarritoTipo;
-        expiracion: Date;
-        vendedorId: string | null;
-    }>>;
-    findOne(id: string, userId?: string, vendedorId?: string): Promise<{
         usuario: {
-            id: string;
             nombre: string;
-            createdAt: Date;
-            updatedAt: Date;
+            id: string;
             email: string;
-            passwordHash: string;
-            rol: import("@prisma/client").$Enums.UserRole;
         };
         vendedor: {
-            id: string;
             nombre: string;
+            id: string;
+            email: string;
+        };
+    } & {
+        tipo: import("@prisma/client").$Enums.CarritoTipo;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        usuarioId: string | null;
+        vendedorId: string | null;
+        expiracion: Date;
+    }>>;
+    findOne(id: string, userId?: string, vendedorId?: string): Promise<{
+        items: {
+            tipo: import("@prisma/client").$Enums.CarritoItemTipo;
+            id: string;
+            createdAt: Date;
+            referenciaId: string;
+            cantidad: number;
+            precioUnitario: import("@prisma/client/runtime/library").Decimal;
+            carritoId: string;
+        }[];
+        usuario: {
+            nombre: string;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
             email: string;
             passwordHash: string;
             rol: import("@prisma/client").$Enums.UserRole;
+            generosPreferidos: string | null;
         };
-        items: {
+        vendedor: {
+            nombre: string;
             id: string;
             createdAt: Date;
-            tipo: import("@prisma/client").$Enums.CarritoItemTipo;
-            carritoId: string;
-            referenciaId: string;
-            cantidad: number;
-            precioUnitario: import("@prisma/client/runtime/library").Decimal;
-        }[];
+            updatedAt: Date;
+            email: string;
+            passwordHash: string;
+            rol: import("@prisma/client").$Enums.UserRole;
+            generosPreferidos: string | null;
+        };
     } & {
+        tipo: import("@prisma/client").$Enums.CarritoTipo;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         usuarioId: string | null;
-        tipo: import("@prisma/client").$Enums.CarritoTipo;
-        expiracion: Date;
         vendedorId: string | null;
+        expiracion: Date;
     }>;
     addItem(id: string, addItemDto: AddItemDto, userId?: string, vendedorId?: string): Promise<{
+        tipo: import("@prisma/client").$Enums.CarritoItemTipo;
         id: string;
         createdAt: Date;
-        tipo: import("@prisma/client").$Enums.CarritoItemTipo;
-        carritoId: string;
         referenciaId: string;
         cantidad: number;
         precioUnitario: import("@prisma/client/runtime/library").Decimal;
+        carritoId: string;
     }>;
     updateItem(id: string, itemId: string, updateItemDto: UpdateItemDto, userId?: string, vendedorId?: string): Promise<{
+        tipo: import("@prisma/client").$Enums.CarritoItemTipo;
         id: string;
         createdAt: Date;
-        tipo: import("@prisma/client").$Enums.CarritoItemTipo;
-        carritoId: string;
         referenciaId: string;
         cantidad: number;
         precioUnitario: import("@prisma/client/runtime/library").Decimal;
+        carritoId: string;
     }>;
     removeItem(id: string, itemId: string, userId?: string, vendedorId?: string): Promise<{
         message: string;
@@ -144,41 +148,41 @@ export declare class CarritosService {
     }>;
     getCarritoByUser(userId: string): Promise<{
         items: {
+            tipo: import("@prisma/client").$Enums.CarritoItemTipo;
             id: string;
             createdAt: Date;
-            tipo: import("@prisma/client").$Enums.CarritoItemTipo;
-            carritoId: string;
             referenciaId: string;
             cantidad: number;
             precioUnitario: import("@prisma/client/runtime/library").Decimal;
+            carritoId: string;
         }[];
     } & {
+        tipo: import("@prisma/client").$Enums.CarritoTipo;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         usuarioId: string | null;
-        tipo: import("@prisma/client").$Enums.CarritoTipo;
-        expiracion: Date;
         vendedorId: string | null;
+        expiracion: Date;
     }>;
     getCarritoByVendedor(vendedorId: string): Promise<{
         items: {
+            tipo: import("@prisma/client").$Enums.CarritoItemTipo;
             id: string;
             createdAt: Date;
-            tipo: import("@prisma/client").$Enums.CarritoItemTipo;
-            carritoId: string;
             referenciaId: string;
             cantidad: number;
             precioUnitario: import("@prisma/client/runtime/library").Decimal;
+            carritoId: string;
         }[];
     } & {
+        tipo: import("@prisma/client").$Enums.CarritoTipo;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         usuarioId: string | null;
-        tipo: import("@prisma/client").$Enums.CarritoTipo;
-        expiracion: Date;
         vendedorId: string | null;
+        expiracion: Date;
     }>;
     limpiarCarritosExpirados(): Promise<{
         message: string;

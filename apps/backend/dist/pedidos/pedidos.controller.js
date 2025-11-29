@@ -37,8 +37,26 @@ let PedidosController = class PedidosController {
     findOne(id) {
         return this.pedidosService.findOne(id);
     }
-    update(id, updatePedidoDto) {
-        return this.pedidosService.update(id, updatePedidoDto);
+    async update(id, updatePedidoDto) {
+        console.log('🔄 CONTROLLER: PATCH /pedidos/:id llamado');
+        console.log('   ID del pedido:', id);
+        console.log('   Datos a actualizar:', {
+            tieneTicketData: !!updatePedidoDto.ticketData,
+            tamanioTicketData: updatePedidoDto.ticketData?.length || 0,
+            camposActualizados: Object.keys(updatePedidoDto)
+        });
+        try {
+            const resultado = await this.pedidosService.update(id, updatePedidoDto);
+            console.log('✅ CONTROLLER: Pedido actualizado exitosamente');
+            return resultado;
+        }
+        catch (error) {
+            console.error('❌ CONTROLLER: Error al actualizar pedido:', error.message);
+            throw error;
+        }
+    }
+    marcarComoEntregado(id, vendedorId) {
+        return this.pedidosService.marcarComoEntregado(id, vendedorId);
     }
     remove(id) {
         return this.pedidosService.remove(id);
@@ -92,15 +110,27 @@ __decorate([
 __decorate([
     (0, common_1.Patch)(':id'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
-    (0, roles_decorator_1.Roles)('ADMIN', 'VENDEDOR'),
+    (0, roles_decorator_1.Roles)('ADMIN', 'VENDEDOR', 'CLIENTE'),
     (0, swagger_1.ApiBearerAuth)(),
     (0, swagger_1.ApiOperation)({ summary: 'Actualizar un pedido' }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, update_pedido_dto_1.UpdatePedidoDto]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], PedidosController.prototype, "update", null);
+__decorate([
+    (0, common_1.Post)(':id/entregar'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)('ADMIN', 'VENDEDOR'),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Marcar un pedido de dulcería como entregado' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)('vendedorId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", void 0)
+], PedidosController.prototype, "marcarComoEntregado", null);
 __decorate([
     (0, common_1.Delete)(':id'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),

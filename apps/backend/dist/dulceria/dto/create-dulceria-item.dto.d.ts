@@ -5,5 +5,6 @@ export declare class CreateDulceriaItemDto {
     descripcion?: string;
     precio: number;
     imagenUrl?: string;
+    stock?: number;
     activo?: boolean;
 }

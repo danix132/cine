@@ -1,0 +1,111 @@
+<div class="recomendaciones-container">
+  <!-- Header -->
+  <div class="recomendaciones-header">
+    <button class="btn-back" (click)="volver()" title="Volver">
+      <i class="fas fa-arrow-left"></i>
+    </button>
+    <div class="header-content">
+      <h1><i class="fas fa-robot"></i> Recomendaciones Para Ti</h1>
+      <p>Películas personalizadas según tus gustos</p>
+    </div>
+    <button class="btn-config" (click)="irAPerfil()" title="Configurar preferencias">
+      <i class="fas fa-cog"></i>
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="cargandoRecomendaciones">
+    <div class="loading-content">
+      <i class="fas fa-spinner fa-spin"></i>
+      <p>Generando recomendaciones personalizadas con IA...</p>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="recomendaciones-content" *ngIf="!cargandoRecomendaciones && recomendaciones">
+    <!-- Mensaje de IA -->
+    <div class="ia-message-card">
+      <div class="ia-icon-circle">
+        <i class="fas fa-robot"></i>
+      </div>
+      <p>{{ recomendaciones.recomendacion }}</p>
+    </div>
+
+    <!-- Grid de películas -->
+    <div class="movies-grid" *ngIf="recomendaciones.peliculas.length > 0">
+      <div class="movie-card-item" *ngFor="let pelicula of recomendaciones.peliculas">
+        <div class="movie-poster-wrapper">
+          <img 
+            [src]="pelicula.posterUrl || 'assets/images/no-poster.jpg'" 
+            [alt]="pelicula.titulo"
+            (error)="$any($event.target).src='assets/images/no-poster.jpg'">
+          <div class="movie-hover-overlay">
+            <button class="play-btn-circle" (click)="verTrailer(pelicula.trailerUrl, pelicula)" *ngIf="pelicula.trailerUrl" title="Ver tráiler">
+              <i class="fas fa-play"></i>
+            </button>
+          </div>
+        </div>
+        <div class="movie-info-content">
+          <h4>{{ pelicula.titulo }}</h4>
+          <div class="movie-meta-info">
+            <span class="meta-badge rating">{{ pelicula.clasificacion }}</span>
+            <span class="meta-badge duration">{{ pelicula.duracionMin }} min</span>
+          </div>
+          <div class="movie-genres-list">
+            <span *ngFor="let genero of pelicula.generos.slice(0, 2)" class="genre-badge">{{ genero }}</span>
+          </div>
+          <button class="action-btn" (click)="verDetallesPelicula(pelicula.id)">
+            <i class="fas fa-ticket-alt"></i> Ver Funciones
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estado vacío -->
+    <div class="empty-message" *ngIf="recomendaciones.peliculas.length === 0">
+      <i class="fas fa-film"></i>
+      <h3>No hay películas disponibles</h3>
+      <p>No encontramos películas que coincidan con tus preferencias en este momento.</p>
+      <button class="btn btn-primary" (click)="irACartelera()">
+        Ver Cartelera Completa
+      </button>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-state" *ngIf="!cargandoRecomendaciones && errorRecomendaciones">
+    <i class="fas fa-exclamation-triangle"></i>
+    <h3>{{ errorRecomendaciones }}</h3>
+    <p *ngIf="errorRecomendaciones.includes('preferencias')">
+      Para recibir recomendaciones personalizadas, primero debes configurar tus géneros favoritos.
+    </p>
+    <div class="error-actions">
+      <button class="btn btn-primary" (click)="irAPerfil()">
+        <i class="fas fa-cog"></i> Configurar Preferencias
+      </button>
+      <button class="btn btn-secondary" (click)="irACartelera()">
+        <i class="fas fa-film"></i> Ver Cartelera
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Tráiler -->
+<div class="trailer-overlay" *ngIf="trailerUrl" (click)="cerrarTrailer()">
+  <div class="trailer-modal" (click)="$event.stopPropagation()">
+    <button class="close-trailer" (click)="cerrarTrailer()">
+      <i class="fas fa-times"></i>
+    </button>
+    <div class="trailer-title" *ngIf="peliculaActual">
+      <h3>{{ peliculaActual.titulo }}</h3>
+    </div>
+    <div class="trailer-video">
+      <iframe
+        [src]="trailerUrl"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen>
+      </iframe>
+    </div>
+  </div>
+</div>

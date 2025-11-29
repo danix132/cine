@@ -1,0 +1,244 @@
+<div class="reporte-container">
+  <!-- Encabezado -->
+  <div class="header">
+    <button routerLink="/admin/reportes" class="btn-back">
+      <i class="fas fa-arrow-left"></i> Volver a Reportes
+    </button>
+    <h1 class="titulo">
+      <i class="fas fa-candy-cane"></i> Reporte de Dulcería
+    </h1>
+  </div>
+
+  <!-- Pestañas de navegación -->
+  <div class="tabs-container">
+    <button 
+      class="tab" 
+      [class.active]="vistaActual === 'todos'"
+      (click)="cambiarVista('todos')">
+      <i class="fas fa-list"></i> Todos
+      <span class="badge">{{ estadisticas.totalPedidos }}</span>
+    </button>
+    <button 
+      class="tab" 
+      [class.active]="vistaActual === 'web'"
+      (click)="cambiarVista('web')">
+      <i class="fas fa-globe"></i> Ventas Web
+      <span class="badge">{{ estadisticas.pedidosWeb }}</span>
+    </button>
+    <button 
+      class="tab" 
+      [class.active]="vistaActual === 'mostrador'"
+      (click)="cambiarVista('mostrador')">
+      <i class="fas fa-store"></i> Ventas Mostrador
+      <span class="badge">{{ estadisticas.pedidosMostrador }}</span>
+    </button>
+  </div>
+
+  <!-- Estadísticas -->
+  <div class="estadisticas-grid">
+    <div class="stat-card total">
+      <div class="stat-icon">
+        <i class="fas fa-shopping-cart"></i>
+      </div>
+      <div class="stat-info">
+        <h3>Total Pedidos</h3>
+        <p class="stat-value">{{ estadisticas.totalPedidos }}</p>
+        <small>{{ estadisticas.productosVendidos }} productos</small>
+      </div>
+    </div>
+
+    <div class="stat-card web">
+      <div class="stat-icon">
+        <i class="fas fa-globe"></i>
+      </div>
+      <div class="stat-info">
+        <h3>Ventas Web</h3>
+        <p class="stat-value">{{ estadisticas.pedidosWeb }}</p>
+        <small>{{ formatearMoneda(estadisticas.ingresosWeb) }}</small>
+      </div>
+    </div>
+
+    <div class="stat-card mostrador">
+      <div class="stat-icon">
+        <i class="fas fa-store"></i>
+      </div>
+      <div class="stat-info">
+        <h3>Ventas Mostrador</h3>
+        <p class="stat-value">{{ estadisticas.pedidosMostrador }}</p>
+        <small>{{ formatearMoneda(estadisticas.ingresosMostrador) }}</small>
+      </div>
+    </div>
+
+    <div class="stat-card ingresos">
+      <div class="stat-icon">
+        <i class="fas fa-dollar-sign"></i>
+      </div>
+      <div class="stat-info">
+        <h3>Ingresos Totales</h3>
+        <p class="stat-value">{{ formatearMoneda(estadisticas.ingresosTotal) }}</p>
+        <small>
+          <i class="fas fa-box-check"></i> {{ estadisticas.pedidosEntregados }} entregados /
+          <i class="fas fa-clock"></i> {{ estadisticas.pedidosPendientes }} pendientes
+        </small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filtros-card">
+    <h3>
+      <i class="fas fa-filter"></i> Filtros
+    </h3>
+    <div class="filtros-grid">
+      <div class="filtro-grupo">
+        <label>Desde:</label>
+        <input 
+          type="date" 
+          [(ngModel)]="fechaDesde"
+          (change)="aplicarFiltros()"
+          class="form-control">
+      </div>
+
+      <div class="filtro-grupo">
+        <label>Hasta:</label>
+        <input 
+          type="date" 
+          [(ngModel)]="fechaHasta"
+          (change)="aplicarFiltros()"
+          class="form-control">
+      </div>
+
+      <div class="filtro-grupo">
+        <label>Estado:</label>
+        <select 
+          [(ngModel)]="estadoFiltro"
+          (change)="aplicarFiltros()"
+          class="form-control">
+          <option value="TODOS">Todos</option>
+          <option value="ENTREGADO">Entregados</option>
+          <option value="PENDIENTE">Pendientes</option>
+        </select>
+      </div>
+
+      <div class="filtro-grupo">
+        <label>Buscar:</label>
+        <input 
+          type="text" 
+          [(ngModel)]="busqueda"
+          (input)="aplicarFiltros()"
+          placeholder="N° pedido, cliente, producto..."
+          class="form-control">
+      </div>
+    </div>
+
+    <div class="filtros-acciones">
+      <button (click)="limpiarFiltros()" class="btn btn-secondary">
+        <i class="fas fa-eraser"></i> Limpiar Filtros
+      </button>
+      <div class="export-buttons">
+        <button (click)="exportarExcel()" class="btn btn-success">
+          <i class="fas fa-file-excel"></i> Exportar Excel
+        </button>
+        <button (click)="exportarPDF()" class="btn btn-danger">
+          <i class="fas fa-file-pdf"></i> Exportar PDF
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de datos -->
+  <div class="tabla-container" *ngIf="!isLoading && !errorMessage">
+    <div *ngIf="pedidosFiltrados.length === 0" class="sin-datos">
+      <i class="fas fa-inbox"></i>
+      <p>No se encontraron pedidos con los filtros aplicados</p>
+    </div>
+
+    <table *ngIf="pedidosFiltrados.length > 0" class="tabla-pedidos">
+      <thead>
+        <tr>
+          <th>N° Pedido</th>
+          <th>Fecha</th>
+          <th>Productos</th>
+          <th>Cantidad</th>
+          <th>Cliente</th>
+          <th>Canal</th>
+          <th *ngIf="vistaActual !== 'web'">Vendedor</th>
+          <th>Total</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let pedido of pedidosFiltrados">
+          <td>
+            <strong>{{ pedido.numeroPedido }}</strong>
+          </td>
+          <td>{{ formatearFecha(pedido.fecha) }}</td>
+          <td class="productos-cell">
+            <div class="productos-lista">
+              {{ pedido.productos }}
+            </div>
+          </td>
+          <td class="text-center">
+            <span class="badge-cantidad">{{ pedido.cantidad }}</span>
+          </td>
+          <td>
+            <div class="cliente-info">
+              <strong>{{ pedido.cliente }}</strong>
+              <small>{{ pedido.clienteEmail }}</small>
+            </div>
+          </td>
+          <td>
+            <span [class]="'badge ' + getCanalBadgeClass(pedido.canal)">
+              <i [class]="pedido.canal === 'WEB' ? 'fas fa-globe' : 'fas fa-store'"></i>
+              {{ pedido.canal }}
+            </span>
+          </td>
+          <td *ngIf="vistaActual !== 'web'">
+            <span *ngIf="pedido.vendedor" class="vendedor-nombre">
+              <i class="fas fa-user"></i> {{ pedido.vendedor }}
+            </span>
+            <span *ngIf="!pedido.vendedor" class="text-muted">-</span>
+          </td>
+          <td class="text-right">
+            <strong class="precio">{{ formatearMoneda(pedido.total) }}</strong>
+          </td>
+          <td>
+            <span [class]="'badge ' + getEstadoClass(pedido.entregado)">
+              <i [class]="pedido.entregado ? 'fas fa-check-circle' : 'fas fa-clock'"></i>
+              {{ pedido.entregado ? 'ENTREGADO' : 'PENDIENTE' }}
+            </span>
+          </td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr class="totales-row">
+          <td colspan="3"><strong>TOTALES</strong></td>
+          <td class="text-center">
+            <strong>{{ getTotalCantidad() }}</strong>
+          </td>
+          <td [attr.colspan]="getColspanValue()"></td>
+          <td class="text-right">
+            <strong class="precio-total">
+              {{ formatearMoneda(getTotalIngresos()) }}
+            </strong>
+          </td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <!-- Estados de carga -->
+  <div *ngIf="isLoading" class="loading-state">
+    <i class="fas fa-spinner fa-spin fa-3x"></i>
+    <p>Cargando pedidos de dulcería...</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-state">
+    <i class="fas fa-exclamation-triangle fa-3x"></i>
+    <p>{{ errorMessage }}</p>
+    <button (click)="cargarPedidos()" class="btn btn-primary">
+      <i class="fas fa-redo"></i> Reintentar
+    </button>
+  </div>
+</div>

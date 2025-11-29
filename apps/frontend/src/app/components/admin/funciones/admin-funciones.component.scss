@@ -1,41 +1,7 @@
+@import '../shared-admin-styles.scss';
+
 .admin-funciones {
   padding: 20px;
-  
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-
-    h2 {
-      margin: 0;
-      font-size: 24px;
-      color: #333;
-    }
-
-    .btn {
-      padding: 10px 20px;
-      border-radius: 6px;
-      font-weight: 500;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-
-      &.btn-success {
-        background: #28a745;
-        color: white;
-        border: none;
-
-        &:hover {
-          background: #218838;
-          transform: translateY(-1px);
-        }
-      }
-    }
-  }
 
   // Filtros
   .filtros-card {

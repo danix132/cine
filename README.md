@@ -1,4 +1,4 @@
-# 🎬 Cine App - Sistema de Gestión de Cine
+# 🎬 CiMeme - Sistema de Gestión de Cine
 
 Una aplicación web completa para la gestión de un cine, desarrollada con **Angular 17** (frontend) y **NestJS** (backend), utilizando **Prisma ORM** con **SQLite**.
 

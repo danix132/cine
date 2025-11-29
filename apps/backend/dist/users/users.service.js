@@ -137,6 +137,37 @@ let UsersService = class UsersService {
             where: { email },
         });
     }
+    async changePassword(userId, currentPassword, newPassword) {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+        });
+        if (!user) {
+            throw new common_1.NotFoundException('Usuario no encontrado');
+        }
+        const isPasswordValid = await bcrypt.compare(currentPassword, user.passwordHash);
+        if (!isPasswordValid) {
+            throw new common_1.ConflictException('La contraseña actual es incorrecta');
+        }
+        const newPasswordHash = await bcrypt.hash(newPassword, 12);
+        await this.prisma.user.update({
+            where: { id: userId },
+            data: { passwordHash: newPasswordHash },
+        });
+        return { message: 'Contraseña actualizada exitosamente' };
+    }
+    async updatePreferencias(userId, generosPreferidos) {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+        });
+        if (!user) {
+            throw new common_1.NotFoundException('Usuario no encontrado');
+        }
+        await this.prisma.user.update({
+            where: { id: userId },
+            data: { generosPreferidos },
+        });
+        return { message: 'Preferencias actualizadas exitosamente', generosPreferidos };
+    }
 };
 exports.UsersService = UsersService;
 exports.UsersService = UsersService = __decorate([

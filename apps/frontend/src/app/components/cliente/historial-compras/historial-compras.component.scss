@@ -503,7 +503,8 @@
           align-items: flex-end;
 
           .estado-badge,
-          .canjeado-badge {
+          .canjeado-badge,
+          .entregado-badge {
             padding: 4px 12px;
             border-radius: 15px;
             font-weight: 600;
@@ -543,7 +544,8 @@
             }
           }
 
-          .canjeado-badge {
+          .canjeado-badge,
+          .entregado-badge {
             background: #d4edda;
             color: #155724;
             display: flex;
@@ -990,71 +992,1030 @@
 }
 
 // Responsive
+@media (max-width: 992px) {
+  .estadisticas-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
+
+  .stat-card {
+    padding: 15px;
+
+    .stat-icon {
+      width: 50px;
+      height: 50px;
+      font-size: 20px;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+    }
+
+    .stat-detalle {
+      font-size: 0.8rem;
+    }
+  }
+
+  .pedido-card {
+    .pedido-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 15px;
+
+      .pedido-total {
+        text-align: left;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .total-label {
+          display: inline;
+          margin-bottom: 0;
+          margin-right: 10px;
+        }
+
+        .total-valor {
+          font-size: 1.5rem;
+        }
+      }
+    }
+
+    .pedido-items {
+      .item-row {
+        flex-wrap: wrap;
+        gap: 15px;
+
+        .item-left {
+          flex: 1;
+          min-width: 250px;
+        }
+
+        .item-qr {
+          margin: 0;
+        }
+
+        .item-right {
+          flex: 1;
+          text-align: left;
+
+          .item-estado {
+            align-items: flex-start;
+          }
+        }
+      }
+    }
+  }
+}
+
 @media (max-width: 768px) {
   .historial-container {
-    padding: 20px 15px;
+    padding: 20px 10px;
   }
 
   .historial-header {
+    margin-bottom: 30px;
+
     .btn-volver {
       position: static;
+      left: auto;
+      top: auto;
       margin-bottom: 20px;
       width: 100%;
+      text-align: center;
+      padding: 12px 20px;
     }
 
     h1 {
       font-size: 1.8rem;
+
+      i {
+        margin-right: 10px;
+      }
     }
 
     p {
-      font-size: 1rem;
+      font-size: 0.95rem;
     }
   }
 
   .estadisticas-grid {
     grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .stat-card {
+    padding: 15px;
+    gap: 12px;
+
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      font-size: 18px;
+    }
+
+    .stat-info {
+      .stat-label {
+        font-size: 0.85rem;
+      }
+
+      .stat-value {
+        font-size: 1.4rem;
+      }
+
+      .stat-detalle {
+        font-size: 0.75rem;
+      }
+    }
+  }
+
+  .filtros-card {
+    padding: 15px;
   }
 
   .filtros-row {
     grid-template-columns: 1fr;
+    gap: 12px;
 
-    .filtro-item.flex-grow {
-      grid-column: span 1;
+    .filtro-item {
+      &.flex-grow {
+        grid-column: span 1;
+      }
+
+      .form-label {
+        font-size: 0.85rem;
+      }
+
+      .form-select,
+      .form-control {
+        padding: 8px;
+        font-size: 0.9rem;
+      }
+
+      .btn {
+        padding: 10px 15px;
+        font-size: 0.9rem;
+      }
+    }
+  }
+
+  .pedido-card {
+    border-radius: 12px;
+
+    .pedido-header {
+      padding: 15px;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 15px;
+
+      .pedido-info {
+        width: 100%;
+
+        .pedido-numero {
+          font-size: 1.1rem;
+          margin-bottom: 10px;
+
+          i {
+            margin-right: 8px;
+          }
+        }
+
+        .pedido-meta {
+          flex-direction: column;
+          gap: 8px;
+          font-size: 0.85rem;
+
+          span {
+            gap: 5px;
+          }
+
+          .pedido-tipo {
+            width: fit-content;
+            padding: 3px 10px;
+            font-size: 0.8rem;
+          }
+        }
+      }
+
+      .pedido-total {
+        text-align: left;
+        width: 100%;
+        padding-top: 10px;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+
+        .total-label {
+          font-size: 0.8rem;
+        }
+
+        .total-valor {
+          font-size: 1.6rem;
+        }
+
+        .total-items {
+          font-size: 0.8rem;
+        }
+      }
+    }
+
+    .pedido-items {
+      padding: 15px;
+
+      .item-row {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 12px 0;
+        gap: 12px;
+
+        .item-left {
+          width: 100%;
+          gap: 12px;
+
+          .item-tipo-icon {
+            width: 45px;
+            height: 45px;
+            font-size: 20px;
+            flex-shrink: 0;
+          }
+
+          .item-info {
+            h4 {
+              font-size: 1rem;
+              margin-bottom: 6px;
+            }
+
+            .item-meta {
+              flex-direction: column;
+              gap: 6px;
+              font-size: 0.85rem;
+            }
+          }
+        }
+
+        .item-qr {
+          margin: 0;
+          align-self: center;
+
+          .qr-mini {
+            width: 80px;
+            height: 80px;
+          }
+        }
+
+        .item-right {
+          width: 100%;
+          text-align: left;
+
+          .item-subtotal {
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+          }
+
+          .item-estado {
+            flex-direction: row;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            gap: 6px;
+
+            .estado-badge,
+            .canjeado-badge,
+            .entregado-badge {
+              padding: 4px 10px;
+              font-size: 0.75rem;
+            }
+          }
+        }
+      }
+    }
+
+    .pedido-footer {
+      padding: 12px 15px;
+      flex-direction: column;
+      gap: 12px;
+
+      .pedido-tags {
+        flex-wrap: wrap;
+        gap: 8px;
+
+        span {
+          padding: 5px 12px;
+          font-size: 0.8rem;
+        }
+      }
+
+      .pedido-actions {
+        width: 100%;
+        flex-direction: column;
+        gap: 10px;
+
+        .pedido-metodo-pago {
+          font-size: 0.85rem;
+        }
+
+        .btn-ticket {
+          width: 100%;
+          justify-content: center;
+          padding: 12px 20px;
+          font-size: 0.95rem;
+        }
+      }
     }
   }
 
   .historial-item {
+    padding: 15px;
+
     .item-header {
       flex-direction: column;
       align-items: flex-start;
       gap: 10px;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+
+      .tipo-badge {
+        font-size: 0.8rem;
+        padding: 6px 12px;
+      }
+
+      .item-fecha {
+        font-size: 0.85rem;
+      }
     }
 
     .item-body {
       flex-direction: column;
+      gap: 15px;
+
+      .item-info {
+        h4 {
+          font-size: 1.1rem;
+          margin-bottom: 10px;
+        }
+
+        .item-detalles {
+          flex-direction: column;
+          gap: 8px;
+
+          span {
+            font-size: 0.85rem;
+          }
+        }
+      }
 
       .item-qr {
-        margin: 15px 0;
+        margin: 0;
+        align-self: center;
+
+        .qr-container {
+          width: 100px;
+          height: 100px;
+        }
+
+        .qr-codigo {
+          font-size: 0.7rem;
+          max-width: 100px;
+        }
       }
 
       .item-estado {
         align-items: flex-start;
-      }
+        width: 100%;
 
-      .item-detalles {
-        flex-direction: column;
-        gap: 8px;
+        .estado-badge,
+        .canjeado-badge,
+        .pendiente-badge {
+          padding: 6px 12px;
+          font-size: 0.8rem;
+        }
       }
+    }
+  }
+
+  .empty-state {
+    padding: 40px 20px;
+
+    i {
+      font-size: 60px;
+    }
+
+    h3 {
+      font-size: 1.5rem;
+    }
+
+    p {
+      font-size: 1rem;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px 20px;
     }
   }
 
   ::ng-deep .qr-modal-overlay {
     .qr-modal-content {
+      width: 95%;
       padding: 30px 20px;
 
-      .qr-code-large img {
-        width: 200px;
-        height: 200px;
+      h3 {
+        font-size: 1.3rem;
+        margin-bottom: 20px;
+      }
+
+      .qr-code-large {
+        padding: 15px;
+
+        img {
+          width: 200px;
+          height: 200px;
+        }
+      }
+
+      .qr-code-text {
+        font-size: 0.85rem;
+        padding: 8px;
+      }
+
+      .qr-instrucciones {
+        font-size: 0.9rem;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .historial-container {
+    padding: 15px 8px;
+  }
+
+  .historial-header {
+    margin-bottom: 25px;
+
+    h1 {
+      font-size: 1.5rem;
+
+      i {
+        margin-right: 8px;
+        font-size: 1.3rem;
+      }
+    }
+
+    p {
+      font-size: 0.9rem;
+    }
+  }
+
+  .estadisticas-grid {
+    gap: 10px;
+  }
+
+  .stat-card {
+    padding: 12px;
+    gap: 10px;
+
+    .stat-icon {
+      width: 42px;
+      height: 42px;
+      font-size: 16px;
+    }
+
+    .stat-info {
+      .stat-label {
+        font-size: 0.8rem;
+      }
+
+      .stat-value {
+        font-size: 1.3rem;
+      }
+
+      .stat-detalle {
+        font-size: 0.7rem;
+      }
+    }
+  }
+
+  .filtros-card {
+    padding: 12px;
+  }
+
+  .filtros-row {
+    gap: 10px;
+
+    .filtro-item {
+      .form-label {
+        font-size: 0.8rem;
+        margin-bottom: 4px;
+      }
+
+      .form-select,
+      .form-control {
+        padding: 8px;
+        font-size: 0.85rem;
+      }
+
+      .btn {
+        padding: 10px;
+        font-size: 0.85rem;
+      }
+    }
+  }
+
+  .pedido-card {
+    .pedido-header {
+      padding: 12px;
+
+      .pedido-info {
+        .pedido-numero {
+          font-size: 1rem;
+
+          i {
+            font-size: 0.9rem;
+          }
+        }
+
+        .pedido-meta {
+          font-size: 0.8rem;
+
+          .pedido-tipo {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+          }
+        }
+      }
+
+      .pedido-total {
+        .total-label {
+          font-size: 0.75rem;
+        }
+
+        .total-valor {
+          font-size: 1.4rem;
+        }
+
+        .total-items {
+          font-size: 0.75rem;
+        }
+      }
+    }
+
+    .pedido-items {
+      padding: 12px;
+
+      .item-row {
+        padding: 10px 0;
+
+        .item-left {
+          gap: 10px;
+
+          .item-tipo-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 18px;
+          }
+
+          .item-info {
+            h4 {
+              font-size: 0.95rem;
+              margin-bottom: 5px;
+            }
+
+            .item-meta {
+              font-size: 0.8rem;
+              gap: 5px;
+            }
+          }
+        }
+
+        .item-qr {
+          .qr-mini {
+            width: 70px;
+            height: 70px;
+          }
+        }
+
+        .item-right {
+          .item-subtotal {
+            font-size: 1.1rem;
+          }
+
+          .item-estado {
+            gap: 5px;
+
+            .estado-badge,
+            .canjeado-badge,
+            .entregado-badge {
+              padding: 3px 8px;
+              font-size: 0.7rem;
+            }
+          }
+        }
+      }
+    }
+
+    .pedido-footer {
+      padding: 10px 12px;
+
+      .pedido-tags {
+        gap: 6px;
+
+        span {
+          padding: 4px 10px;
+          font-size: 0.75rem;
+        }
+      }
+
+      .pedido-actions {
+        .pedido-metodo-pago {
+          font-size: 0.8rem;
+        }
+
+        .btn-ticket {
+          padding: 10px 16px;
+          font-size: 0.9rem;
+
+          i {
+            font-size: 0.9rem;
+          }
+        }
+      }
+    }
+  }
+
+  .historial-item {
+    padding: 12px;
+
+    .item-header {
+      .tipo-badge {
+        font-size: 0.75rem;
+        padding: 5px 10px;
+      }
+
+      .item-fecha {
+        font-size: 0.8rem;
+      }
+    }
+
+    .item-body {
+      .item-info {
+        h4 {
+          font-size: 1rem;
+        }
+
+        .item-detalles {
+          span {
+            font-size: 0.8rem;
+          }
+        }
+      }
+
+      .item-qr {
+        .qr-container {
+          width: 90px;
+          height: 90px;
+        }
+
+        .qr-codigo {
+          font-size: 0.65rem;
+          max-width: 90px;
+        }
+      }
+
+      .item-estado {
+        .estado-badge,
+        .canjeado-badge,
+        .pendiente-badge {
+          padding: 5px 10px;
+          font-size: 0.75rem;
+        }
+      }
+    }
+  }
+
+  .empty-state {
+    padding: 30px 15px;
+
+    i {
+      font-size: 50px;
+    }
+
+    h3 {
+      font-size: 1.3rem;
+    }
+
+    p {
+      font-size: 0.95rem;
+    }
+  }
+
+  ::ng-deep .qr-modal-overlay {
+    .qr-modal-content {
+      width: 96%;
+      padding: 25px 15px;
+
+      .qr-modal-close {
+        width: 35px;
+        height: 35px;
+        font-size: 24px;
+        top: 10px;
+        right: 10px;
+      }
+
+      h3 {
+        font-size: 1.2rem;
+        margin-bottom: 15px;
+      }
+
+      .qr-code-large {
+        padding: 12px;
+        margin: 15px 0;
+
+        img {
+          width: 180px;
+          height: 180px;
+        }
+      }
+
+      .qr-code-text {
+        font-size: 0.8rem;
+        padding: 8px;
+        margin: 12px 0;
+      }
+
+      .qr-instrucciones {
+        font-size: 0.85rem;
+        margin-top: 15px;
+
+        i {
+          margin-right: 6px;
+        }
+      }
+    }
+  }
+
+  .resultados-info {
+    margin-top: 20px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .modal-ticket {
+    max-width: 100%;
+    width: 98vw;
+    height: 95vh;
+    max-height: none;
+    border-radius: 12px;
+
+    .modal-header {
+      padding: 15px 20px;
+
+      h2 {
+        font-size: 1.4rem;
+      }
+
+      .btn-cerrar {
+        width: 40px;
+        height: 40px;
+        font-size: 1.3rem;
+      }
+    }
+
+    .modal-content {
+      padding: 15px;
+    }
+
+    .modal-footer {
+      padding: 15px 20px;
+      flex-direction: column-reverse;
+      gap: 10px;
+
+      button {
+        width: 100%;
+        justify-content: center;
+        padding: 12px 20px;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-ticket {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+
+    .modal-header {
+      padding: 12px 15px;
+
+      h2 {
+        font-size: 1.2rem;
+      }
+
+      .btn-cerrar {
+        width: 36px;
+        height: 36px;
+        font-size: 1.2rem;
+      }
+    }
+
+    .modal-content {
+      padding: 10px;
+    }
+
+    .modal-footer {
+      padding: 12px 15px;
+
+      button {
+        padding: 10px 15px;
+        font-size: 0.9rem;
+      }
+    }
+  }
+}
+
+// ========== MODAL DE TICKET ==========
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+.modal-ticket {
+  background: white;
+  border-radius: 20px;
+  max-width: 900px;
+  width: 95vw;
+  height: 90vh;
+  max-height: 900px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideIn 0.3s ease-out;
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 25px 30px;
+    border-bottom: 2px solid #f0f0f0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px 20px 0 0;
+
+    h2 {
+      color: white;
+      font-size: 1.8rem;
+      margin: 0;
+      font-weight: 700;
+    }
+
+    .btn-cerrar {
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1.5rem;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(1.1);
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+    }
+  }
+
+  .modal-content {
+    flex: 1;
+    overflow: auto;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .pdf-viewer {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      .pdf-iframe {
+        width: 100%;
+        height: 100%;
+        border-radius: 10px;
+        border: 2px solid #e0e0e0;
+      }
+    }
+  }
+
+  .modal-footer {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+    padding: 20px 30px;
+    border-top: 2px solid #f0f0f0;
+    background: #fafafa;
+    border-radius: 0 0 20px 20px;
+
+    .btn-cancelar {
+      background: #e0e0e0;
+      border: none;
+      color: #333;
+      padding: 12px 25px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      &:hover {
+        background: #d0d0d0;
+        transform: translateY(-2px);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+
+    .btn-descargar {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      color: white;
+      padding: 12px 25px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 768px) {
+  .modal-ticket {
+    max-width: 100%;
+    width: 98vw;
+    height: 95vh;
+    max-height: none;
+
+    .modal-header {
+      padding: 20px;
+
+      h2 {
+        font-size: 1.5rem;
+      }
+    }
+
+    .modal-footer {
+      padding: 15px 20px;
+      flex-direction: column-reverse;
+      gap: 10px;
+
+      button {
+        width: 100%;
+        justify-content: center;
       }
     }
   }

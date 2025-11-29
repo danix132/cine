@@ -22,4 +22,9 @@ export class CreateUserDto {
   @IsOptional()
   @IsEnum(UserRole)
   rol?: UserRole;
+
+  @ApiPropertyOptional({ example: 'Acción,Comedia,Drama' })
+  @IsOptional()
+  @IsString()
+  generosPreferidos?: string;
 }

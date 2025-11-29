@@ -1,7 +1,10 @@
 <div class="admin-funciones">
-  <div class="header">
-    <h2>🎬 Gestión de Funciones</h2>
-    <button class="btn btn-success" (click)="abrirModalCrear()">
+  <div class="admin-section-header">
+    <div>
+      <h2><i class="fas fa-ticket-alt"></i> Gestión de Funciones</h2>
+      <p class="subtitle">Programa y administra las funciones de cine</p>
+    </div>
+    <button class="btn btn-primary" (click)="abrirModalCrear()">
       <i class="fas fa-plus"></i> Nueva Función
     </button>
   </div>
@@ -232,21 +235,45 @@
             <div class="col-md-6">
               <div class="mb-3">
                 <label for="fecha" class="form-label">Fecha *</label>
-                <input type="date" id="fecha" class="form-control" formControlName="fecha" required>
+                <input 
+                  type="date" 
+                  id="fecha" 
+                  class="form-control" 
+                  formControlName="fecha" 
+                  [min]="fechaMinima"
+                  (change)="onFechaChange()"
+                  required>
                 <div *ngIf="funcionForm.get('fecha')?.touched && funcionForm.get('fecha')?.errors?.['required']" 
                      class="text-danger small">
                   La fecha es requerida
+                </div>
+                <div *ngIf="funcionForm.get('fecha')?.value && funcionForm.get('fecha')?.value < fechaMinima" 
+                     class="text-danger small">
+                  No se pueden crear funciones en fechas pasadas
                 </div>
               </div>
             </div>
             <div class="col-md-6">
               <div class="mb-3">
                 <label for="hora" class="form-label">Hora *</label>
-                <input type="time" id="hora" class="form-control" formControlName="hora" required>
+                <input 
+                  type="time" 
+                  id="hora" 
+                  class="form-control" 
+                  formControlName="hora"
+                  [min]="horaMinima"
+                  required>
                 <div *ngIf="funcionForm.get('hora')?.touched && funcionForm.get('hora')?.errors?.['required']" 
                      class="text-danger small">
                   La hora es requerida
                 </div>
+                <div *ngIf="horaMinima && funcionForm.get('hora')?.value && funcionForm.get('hora')?.value < horaMinima" 
+                     class="text-danger small">
+                  No se pueden crear funciones con horarios pasados (hora actual: {{ horaMinima }})
+                </div>
+                <small *ngIf="horaMinima" class="form-text text-muted">
+                  Hora mínima permitida: {{ horaMinima }}
+                </small>
               </div>
             </div>
           </div>

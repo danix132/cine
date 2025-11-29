@@ -8,6 +8,10 @@ export interface Pedido {
   tipo: PedidoTipo;
   estado?: PedidoEstado;
   metodoPago?: string;
+  entregado?: boolean;
+  fechaEntrega?: Date | string;
+  entregadoPorId?: string;
+  ticketData?: string;
   createdAt: string;
   updatedAt: string;
   usuario?: User;
@@ -53,4 +57,8 @@ export interface CreatePedidoRequest {
 
 export interface UpdatePedidoRequest {
   total?: number;
+  ticketData?: string;
+  estado?: string;
+  entregado?: boolean;
+  fechaEntrega?: Date | string;
 }

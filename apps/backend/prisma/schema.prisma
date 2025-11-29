@@ -11,19 +11,20 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  nombre       String
-  email        String   @unique
-  passwordHash String
-  rol          UserRole @default(CLIENTE)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id              String   @id @default(cuid())
+  nombre          String
+  email           String   @unique
+  passwordHash    String
+  rol             UserRole @default(CLIENTE)
+  generosPreferidos String? // Géneros favoritos separados por comas
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // Relaciones
-  boletos      Boleto[]
-  carritos     Carrito[]
-  pedidos      Pedido[]
-  ventas       Pedido[] @relation("VendedorPedidos")
+  boletos         Boleto[]
+  carritos        Carrito[]
+  pedidos         Pedido[]
+  ventas          Pedido[] @relation("VendedorPedidos")
   carritosVendidos Carrito[] @relation("VendedorCarritos")
 
   @@map("users")
@@ -60,17 +61,19 @@ model Asiento {
 }
 
 model Pelicula {
-  id           String   @id @default(cuid())
-  titulo       String
-  sinopsis     String?
-  duracionMin  Int
-  clasificacion String
-  posterUrl    String?
-  trailerUrl   String?
-  generos      String[]
-  estado       PeliculaEstado @default(ACTIVA)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                String   @id @default(cuid())
+  titulo            String
+  sinopsis          String?
+  duracionMin       Int
+  clasificacion     String
+  posterUrl         String?
+  trailerUrl        String?
+  generos           String[]
+  estado            PeliculaEstado @default(ACTIVA)
+  esProximoEstreno  Boolean  @default(false)
+  fechaEstreno      DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   // Relaciones
   funciones    Funcion[]
@@ -105,6 +108,7 @@ model Boleto {
   estado           BoletoEstado @default(RESERVADO)
   codigoQR         String    // QUITADO @unique para permitir múltiples boletos con mismo QR
   fechaValidacion  DateTime? // Fecha y hora cuando el boleto fue validado/escaneado
+  ticketData       String?   @db.Text // PDF en Base64 del ticket generado
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
@@ -152,21 +156,25 @@ model CarritoItem {
 }
 
 model Pedido {
-  id         String   @id @default(cuid())
-  usuarioId  String?
-  vendedorId String?
-  total      Decimal  @db.Decimal(10, 2)
-  tipo       PedidoTipo
-  estado     PedidoEstado @default(PENDIENTE)
-  metodoPago String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id                String   @id @default(cuid())
+  usuarioId         String?
+  vendedorId        String?
+  total             Decimal  @db.Decimal(10, 2)
+  tipo              PedidoTipo
+  estado            PedidoEstado @default(PENDIENTE)
+  metodoPago        String?
+  entregado         Boolean  @default(false)
+  fechaEntrega      DateTime?
+  entregadoPorId    String?
+  ticketData        String?  @db.Text // PDF en Base64 del ticket generado
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   // Relaciones
-  usuario    User?         @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
-  vendedor   User?         @relation("VendedorPedidos", fields: [vendedorId], references: [id], onDelete: SetNull)
-  items      PedidoItem[]
-  boletos    Boleto[]
+  usuario           User?         @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+  vendedor          User?         @relation("VendedorPedidos", fields: [vendedorId], references: [id], onDelete: SetNull)
+  items             PedidoItem[]
+  boletos           Boleto[]
 
   @@map("pedidos")
 }
@@ -196,6 +204,7 @@ model DulceriaItem {
   descripcion String?
   precio      Decimal  @db.Decimal(10, 2)
   imagenUrl   String?
+  stock       Int      @default(0)
   activo      Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -229,6 +238,7 @@ enum UserRole {
 enum AsientoEstado {
   DISPONIBLE
   DANADO
+  NO_EXISTE
 }
 
 enum PeliculaEstado {

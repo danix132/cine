@@ -31,10 +31,19 @@ let FuncionesService = class FuncionesService {
         }
         const sala = await this.prisma.sala.findUnique({
             where: { id: salaId },
+            include: {
+                asientos: true,
+            },
         });
         if (!sala) {
             throw new common_1.NotFoundException('Sala no encontrada');
         }
+        const asientosDisponibles = sala.asientos.filter(asiento => asiento.estado === 'DISPONIBLE');
+        if (asientosDisponibles.length === 0) {
+            throw new common_1.BadRequestException(`No se puede crear una función en la sala "${sala.nombre}" porque no tiene asientos disponibles. ` +
+                `Todos los asientos están dañados o marcados como no existentes.`);
+        }
+        console.log(`✅ Sala ${sala.nombre} tiene ${asientosDisponibles.length} asientos disponibles`);
         const inicioFuncion = moment.tz(inicio, 'America/Mazatlan');
         const finFuncion = inicioFuncion.clone().add(pelicula.duracionMin + 30, 'minutes');
         console.log(`🔍 Verificando conflictos para sala ${salaId}:`);
@@ -255,6 +264,21 @@ let FuncionesService = class FuncionesService {
         return funcion;
     }
     async validarConflictosParaActualizacion(funcionId, peliculaId, salaId, inicio, forzarActualizacion = false) {
+        const sala = await this.prisma.sala.findUnique({
+            where: { id: salaId },
+            include: {
+                asientos: true,
+            },
+        });
+        if (!sala) {
+            throw new common_1.NotFoundException('Sala no encontrada');
+        }
+        const asientosDisponibles = sala.asientos.filter(asiento => asiento.estado === 'DISPONIBLE');
+        if (asientosDisponibles.length === 0) {
+            throw new common_1.BadRequestException(`No se puede asignar la función a la sala "${sala.nombre}" porque no tiene asientos disponibles. ` +
+                `Todos los asientos están dañados o marcados como no existentes.`);
+        }
+        console.log(`✅ Sala ${sala.nombre} tiene ${asientosDisponibles.length} asientos disponibles`);
         const pelicula = await this.prisma.pelicula.findUnique({
             where: { id: peliculaId },
         });

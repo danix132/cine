@@ -25,8 +25,11 @@ export declare class FuncionesService {
             posterUrl: string | null;
             trailerUrl: string | null;
             generos: string[];
+            esProximoEstreno: boolean;
+            fechaEstreno: Date | null;
         };
     } & {
+        precio: import("@prisma/client/runtime/library").Decimal;
         id: string;
         createdAt: Date;
         updatedAt: Date;
@@ -34,7 +37,6 @@ export declare class FuncionesService {
         peliculaId: string;
         inicio: Date;
         cancelada: boolean;
-        precio: import("@prisma/client/runtime/library").Decimal;
     }>;
     debugConflictos(createFuncionDto: CreateFuncionDto): Promise<{
         error: string;
@@ -71,6 +73,9 @@ export declare class FuncionesService {
         sala?: undefined;
     }>;
     findAll(query: any): Promise<import("../common/dto/pagination.dto").PaginatedResponseDto<{
+        _count: {
+            boletos: number;
+        };
         sala: {
             nombre: string;
             id: string;
@@ -85,10 +90,8 @@ export declare class FuncionesService {
             posterUrl: string;
             generos: string[];
         };
-        _count: {
-            boletos: number;
-        };
     } & {
+        precio: import("@prisma/client/runtime/library").Decimal;
         id: string;
         createdAt: Date;
         updatedAt: Date;
@@ -96,9 +99,11 @@ export declare class FuncionesService {
         peliculaId: string;
         inicio: Date;
         cancelada: boolean;
-        precio: import("@prisma/client/runtime/library").Decimal;
     }>>;
     findUpcoming(): Promise<({
+        _count: {
+            boletos: number;
+        };
         sala: {
             nombre: string;
             id: string;
@@ -119,11 +124,11 @@ export declare class FuncionesService {
             posterUrl: string | null;
             trailerUrl: string | null;
             generos: string[];
-        };
-        _count: {
-            boletos: number;
+            esProximoEstreno: boolean;
+            fechaEstreno: Date | null;
         };
     } & {
+        precio: import("@prisma/client/runtime/library").Decimal;
         id: string;
         createdAt: Date;
         updatedAt: Date;
@@ -131,63 +136,67 @@ export declare class FuncionesService {
         peliculaId: string;
         inicio: Date;
         cancelada: boolean;
-        precio: import("@prisma/client/runtime/library").Decimal;
     })[]>;
     findOne(id: string): Promise<{
-        sala: {
-            nombre: string;
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            filas: number;
-            asientosPorFila: number;
-        };
-        pelicula: {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            estado: import("@prisma/client").$Enums.PeliculaEstado;
-            titulo: string;
-            sinopsis: string | null;
-            duracionMin: number;
-            clasificacion: string;
-            posterUrl: string | null;
-            trailerUrl: string | null;
-            generos: string[];
+        _count: {
+            boletos: number;
         };
         boletos: ({
+            usuario: {
+                nombre: string;
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                email: string;
+                passwordHash: string;
+                rol: import("@prisma/client").$Enums.UserRole;
+                generosPreferidos: string | null;
+            };
             asiento: {
                 id: string;
+                estado: import("@prisma/client").$Enums.AsientoEstado;
                 salaId: string;
                 fila: number;
                 numero: number;
-                estado: import("@prisma/client").$Enums.AsientoEstado;
-            };
-            usuario: {
-                email: string;
-                nombre: string;
-                rol: import("@prisma/client").$Enums.UserRole;
-                id: string;
-                passwordHash: string;
-                createdAt: Date;
-                updatedAt: Date;
             };
         } & {
             id: string;
             createdAt: Date;
             updatedAt: Date;
+            usuarioId: string | null;
             estado: import("@prisma/client").$Enums.BoletoEstado;
+            ticketData: string | null;
+            pedidoId: string | null;
             funcionId: string;
             asientoId: string;
-            usuarioId: string | null;
-            pedidoId: string | null;
             codigoQR: string;
             fechaValidacion: Date | null;
         })[];
-        _count: {
-            boletos: number;
+        sala: {
+            nombre: string;
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            filas: number;
+            asientosPorFila: number;
+        };
+        pelicula: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            estado: import("@prisma/client").$Enums.PeliculaEstado;
+            titulo: string;
+            sinopsis: string | null;
+            duracionMin: number;
+            clasificacion: string;
+            posterUrl: string | null;
+            trailerUrl: string | null;
+            generos: string[];
+            esProximoEstreno: boolean;
+            fechaEstreno: Date | null;
         };
     } & {
+        precio: import("@prisma/client/runtime/library").Decimal;
         id: string;
         createdAt: Date;
         updatedAt: Date;
@@ -195,7 +204,6 @@ export declare class FuncionesService {
         peliculaId: string;
         inicio: Date;
         cancelada: boolean;
-        precio: import("@prisma/client/runtime/library").Decimal;
     }>;
     update(id: string, updateFuncionDto: UpdateFuncionDto): Promise<{
         sala: {
@@ -218,8 +226,11 @@ export declare class FuncionesService {
             posterUrl: string | null;
             trailerUrl: string | null;
             generos: string[];
+            esProximoEstreno: boolean;
+            fechaEstreno: Date | null;
         };
     } & {
+        precio: import("@prisma/client/runtime/library").Decimal;
         id: string;
         createdAt: Date;
         updatedAt: Date;
@@ -227,7 +238,6 @@ export declare class FuncionesService {
         peliculaId: string;
         inicio: Date;
         cancelada: boolean;
-        precio: import("@prisma/client/runtime/library").Decimal;
     }>;
     private validarConflictosParaActualizacion;
     private analizarConflictosFunciones;
@@ -254,8 +264,11 @@ export declare class FuncionesService {
                 posterUrl: string | null;
                 trailerUrl: string | null;
                 generos: string[];
+                esProximoEstreno: boolean;
+                fechaEstreno: Date | null;
             };
         } & {
+            precio: import("@prisma/client/runtime/library").Decimal;
             id: string;
             createdAt: Date;
             updatedAt: Date;
@@ -263,7 +276,6 @@ export declare class FuncionesService {
             peliculaId: string;
             inicio: Date;
             cancelada: boolean;
-            precio: import("@prisma/client/runtime/library").Decimal;
         };
     }>;
     reactivar(id: string): Promise<{
@@ -289,8 +301,11 @@ export declare class FuncionesService {
                 posterUrl: string | null;
                 trailerUrl: string | null;
                 generos: string[];
+                esProximoEstreno: boolean;
+                fechaEstreno: Date | null;
             };
         } & {
+            precio: import("@prisma/client/runtime/library").Decimal;
             id: string;
             createdAt: Date;
             updatedAt: Date;
@@ -298,13 +313,15 @@ export declare class FuncionesService {
             peliculaId: string;
             inicio: Date;
             cancelada: boolean;
-            precio: import("@prisma/client/runtime/library").Decimal;
         };
     }>;
     remove(id: string): Promise<{
         message: string;
     }>;
     findByPelicula(peliculaId: string): Promise<({
+        _count: {
+            boletos: number;
+        };
         sala: {
             nombre: string;
             id: string;
@@ -313,10 +330,8 @@ export declare class FuncionesService {
             filas: number;
             asientosPorFila: number;
         };
-        _count: {
-            boletos: number;
-        };
     } & {
+        precio: import("@prisma/client/runtime/library").Decimal;
         id: string;
         createdAt: Date;
         updatedAt: Date;
@@ -324,9 +339,11 @@ export declare class FuncionesService {
         peliculaId: string;
         inicio: Date;
         cancelada: boolean;
-        precio: import("@prisma/client/runtime/library").Decimal;
     })[]>;
     findBySala(salaId: string): Promise<({
+        _count: {
+            boletos: number;
+        };
         pelicula: {
             id: string;
             createdAt: Date;
@@ -339,11 +356,11 @@ export declare class FuncionesService {
             posterUrl: string | null;
             trailerUrl: string | null;
             generos: string[];
-        };
-        _count: {
-            boletos: number;
+            esProximoEstreno: boolean;
+            fechaEstreno: Date | null;
         };
     } & {
+        precio: import("@prisma/client/runtime/library").Decimal;
         id: string;
         createdAt: Date;
         updatedAt: Date;
@@ -351,6 +368,5 @@ export declare class FuncionesService {
         peliculaId: string;
         inicio: Date;
         cancelada: boolean;
-        precio: import("@prisma/client/runtime/library").Decimal;
     })[]>;
 }

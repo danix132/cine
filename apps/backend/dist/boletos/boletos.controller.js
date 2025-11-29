@@ -53,8 +53,23 @@ let BoletosController = class BoletosController {
     findOne(id) {
         return this.boletosService.findOne(id);
     }
-    update(id, updateBoletoDto) {
-        return this.boletosService.update(id, updateBoletoDto);
+    async update(id, updateBoletoDto) {
+        console.log('🔄 CONTROLLER: PATCH /boletos/:id llamado');
+        console.log('   ID del boleto:', id);
+        console.log('   Datos a actualizar:', {
+            tieneTicketData: !!updateBoletoDto.ticketData,
+            tamanioTicketData: updateBoletoDto.ticketData?.length || 0,
+            camposActualizados: Object.keys(updateBoletoDto)
+        });
+        try {
+            const resultado = await this.boletosService.update(id, updateBoletoDto);
+            console.log('✅ CONTROLLER: Boleto actualizado exitosamente');
+            return resultado;
+        }
+        catch (error) {
+            console.error('❌ CONTROLLER: Error al actualizar boleto:', error.message);
+            throw error;
+        }
     }
     remove(id) {
         return this.boletosService.remove(id);
@@ -125,14 +140,14 @@ __decorate([
 __decorate([
     (0, common_1.Patch)(':id'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
-    (0, roles_decorator_1.Roles)('ADMIN', 'VENDEDOR'),
+    (0, roles_decorator_1.Roles)('ADMIN', 'VENDEDOR', 'CLIENTE'),
     (0, swagger_1.ApiBearerAuth)(),
     (0, swagger_1.ApiOperation)({ summary: 'Actualizar un boleto' }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, update_boleto_dto_1.UpdateBoletoDto]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], BoletosController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),

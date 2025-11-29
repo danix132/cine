@@ -25,7 +25,8 @@ export interface Asiento {
 
 export enum AsientoEstado {
   DISPONIBLE = 'DISPONIBLE',
-  DANADO = 'DANADO'
+  DANADO = 'DANADO',
+  NO_EXISTE = 'NO_EXISTE'
 }
 
 export interface CreateSalaRequest {
@@ -43,6 +44,7 @@ export interface UpdateSalaRequest {
 export interface AsientoDanado {
   fila: number;
   numero: number;
+  estado?: 'DISPONIBLE' | 'DANADO' | 'NO_EXISTE';
 }
 
 export interface UpdateAsientosDanadosRequest {

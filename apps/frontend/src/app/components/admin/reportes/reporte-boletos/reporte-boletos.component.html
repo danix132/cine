@@ -1,0 +1,214 @@
+<div class="reporte-boletos-container">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-title">
+      <button class="btn-back" routerLink="/admin/reportes" title="Volver">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <h1><i class="fas fa-ticket-alt"></i> Reporte de Boletos</h1>
+    </div>
+  </div>
+
+  <!-- Pestañas -->
+  <div class="tabs-container">
+    <button 
+      class="tab" 
+      [class.active]="vistaActual === 'todos'"
+      (click)="cambiarVista('todos')">
+      <i class="fas fa-th-large"></i> Todos los Boletos
+      <span class="tab-count">{{ estadisticas.totalBoletos }}</span>
+    </button>
+    <button 
+      class="tab" 
+      [class.active]="vistaActual === 'web'"
+      (click)="cambiarVista('web')">
+      <i class="fas fa-globe"></i> Ventas Web
+      <span class="tab-count">{{ estadisticas.boletosWeb }}</span>
+    </button>
+    <button 
+      class="tab" 
+      [class.active]="vistaActual === 'mostrador'"
+      (click)="cambiarVista('mostrador')">
+      <i class="fas fa-cash-register"></i> Ventas Mostrador
+      <span class="tab-count">{{ estadisticas.boletosMostrador }}</span>
+    </button>
+  </div>
+
+  <!-- Estadísticas -->
+  <div class="estadisticas-grid">
+    <div class="stat-card">
+      <div class="stat-icon total">
+        <i class="fas fa-ticket-alt"></i>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">Total Boletos</span>
+        <span class="stat-value">{{ estadisticas.totalBoletos }}</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon web">
+        <i class="fas fa-globe"></i>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">Ventas Web</span>
+        <span class="stat-value">{{ estadisticas.boletosWeb }}</span>
+        <span class="stat-sub">{{ formatearMoneda(estadisticas.ingresosWeb) }}</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon mostrador">
+        <i class="fas fa-cash-register"></i>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">Ventas Mostrador</span>
+        <span class="stat-value">{{ estadisticas.boletosMostrador }}</span>
+        <span class="stat-sub">{{ formatearMoneda(estadisticas.ingresosMostrador) }}</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon ingresos">
+        <i class="fas fa-dollar-sign"></i>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">Ingresos Totales</span>
+        <span class="stat-value">{{ formatearMoneda(estadisticas.ingresosTotal) }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filtros-card">
+    <h3><i class="fas fa-filter"></i> Filtros</h3>
+    <div class="filtros-grid">
+      <div class="filtro-item">
+        <label>Desde:</label>
+        <input 
+          type="date" 
+          [(ngModel)]="fechaDesde" 
+          (change)="aplicarFiltros()"
+          class="form-control">
+      </div>
+
+      <div class="filtro-item">
+        <label>Hasta:</label>
+        <input 
+          type="date" 
+          [(ngModel)]="fechaHasta" 
+          (change)="aplicarFiltros()"
+          class="form-control">
+      </div>
+
+      <div class="filtro-item">
+        <label>Estado:</label>
+        <select 
+          [(ngModel)]="estadoFiltro" 
+          (change)="aplicarFiltros()"
+          class="form-control">
+          <option value="TODOS">Todos</option>
+          <option value="COMPRADO">Comprado</option>
+          <option value="VALIDADO">Validado</option>
+          <option value="CANCELADO">Cancelado</option>
+        </select>
+      </div>
+
+      <div class="filtro-item">
+        <label>Buscar:</label>
+        <input 
+          type="text" 
+          [(ngModel)]="busqueda" 
+          (input)="aplicarFiltros()"
+          placeholder="Película, cliente, código QR..."
+          class="form-control">
+      </div>
+    </div>
+    
+    <div class="filtros-actions">
+      <button class="btn-secondary" (click)="limpiarFiltros()">
+        <i class="fas fa-redo"></i> Limpiar Filtros
+      </button>
+      <button class="btn-primary" (click)="exportarExcel()">
+        <i class="fas fa-file-excel"></i> Exportar Excel
+      </button>
+      <button class="btn-primary" (click)="exportarPDF()">
+        <i class="fas fa-file-pdf"></i> Exportar PDF
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="loading">
+    <i class="fas fa-spinner fa-spin"></i> Cargando boletos...
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="errorMessage" class="error-message">
+    <i class="fas fa-exclamation-triangle"></i> {{ errorMessage }}
+  </div>
+
+  <!-- Tabla de boletos -->
+  <div *ngIf="!isLoading && !errorMessage" class="tabla-card">
+    <h3>
+      <i class="fas fa-list"></i> 
+      Boletos {{ vistaActual === 'web' ? 'Web' : vistaActual === 'mostrador' ? 'Mostrador' : '' }}
+      <span class="count-badge">{{ boletosFiltrados.length }}</span>
+    </h3>
+
+    <div class="tabla-responsive">
+      <table class="tabla-boletos">
+        <thead>
+          <tr>
+            <th>Código QR</th>
+            <th>Fecha</th>
+            <th>Película</th>
+            <th>Sala</th>
+            <th>Asiento</th>
+            <th>Cliente</th>
+            <th>Canal</th>
+            <th *ngIf="vistaActual === 'mostrador' || vistaActual === 'todos'">Vendedor</th>
+            <th>Precio</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let boleto of boletosFiltrados">
+            <td><code>{{ boleto.codigoQR }}</code></td>
+            <td>{{ formatearFecha(boleto.fecha) }}</td>
+            <td class="pelicula-cell">{{ boleto.pelicula }}</td>
+            <td>{{ boleto.sala }}</td>
+            <td class="asiento-cell">{{ boleto.asiento }}</td>
+            <td>
+              <div class="cliente-info">
+                <strong>{{ boleto.cliente }}</strong>
+                <small>{{ boleto.clienteEmail }}</small>
+              </div>
+            </td>
+            <td>
+              <span class="badge" [ngClass]="getCanalBadgeClass(boleto.canal)">
+                <i [class]="boleto.canal === 'WEB' ? 'fas fa-globe' : 'fas fa-cash-register'"></i>
+                {{ boleto.canal }}
+              </span>
+            </td>
+            <td *ngIf="vistaActual === 'mostrador' || vistaActual === 'todos'">
+              {{ boleto.vendedor || '-' }}
+            </td>
+            <td class="precio-cell">{{ formatearMoneda(boleto.precio) }}</td>
+            <td>
+              <span class="badge-estado" [ngClass]="getEstadoClass(boleto.estado)">
+                {{ boleto.estado }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Mensaje si no hay boletos -->
+      <div *ngIf="boletosFiltrados.length === 0" class="no-datos">
+        <i class="fas fa-inbox"></i>
+        <p>No se encontraron boletos con los filtros aplicados</p>
+      </div>
+    </div>
+  </div>
+</div>

@@ -48,6 +48,13 @@ __decorate([
     __metadata("design:type", String)
 ], CreateDulceriaItemDto.prototype, "imagenUrl", void 0);
 __decorate([
+    (0, swagger_1.ApiPropertyOptional)({ example: 50, minimum: 0, default: 0 }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0),
+    __metadata("design:type", Number)
+], CreateDulceriaItemDto.prototype, "stock", void 0);
+__decorate([
     (0, swagger_1.ApiPropertyOptional)({ example: true, default: true }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsBoolean)(),

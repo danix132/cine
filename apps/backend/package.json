@@ -1,10 +1,10 @@
 {
   "name": "cine-backend",
-  "version": "1.0.0",
-  "description": "Backend para sistema de cine con NestJS y Prisma",
-  "author": "Cine App",
+  "version": "0.0.1",
+  "description": "",
+  "author": "CiMeme",
   "private": true,
-  "license": "MIT",
+  "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",

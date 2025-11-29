@@ -7,59 +7,59 @@ export declare class SalasController {
     private readonly salasService;
     constructor(salasService: SalasService);
     create(createSalaDto: CreateSalaDto): Promise<{
-        id: string;
         nombre: string;
-        filas: number;
-        asientosPorFila: number;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
+        filas: number;
+        asientosPorFila: number;
     }>;
     findAll(paginationDto: PaginationDto): Promise<import("../common/dto/pagination.dto").PaginatedResponseDto<{
+        _count: {
+            funciones: number;
+            asientos: number;
+        };
         asientos: {
             id: string;
+            estado: import("@prisma/client").$Enums.AsientoEstado;
             fila: number;
             numero: number;
-            estado: import("@prisma/client").$Enums.AsientoEstado;
         }[];
-        _count: {
-            asientos: number;
-            funciones: number;
-        };
     } & {
-        id: string;
         nombre: string;
-        filas: number;
-        asientosPorFila: number;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
+        filas: number;
+        asientosPorFila: number;
     }>>;
     findOne(id: string): Promise<{
+        _count: {
+            funciones: number;
+            asientos: number;
+        };
         asientos: {
             id: string;
+            estado: import("@prisma/client").$Enums.AsientoEstado;
             salaId: string;
             fila: number;
             numero: number;
-            estado: import("@prisma/client").$Enums.AsientoEstado;
         }[];
-        _count: {
-            asientos: number;
-            funciones: number;
-        };
     } & {
-        id: string;
         nombre: string;
-        filas: number;
-        asientosPorFila: number;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
+        filas: number;
+        asientosPorFila: number;
     }>;
     update(id: string, updateSalaDto: UpdateSalaDto): Promise<{
-        id: string;
         nombre: string;
-        filas: number;
-        asientosPorFila: number;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
+        filas: number;
+        asientosPorFila: number;
     }>;
     remove(id: string): Promise<{
         message: string;
@@ -67,18 +67,19 @@ export declare class SalasController {
     updateAsientosDanados(id: string, updateAsientosDanadosDto: UpdateAsientosDanadosDto): Promise<{
         message: string;
         asientosDanadosCount: number;
-        asientosDanados: {
+        asientosNoExistenCount: number;
+        asientos: {
+            estado: import("@prisma/client").$Enums.AsientoEstado;
             fila: number;
             numero: number;
-            estado: import("@prisma/client").$Enums.AsientoEstado;
         }[];
     }>;
     getAsientosDisponibilidad(id: string, funcionId: string): Promise<{
         disponible: boolean;
         id: string;
+        estado: import("@prisma/client").$Enums.AsientoEstado;
         salaId: string;
         fila: number;
         numero: number;
-        estado: import("@prisma/client").$Enums.AsientoEstado;
     }[]>;
 }

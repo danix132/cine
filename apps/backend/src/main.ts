@@ -18,7 +18,13 @@ async function bootstrap() {
   // Configurar zona horaria
   moment.tz.setDefault('America/Mazatlan');
 
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    bodyParser: true,
+  });
+
+  // Aumentar el límite de body para permitir PDFs en base64
+  app.use(require('express').json({ limit: '50mb' }));
+  app.use(require('express').urlencoded({ limit: '50mb', extended: true }));
 
   // Configurar CORS
   app.enableCors({

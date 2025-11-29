@@ -1,6 +1,9 @@
 <div class="admin-salas">
-  <div class="header">
-    <h2>Gestión de Salas</h2>
+  <div class="admin-section-header">
+    <div>
+      <h2><i class="fas fa-door-open"></i> Gestión de Salas</h2>
+      <p class="subtitle">Configura las salas de cine y sus asientos</p>
+    </div>
     <button class="btn btn-primary" (click)="abrirModalCrear()">
       <i class="fas fa-plus"></i> Agregar Sala
     </button>
@@ -101,40 +104,28 @@
           </div>
         </div>
 
-        <!-- Vista previa de la sala -->
-        <div class="sala-preview">
-          <div class="pantalla">
+        <!-- Vista previa de la sala - Diseño moderno -->
+        <div class="sala-preview-moderna">
+          <div class="pantalla-moderna">
             <span>PANTALLA</span>
           </div>
-          <div class="mapa-mini">
-            <div class="pasillo-mini izq"></div>
-            <div class="asientos-preview">
-              <div class="fila-preview" *ngFor="let fila of getFilasArray(sala); let f = index">
-                <span class="fila-letra">{{ getLabelFila(f) }}</span>
-                <div class="grupos-mini">
-                  <div class="grupo-mini">
-                    <div class="asiento-mini" 
-                         *ngFor="let asiento of getPrimerGrupoAsientos(sala)"
-                         [class.danado]="esAsientoDanadoEnPrevia(sala, f + 1, asiento)"
-                         [title]="'Asiento ' + getLabelFila(f) + asiento + (esAsientoDanadoEnPrevia(sala, f + 1, asiento) ? ' (Dañado)' : '')">
-                    </div>
+          <div class="mapa-preview">
+            <div class="fila-preview-moderna" *ngFor="let fila of getFilasArray(sala); let f = index">
+              <span class="fila-letra-moderna">{{ f + 1 }}</span>
+              <div class="asientos-fila-preview">
+                <ng-container *ngFor="let asiento of getAsientosArray(sala); let a = index">
+                  <div class="asiento-preview" 
+                       *ngIf="getEstadoAsientoPrevia(sala, f + 1, a + 1) !== 'NO_EXISTE'"
+                       [class.danado]="getEstadoAsientoPrevia(sala, f + 1, a + 1) === 'DANADO'"
+                       [title]="'Fila ' + (f + 1) + ', Asiento ' + (a + 1) + ' - ' + getEstadoAsientoPrevia(sala, f + 1, a + 1)">
                   </div>
-                  <div class="pasillo-centro-mini"></div>
-                  <div class="grupo-mini">
-                    <div class="asiento-mini" 
-                         *ngFor="let asiento of getSegundoGrupoAsientos(sala)"
-                         [class.danado]="esAsientoDanadoEnPrevia(sala, f + 1, asiento + getPrimerGrupoAsientos(sala).length)"
-                         [title]="'Asiento ' + getLabelFila(f) + (asiento + getPrimerGrupoAsientos(sala).length) + (esAsientoDanadoEnPrevia(sala, f + 1, asiento + getPrimerGrupoAsientos(sala).length) ? ' (Dañado)' : '')">
-                    </div>
-                  </div>
-                </div>
-                <span class="fila-letra">{{ getLabelFila(f) }}</span>
+                  <div class="asiento-spacer" *ngIf="getEstadoAsientoPrevia(sala, f + 1, a + 1) === 'NO_EXISTE'"></div>
+                </ng-container>
               </div>
             </div>
-            <div class="pasillo-mini der"></div>
           </div>
           
-          <!-- ✅ Estado de asientos debajo del mapa -->
+          <!-- Estado de asientos debajo del mapa -->
           <div class="estado-asientos-preview" *ngIf="sala.asientosDanados !== undefined">
             <div class="estado-item disponibles">
               <i class="fas fa-check-circle"></i>
@@ -157,7 +148,7 @@
         </div>
         <div class="acciones">
           <button class="btn btn-sm btn-outline-primary" (click)="verDetalles(sala)" title="Ver detalles y asientos"><i class="fas fa-eye"></i></button>
-          <button class="btn btn-sm btn-outline-warning" (click)="editarSala(sala)" title="Editar sala"><i class="fas fa-edit"></i></button>
+          <button class="btn btn-sm btn-primary" (click)="editarSala(sala)" title="Editar sala"><i class="fas fa-edit"></i></button>
           <button class="btn btn-sm btn-danger" (click)="eliminarSala(sala)" title="Eliminar sala"><i class="fas fa-trash"></i></button>
         </div>
       </div>
@@ -244,21 +235,14 @@
             </div>
           </div>
 
-          <div class="d-flex justify-content-between align-items-center">
-            <!-- Botón de debug temporal -->
-            <button type="button" class="btn btn-warning btn-sm" (click)="debugFormulario()">
-              🐛 Debug
+          <div class="d-flex justify-content-end">
+            <button type="button" class="btn btn-secondary me-2" (click)="cerrarModal()">
+              Cancelar
             </button>
-            
-            <div>
-              <button type="button" class="btn btn-secondary me-2" (click)="cerrarModal()">
-                Cancelar
-              </button>
-              <button type="submit" class="btn btn-primary" [disabled]="!salaForm.valid || guardando">
-                <span *ngIf="guardando" class="spinner-border spinner-border-sm me-2"></span>
-                {{ modoEdicion ? 'Actualizar' : 'Crear' }}
-              </button>
-            </div>
+            <button type="submit" class="btn btn-primary" [disabled]="!salaForm.valid || guardando">
+              <span *ngIf="guardando" class="spinner-border spinner-border-sm me-2"></span>
+              {{ modoEdicion ? 'Actualizar' : 'Crear' }}
+            </button>
           </div>
         </form>
       </div>
@@ -275,96 +259,80 @@
         <button type="button" class="btn-close" (click)="cerrarModalDetalles()" aria-label="Close">&times;</button>
       </div>
       <div class="modal-body" *ngIf="salaSeleccionada">
-        <div class="row">
-          <div class="col-md-6">
-            <h6>Información General</h6>
-            <p><strong>Nombre:</strong> {{ salaSeleccionada.nombre }}</p>
-            <p><strong>Capacidad Total:</strong> {{ salaSeleccionada.filas * salaSeleccionada.asientosPorFila }} asientos</p>
-            <p><strong>Configuración:</strong> {{ salaSeleccionada.filas }} filas × {{ salaSeleccionada.asientosPorFila }} asientos</p>
-            <p><strong>Fecha de Creación:</strong> {{ formatearFecha(salaSeleccionada.createdAt) }}</p>
+        <!-- Header de la sala con información -->
+        <div class="sala-header-info">
+          <div class="sala-title">
+            <i class="fas fa-couch"></i>
+            <h3>{{ salaSeleccionada.nombre }}</h3>
           </div>
-          <div class="col-md-6">
-            <h6>Información Adicional</h6>
-            <p><strong>Total de Funciones:</strong> {{ salaSeleccionada._count?.funciones || 0 }}</p>
-            <p><strong>Última Actualización:</strong> {{ formatearFecha(salaSeleccionada.updatedAt) }}</p>
+          <div class="sala-badges">
+            <span class="badge-config">
+              <i class="fas fa-grip-horizontal"></i>
+              {{ salaSeleccionada.filas }} filas × {{ salaSeleccionada.asientosPorFila }} posiciones
+            </span>
+            <span class="badge-disponibles">
+              <i class="fas fa-couch"></i>
+              Capacidad: {{ calcularCapacidadTotal() }} asientos
+            </span>
+            <span class="badge-disponibles">
+              <i class="fas fa-check-circle"></i>
+              {{ calcularAsientosDisponibles() }} disponibles
+            </span>
           </div>
         </div>
         
         <!-- Mapa de asientos detallado -->
-        <div class="mt-4">
-          <h6>Mapa de Asientos</h6>
-          <div class="sala-completa">
-            <!-- Salidas superiores -->
-            <div class="salidas-superiores">
-              <div class="salida"><i class="fas fa-door-open"></i> SALIDA</div>
-              <div class="salida"><i class="fas fa-door-open"></i> SALIDA</div>
-            </div>
+        <div class="sala-completa-moderna">
+          <!-- Pantalla -->
+          <div class="pantalla-moderna">
+            <span>PANTALLA</span>
+          </div>
 
-            <!-- Pantalla -->
-            <div class="pantalla-completa">
-              <span>🎬 PANTALLA 🎬</span>
-            </div>
-
-            <!-- Mapa principal con pasillos -->
-            <div class="mapa-asientos">
-              <!-- Pasillo lateral izquierdo -->
-              <div class="pasillo-lateral izquierdo">
-                <span>PASILLO</span>
-              </div>
-
-              <!-- Contenedor de asientos -->
-              <div class="asientos-contenedor">
-                <div class="fila-completa" *ngFor="let fila of getFilasArray(salaSeleccionada); let f = index">
-                  <!-- Etiqueta de fila -->
-                  <span class="fila-etiqueta">{{ getLabelFila(f) }}</span>
-                  
-                  <!-- Grupo de asientos -->
-                  <div class="grupos-asientos">
-                    <!-- Grupo izquierdo -->
-                    <div class="grupo-asientos">
-                      <div class="asiento-completo" 
-                           *ngFor="let asiento of getPrimerGrupoAsientos(salaSeleccionada); let a = index"
-                           [class.disponible]="esAsientoDisponible(f, a)"
-                           [class.danado]="!esAsientoDisponible(f, a)"
-                           [title]="'Asiento ' + getLabelFila(f) + (a + 1) + ' - ' + (esAsientoDisponible(f, a) ? 'Disponible' : 'Dañado')">
-                        {{ a + 1 }}
-                      </div>
-                    </div>
-
-                    <!-- Pasillo central -->
-                    <div class="pasillo-central">
-                      <span></span>
-                    </div>
-
-                    <!-- Grupo derecho -->
-                    <div class="grupo-asientos">
-                      <div class="asiento-completo" 
-                           *ngFor="let asiento of getSegundoGrupoAsientos(salaSeleccionada); let a = index"
-                           [class.disponible]="esAsientoDisponible(f, a + getPrimerGrupoAsientos(salaSeleccionada).length)"
-                           [class.danado]="!esAsientoDisponible(f, a + getPrimerGrupoAsientos(salaSeleccionada).length)"
-                           [title]="'Asiento ' + getLabelFila(f) + (a + getPrimerGrupoAsientos(salaSeleccionada).length + 1) + ' - ' + (esAsientoDisponible(f, a + getPrimerGrupoAsientos(salaSeleccionada).length) ? 'Disponible' : 'Dañado')">
-                        {{ a + getPrimerGrupoAsientos(salaSeleccionada).length + 1 }}
-                      </div>
-                    </div>
+          <!-- Mapa de asientos sin pasillos laterales -->
+          <div class="mapa-asientos-moderno">
+            <div class="fila-moderna" *ngFor="let fila of getFilasArray(salaSeleccionada); let f = index">
+              <!-- Etiqueta de fila -->
+              <div class="fila-label-moderna">Fila {{ f + 1 }}</div>
+              
+              <!-- Todos los asientos -->
+              <div class="asientos-fila">
+                <ng-container *ngFor="let asiento of getAsientosArray(salaSeleccionada); let a = index">
+                  <div class="asiento-moderno" 
+                       *ngIf="getEstadoAsientoModal(f, a) !== 'NO_EXISTE'"
+                       [class.disponible]="getEstadoAsientoModal(f, a) === 'DISPONIBLE'"
+                       [class.danado]="getEstadoAsientoModal(f, a) === 'DANADO'"
+                       [title]="'Asiento ' + getLabelFila(f) + (a + 1) + ' - ' + getEstadoAsientoModal(f, a)">
+                    {{ a + 1 }}
                   </div>
-
-                  <!-- Etiqueta de fila derecha -->
-                  <span class="fila-etiqueta">{{ getLabelFila(f) }}</span>
-                </div>
-              </div>
-
-              <!-- Pasillo lateral derecho -->
-              <div class="pasillo-lateral derecho">
-                <span>PASILLO</span>
+                  <div class="asiento-spacer-modal" *ngIf="getEstadoAsientoModal(f, a) === 'NO_EXISTE'"></div>
+                </ng-container>
               </div>
             </div>
+          </div>
 
-
+          <!-- Leyenda -->
+          <div class="leyenda-moderna">
+            <div class="leyenda-item">
+              <div class="asiento-ejemplo disponible"></div>
+              <span>Disponible</span>
+            </div>
+            <div class="leyenda-item">
+              <div class="asiento-ejemplo seleccionado"></div>
+              <span>Seleccionado</span>
+            </div>
+            <div class="leyenda-item">
+              <div class="asiento-ejemplo ocupado"></div>
+              <span>Ocupado</span>
+            </div>
+            <div class="leyenda-item">
+              <div class="asiento-ejemplo danado">✕</div>
+              <span>Dañado</span>
+            </div>
           </div>
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-warning" (click)="gestionarAsientos(salaSeleccionada!)">
+        <button type="button" class="btn btn-primary" (click)="gestionarAsientos(salaSeleccionada!)">
           <i class="fas fa-wrench"></i> Gestionar Asientos Dañados
         </button>
         <button type="button" class="btn btn-secondary" (click)="cerrarModalDetalles()">Cerrar</button>
@@ -387,69 +355,51 @@
 
         <div class="sala-asientos-gestion" *ngIf="salaParaAsientos">
           <!-- Pantalla -->
-          <div class="pantalla-gestion mb-4">
-            <span>🎬 PANTALLA 🎬</span>
+          <div class="pantalla-gestion">
+            <span>PANTALLA</span>
           </div>
 
-          <!-- Mapa de asientos con pasillo central -->
+          <!-- Mapa de asientos -->
           <div class="mapa-asientos-gestion">
-            <!-- Pasillo lateral izquierdo -->
-            <div class="pasillo-lateral izquierdo">
-              <span>PASILLO</span>
-            </div>
-
-            <!-- Contenedor de asientos -->
-            <div class="asientos-contenedor">
-              <div class="fila-completa" *ngFor="let fila of getFilasArray(salaParaAsientos); let f = index">
-                <!-- Etiqueta de fila -->
-                <span class="fila-etiqueta">{{ getLabelFila(f) }}</span>
-                
-                <!-- Grupo de asientos -->
-                <div class="grupos-asientos">
-                  <!-- Grupo izquierdo -->
-                  <div class="grupo-asientos">
-                    <div class="asiento-gestion" 
-                         *ngFor="let asiento of getPrimerGrupoAsientos(salaParaAsientos); let a = index"
-                         [class.disponible]="!esAsientoDanado(f + 1, a + 1)"
-                         [class.danado]="esAsientoDanado(f + 1, a + 1)"
-                         [class.seleccionado]="esAsientoDanado(f + 1, a + 1)"
-                         (click)="toggleAsientoDanado(f + 1, a + 1)"
-                         [title]="'Asiento ' + getLabelFila(f) + (a + 1)">
-                      {{ a + 1 }}
-                    </div>
+            <div class="fila-completa" *ngFor="let fila of getFilasArray(salaParaAsientos); let f = index">
+              <!-- Etiqueta de fila izquierda -->
+              <span class="fila-label">Fila {{ f + 1 }}</span>
+              
+              <!-- Grupo de asientos -->
+              <div class="grupos-asientos">
+                <!-- Todos los asientos de la fila -->
+                <ng-container *ngFor="let num of getAsientosDeFila(salaParaAsientos.asientosPorFila); let a = index">
+                  <div class="asiento-gestion" 
+                       [class.disponible]="getEstadoAsiento(f + 1, a + 1) === 'DISPONIBLE'"
+                       [class.danado]="getEstadoAsiento(f + 1, a + 1) === 'DANADO'"
+                       [class.no-existe]="getEstadoAsiento(f + 1, a + 1) === 'NO_EXISTE'"
+                       (click)="toggleEstadoAsiento(f + 1, a + 1)"
+                       [title]="'Fila ' + (f + 1) + ', Asiento ' + (a + 1) + ' - ' + getEstadoAsiento(f + 1, a + 1)">
+                    <span *ngIf="getEstadoAsiento(f + 1, a + 1) !== 'NO_EXISTE'">{{ a + 1 }}</span>
                   </div>
-
-                  <!-- Pasillo central -->
-                  <div class="pasillo-central">
-                    <span></span>
-                  </div>
-
-                  <!-- Grupo derecho -->
-                  <div class="grupo-asientos">
-                    <div class="asiento-gestion" 
-                         *ngFor="let asiento of getSegundoGrupoAsientos(salaParaAsientos); let a = index"
-                         [class.disponible]="!esAsientoDanado(f + 1, a + getPrimerGrupoAsientos(salaParaAsientos).length + 1)"
-                         [class.danado]="esAsientoDanado(f + 1, a + getPrimerGrupoAsientos(salaParaAsientos).length + 1)"
-                         [class.seleccionado]="esAsientoDanado(f + 1, a + getPrimerGrupoAsientos(salaParaAsientos).length + 1)"
-                         (click)="toggleAsientoDanado(f + 1, a + getPrimerGrupoAsientos(salaParaAsientos).length + 1)"
-                         [title]="'Asiento ' + getLabelFila(f) + (a + getPrimerGrupoAsientos(salaParaAsientos).length + 1)">
-                      {{ a + getPrimerGrupoAsientos(salaParaAsientos).length + 1 }}
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Etiqueta de fila derecha -->
-                <span class="fila-etiqueta">{{ getLabelFila(f) }}</span>
+                </ng-container>
               </div>
             </div>
-
-            <!-- Pasillo lateral derecho -->
-            <div class="pasillo-lateral derecho">
-              <span>PASILLO</span>
-            </div>
           </div>
 
-
+          <!-- Leyenda -->
+          <div class="leyenda-asientos">
+            <div class="leyenda-item">
+              <div class="asiento-ejemplo disponible"></div>
+              <span>Disponible</span>
+            </div>
+            <div class="leyenda-item">
+              <div class="asiento-ejemplo danado">✕</div>
+              <span>Dañado</span>
+            </div>
+            <div class="leyenda-item">
+              <div class="asiento-ejemplo no-existe"></div>
+              <span>No existe</span>
+            </div>
+          </div>
+          <p class="text-muted mt-2 mb-0" style="font-size: 0.85rem;">
+            <i class="fas fa-info-circle"></i> Haz clic en un asiento para cambiar su estado: Disponible → Dañado → No existe
+          </p>
         </div>
 
         <div *ngIf="loading" class="text-center">

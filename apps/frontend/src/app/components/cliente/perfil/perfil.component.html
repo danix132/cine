@@ -1,0 +1,518 @@
+<div class="perfil-container">
+  <!-- Header -->
+  <div class="perfil-header">
+    <button class="btn-volver" (click)="volver()">
+      <i class="fas fa-arrow-left"></i> Volver
+    </button>
+    <h1>Mi Perfil</h1>
+    <p>Administra tu información personal y preferencias</p>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="loading">
+    <i class="fas fa-spinner fa-spin"></i>
+    <p>Cargando información...</p>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="alert alert-danger">
+    <i class="fas fa-exclamation-circle"></i>
+    {{ errorMessage }}
+  </div>
+
+  <!-- Success Message -->
+  <div *ngIf="successMessage" class="alert alert-success">
+    <i class="fas fa-check-circle"></i>
+    {{ successMessage }}
+  </div>
+
+  <!-- Perfil Content -->
+  <div *ngIf="!isLoading && usuario" class="perfil-content">
+    
+    <!-- Navigation Tabs -->
+    <div class="tabs-navigation">
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'info'"
+        (click)="changeTab('info')">
+        <i class="fas fa-user"></i>
+        <span>Información Personal</span>
+      </button>
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'seguridad'"
+        (click)="changeTab('seguridad')">
+        <i class="fas fa-lock"></i>
+        <span>Seguridad</span>
+      </button>
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'pagos'"
+        (click)="changeTab('pagos')">
+        <i class="fas fa-credit-card"></i>
+        <span>Métodos de Pago</span>
+      </button>
+    </div>
+
+    <!-- TAB 1: Información Personal -->
+    <div *ngIf="activeTab === 'info'" class="tab-content">
+      <!-- Foto de Perfil -->
+      <div class="perfil-card">
+        <div class="card-header">
+          <h2><i class="fas fa-camera"></i> Foto de Perfil</h2>
+        </div>
+        <div class="card-body foto-perfil-section">
+          <div class="foto-preview">
+            <img *ngIf="fotoPerfilUrl" [src]="fotoPerfilUrl" alt="Foto de perfil">
+            <div *ngIf="!fotoPerfilUrl" class="foto-placeholder">
+              <i class="fas fa-user-circle"></i>
+            </div>
+          </div>
+          <div class="foto-actions">
+            <button class="btn btn-outline" (click)="toggleCambiarFoto()">
+              <i class="fas fa-upload"></i> Cambiar Foto
+            </button>
+            <button *ngIf="fotoPerfilUrl" class="btn btn-danger" (click)="eliminarFoto()">
+              <i class="fas fa-trash"></i> Eliminar
+            </button>
+          </div>
+          
+          <div *ngIf="mostrarCambiarFoto" class="upload-section">
+            <input type="file" (change)="onFileSelected($event)" accept="image/*" id="fileInput" class="file-input">
+            <label for="fileInput" class="file-label">
+              <i class="fas fa-cloud-upload-alt"></i> Seleccionar Imagen
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Información Básica -->
+      <div class="perfil-card">
+        <div class="card-header">
+          <h2><i class="fas fa-id-card"></i> Información Básica</h2>
+          <button *ngIf="!editMode" class="btn-edit" (click)="toggleEditMode()">
+            <i class="fas fa-edit"></i> Editar
+          </button>
+        </div>
+        <div class="card-body">
+          <!-- Modo Visualización -->
+          <div *ngIf="!editMode" class="info-grid">
+            <div class="info-item">
+              <label>Nombre</label>
+              <p>{{ usuario.nombre }}</p>
+            </div>
+            <div class="info-item">
+              <label>Email</label>
+              <p>{{ usuario.email }}</p>
+            </div>
+            <div class="info-item">
+              <label>Teléfono</label>
+              <p>{{ formData.telefono || 'No especificado' }}</p>
+            </div>
+            <div class="info-item">
+              <label>Rol</label>
+              <p>{{ usuario.rol }}</p>
+            </div>
+            <div class="info-item">
+              <label>Miembro desde</label>
+              <p>{{ usuario.createdAt | date: 'dd/MM/yyyy' }}</p>
+            </div>
+          </div>
+
+          <!-- Modo Edición -->
+          <form *ngIf="editMode" class="edit-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="nombre">Nombre *</label>
+                <input
+                  type="text"
+                  id="nombre"
+                  [(ngModel)]="formData.nombre"
+                  name="nombre"
+                  class="form-control"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="email">Email *</label>
+                <input
+                  type="email"
+                  id="email"
+                  [(ngModel)]="formData.email"
+                  name="email"
+                  class="form-control"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="telefono">Teléfono</label>
+                <input
+                  type="tel"
+                  id="telefono"
+                  [(ngModel)]="formData.telefono"
+                  name="telefono"
+                  class="form-control"
+                  placeholder="+598 99 123 456"
+                />
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" (click)="toggleEditMode()">
+                <i class="fas fa-times"></i> Cancelar
+              </button>
+              <button type="button" class="btn btn-primary" (click)="saveProfile()">
+                <i class="fas fa-save"></i> Guardar Cambios
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Géneros Preferidos -->
+      <div class="perfil-card">
+        <div class="card-header">
+          <h2><i class="fas fa-film"></i> Mis Géneros Favoritos</h2>
+          <button 
+            type="button" 
+            class="btn btn-sm btn-edit" 
+            (click)="mostrarPreferencias = !mostrarPreferencias"
+            [disabled]="isLoading">
+            <i class="fas" [ngClass]="mostrarPreferencias ? 'fa-times' : 'fa-edit'"></i>
+            {{ mostrarPreferencias ? 'Cancelar' : 'Editar' }}
+          </button>
+        </div>
+
+        <div class="card-body">
+          <!-- Mostrar géneros actuales -->
+          <div *ngIf="!mostrarPreferencias" class="generos-actuales">
+            <div *ngIf="generosSeleccionados.length > 0" class="generos-list">
+              <span *ngFor="let genero of generosSeleccionados" class="genero-badge">
+                🎬 {{ genero }}
+              </span>
+            </div>
+            <div *ngIf="generosSeleccionados.length === 0" class="no-generos">
+              <i class="fas fa-info-circle"></i>
+              <p>No has seleccionado géneros favoritos aún.</p>
+              <p class="hint">Selecciona tus géneros favoritos para recibir recomendaciones personalizadas en la página principal.</p>
+            </div>
+          </div>
+
+          <!-- Formulario de selección de géneros -->
+          <div *ngIf="mostrarPreferencias" class="generos-form">
+            <p class="form-description">
+              <i class="fas fa-star"></i>
+              Selecciona los géneros de películas que más te gustan. Esto nos ayudará a recomendarte películas perfectas para ti.
+            </p>
+            
+            <div class="generos-grid">
+              <div 
+                *ngFor="let genero of generosDisponibles" 
+                class="genero-item"
+                [class.selected]="isGeneroSeleccionado(genero)"
+                (click)="toggleGenero(genero)">
+                <i class="fas" [ngClass]="isGeneroSeleccionado(genero) ? 'fa-check-circle' : 'fa-circle'"></i>
+                <span>{{ genero }}</span>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" (click)="cancelarPreferencias()">
+                <i class="fas fa-times"></i> Cancelar
+              </button>
+              <button type="button" class="btn btn-primary" (click)="guardarPreferencias()" [disabled]="generosSeleccionados.length === 0">
+                <i class="fas fa-save"></i> Guardar Preferencias
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: Seguridad -->
+    <div *ngIf="activeTab === 'seguridad'" class="tab-content">
+      <div class="perfil-card">
+        <div class="card-header">
+          <h2><i class="fas fa-lock"></i> Seguridad de la Cuenta</h2>
+        </div>
+        <div class="card-body">
+          <button 
+            *ngIf="!showPasswordForm" 
+            class="btn btn-outline" 
+            (click)="togglePasswordForm()">
+            <i class="fas fa-key"></i> Cambiar Contraseña
+          </button>
+
+          <!-- Formulario de Cambio de Contraseña -->
+          <form *ngIf="showPasswordForm" class="password-form">
+            <div class="form-group">
+              <label for="currentPassword">Contraseña Actual *</label>
+              <input
+                type="password"
+                id="currentPassword"
+                [(ngModel)]="passwordForm.currentPassword"
+                name="currentPassword"
+                class="form-control"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="newPassword">Nueva Contraseña *</label>
+              <input
+                type="password"
+                id="newPassword"
+                [(ngModel)]="passwordForm.newPassword"
+                name="newPassword"
+                class="form-control"
+                placeholder="Mínimo 6 caracteres"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="confirmPassword">Confirmar Nueva Contraseña *</label>
+              <input
+                type="password"
+                id="confirmPassword"
+                [(ngModel)]="passwordForm.confirmPassword"
+                name="confirmPassword"
+                class="form-control"
+                required
+              />
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" (click)="togglePasswordForm()">
+                <i class="fas fa-times"></i> Cancelar
+              </button>
+              <button type="button" class="btn btn-primary" (click)="changePassword()">
+                <i class="fas fa-check"></i> Cambiar Contraseña
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Borrar Cuenta -->
+      <div class="perfil-card danger-zone">
+        <div class="card-header">
+          <h2><i class="fas fa-exclamation-triangle"></i> Zona de Peligro</h2>
+        </div>
+        <div class="card-body">
+          <p class="danger-text">⚠️ Esta acción es irreversible. Se eliminarán todos tus datos, incluyendo tu historial de compras, tarjetas guardadas y preferencias.</p>
+          <button class="btn btn-danger" (click)="borrarCuenta()">
+            <i class="fas fa-trash-alt"></i> Borrar Cuenta Permanentemente
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Continuing in next part... -->
+    
+    <!-- TAB 3: Métodos de Pago -->
+    <div *ngIf="activeTab === 'pagos'" class="tab-content">
+      <div class="perfil-card">
+        <div class="card-header">
+          <h2><i class="fas fa-credit-card"></i> Tarjetas Guardadas</h2>
+          <button class="btn-edit" (click)="toggleFormTarjeta()">
+            <i class="fas fa-plus"></i> Agregar Tarjeta
+          </button>
+        </div>
+        <div class="card-body">
+          <!-- Lista de Tarjetas -->
+          <div *ngIf="tarjetasGuardadas.length > 0" class="tarjetas-list">
+            <div *ngFor="let tarjeta of tarjetasGuardadas" class="tarjeta-item">
+              <div class="tarjeta-info">
+                <i class="fas fa-credit-card tarjeta-icon"></i>
+                <div>
+                  <h4>{{ tarjeta.tipo }} **** {{ tarjeta.ultimos4 }}</h4>
+                  <p>{{ tarjeta.nombre }}</p>
+                </div>
+              </div>
+              <button class="btn btn-danger-small" (click)="eliminarTarjeta(tarjeta.id)">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+
+          <div *ngIf="tarjetasGuardadas.length === 0 && !mostrarFormTarjeta" class="empty-state">
+            <i class="fas fa-credit-card"></i>
+            <p>No tienes tarjetas guardadas</p>
+            <button class="btn btn-primary" (click)="toggleFormTarjeta()">
+              <i class="fas fa-plus"></i> Agregar Primera Tarjeta
+            </button>
+          </div>
+
+          <!-- Formulario Nueva Tarjeta -->
+          <form *ngIf="mostrarFormTarjeta" class="tarjeta-form">
+            <div class="form-group">
+              <label for="numeroTarjeta">Número de Tarjeta *</label>
+              <input
+                type="text"
+                id="numeroTarjeta"
+                [(ngModel)]="nuevaTarjeta.numero"
+                name="numeroTarjeta"
+                class="form-control"
+                placeholder="1234 5678 9012 3456"
+                maxlength="16"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="nombreTarjeta">Nombre en la Tarjeta *</label>
+              <input
+                type="text"
+                id="nombreTarjeta"
+                [(ngModel)]="nuevaTarjeta.nombre"
+                name="nombreTarjeta"
+                class="form-control"
+                placeholder="JUAN PEREZ"
+                required
+              />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="vencimiento">Vencimiento *</label>
+                <input
+                  type="text"
+                  id="vencimiento"
+                  [(ngModel)]="nuevaTarjeta.vencimiento"
+                  name="vencimiento"
+                  class="form-control"
+                  placeholder="MM/AA"
+                  maxlength="5"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="cvv">CVV *</label>
+                <input
+                  type="text"
+                  id="cvv"
+                  [(ngModel)]="nuevaTarjeta.cvv"
+                  name="cvv"
+                  class="form-control"
+                  placeholder="123"
+                  maxlength="4"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" (click)="toggleFormTarjeta()">
+                <i class="fas fa-times"></i> Cancelar
+              </button>
+              <button type="button" class="btn btn-primary" (click)="guardarNuevaTarjeta()">
+                <i class="fas fa-save"></i> Guardar Tarjeta
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal: Confirmar Eliminación de Cuenta -->
+<div *ngIf="mostrarModalBorrarCuenta" class="modal-overlay" (click)="cerrarModalBorrarCuenta()">
+  <div class="modal-content modal-danger" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>
+        <i class="fas fa-exclamation-triangle"></i>
+        {{ pasoConfirmacion === 1 ? '⚠️ Confirmar Eliminación' : '🚨 ÚLTIMA ADVERTENCIA' }}
+      </h2>
+      <button class="btn-close" (click)="cerrarModalBorrarCuenta()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Paso 1: Primera advertencia -->
+      <div *ngIf="pasoConfirmacion === 1">
+        <p class="warning-text"><strong>¿Estás completamente seguro de que deseas BORRAR tu cuenta?</strong></p>
+        <p class="info-text">Esta acción es <strong>PERMANENTE e IRREVERSIBLE</strong>.</p>
+        
+        <div class="deletion-list">
+          <p><strong>Se eliminarán:</strong></p>
+          <ul>
+            <li><i class="fas fa-user"></i> Tu perfil y datos personales</li>
+            <li><i class="fas fa-ticket-alt"></i> Historial de compras y boletos</li>
+            <li><i class="fas fa-credit-card"></i> Tarjetas guardadas</li>
+            <li><i class="fas fa-cog"></i> Todas tus preferencias</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Paso 2: Confirmación final con texto -->
+      <div *ngIf="pasoConfirmacion === 2">
+        <p class="warning-text"><strong>🚨 ¿Realmente deseas eliminar tu cuenta de forma permanente?</strong></p>
+        <p class="info-text">No podrás recuperar tu cuenta ni tus datos después de esto.</p>
+        
+        <div class="confirmation-input">
+          <label for="confirmText">Para confirmar, escribe exactamente: <strong>CONFIRMAR</strong></label>
+          <input
+            type="text"
+            id="confirmText"
+            [(ngModel)]="textoConfirmacion"
+            class="form-control"
+            placeholder="Escribe CONFIRMAR"
+            (keyup.enter)="confirmarEliminacionFinal()"
+          />
+          <small *ngIf="errorConfirmacion" class="error-text">
+            <i class="fas fa-exclamation-circle"></i> {{ errorConfirmacion }}
+          </small>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="cerrarModalBorrarCuenta()">
+        <i class="fas fa-times"></i> Cancelar
+      </button>
+      <button 
+        *ngIf="pasoConfirmacion === 1"
+        class="btn btn-danger" 
+        (click)="siguientePasoConfirmacion()">
+        <i class="fas fa-arrow-right"></i> Continuar
+      </button>
+      <button 
+        *ngIf="pasoConfirmacion === 2"
+        class="btn btn-danger" 
+        (click)="confirmarEliminacionFinal()"
+        [disabled]="isLoading">
+        <i class="fas fa-trash-alt"></i> {{ isLoading ? 'Eliminando...' : 'Eliminar Cuenta' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Mensaje de Éxito/Error -->
+<div *ngIf="mostrarModalMensaje" class="modal-overlay" (click)="cerrarModalMensaje()">
+  <div class="modal-content modal-message" (click)="$event.stopPropagation()">
+    <div class="modal-header" [class.success]="tipoMensaje === 'success'" [class.error]="tipoMensaje === 'error'">
+      <h2>
+        <i *ngIf="tipoMensaje === 'success'" class="fas fa-check-circle"></i>
+        <i *ngIf="tipoMensaje === 'error'" class="fas fa-exclamation-circle"></i>
+        {{ tituloMensaje }}
+      </h2>
+    </div>
+
+    <div class="modal-body">
+      <p>{{ contenidoMensaje }}</p>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-primary" (click)="cerrarModalMensaje()">
+        <i class="fas fa-check"></i> Aceptar
+      </button>
+    </div>
+  </div>
+</div>

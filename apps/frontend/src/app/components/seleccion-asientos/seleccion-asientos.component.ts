@@ -6,11 +6,11 @@ import { SalasService } from '../../services/salas.service';
 import { BoletosService } from '../../services/boletos.service';
 import { FuncionesService } from '../../services/funciones.service';
 import { AuthService } from '../../services/auth.service';
+import { TicketPdfService } from '../../services/ticket-pdf.service';
 import { Asiento, Sala, AsientoEstado } from '../../models/sala.model';
 import { Funcion } from '../../models/funcion.model';
 import { Boleto } from '../../models/boleto.model';
 import * as QRCode from 'qrcode';
-import { jsPDF } from 'jspdf';
 
 interface TarjetaGuardada {
   id: string;
@@ -34,6 +34,7 @@ export class SeleccionAsientosComponent implements OnInit {
   asientosSeleccionados: string[] = [];
   asientosOcupados: string[] = [];
   asientosDanados: string[] = [];
+  asientosNoExisten: string[] = [];
   isLoading = true;
   errorMessage = '';
   mostrarModalCompra = false;
@@ -70,6 +71,7 @@ export class SeleccionAsientosComponent implements OnInit {
     private boletosService: BoletosService,
     private funcionesService: FuncionesService,
     private authService: AuthService,
+    private ticketPdfService: TicketPdfService,
     private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) platformId: Object
   ) {
@@ -99,18 +101,44 @@ export class SeleccionAsientosComponent implements OnInit {
     if (!this.isBrowser) return;
     
     try {
-      const tarjetasStr = localStorage.getItem('tarjetasGuardadas');
+      const user = this.authService.getCurrentUser();
+      if (!user) {
+        this.tarjetaSeleccionada = 'nueva';
+        return;
+      }
+
+      const userKey = `tarjetasGuardadas_${user.id}`;
+      const tarjetasStr = localStorage.getItem(userKey);
       if (tarjetasStr) {
         this.tarjetasGuardadas = JSON.parse(tarjetasStr);
+        
+        // Intentar cargar y pre-seleccionar la última tarjeta usada
+        const ultimaTarjetaKey = `ultimaTarjetaUsada_${user.id}`;
+        const ultimaTarjetaUsada = localStorage.getItem(ultimaTarjetaKey);
+        if (ultimaTarjetaUsada && this.tarjetasGuardadas.find(t => t.id === ultimaTarjetaUsada)) {
+          this.tarjetaSeleccionada = ultimaTarjetaUsada;
+        } else if (this.tarjetasGuardadas.length > 0) {
+          // Si no hay última tarjeta o no existe, seleccionar la primera
+          this.tarjetaSeleccionada = this.tarjetasGuardadas[0].id;
+        } else {
+          this.tarjetaSeleccionada = 'nueva';
+        }
+      } else {
+        // No hay tarjetas guardadas
+        this.tarjetaSeleccionada = 'nueva';
       }
     } catch (error) {
       console.error('Error al cargar tarjetas guardadas:', error);
+      this.tarjetaSeleccionada = 'nueva';
     }
   }
 
   guardarTarjeta(): void {
     if (!this.isBrowser) return;
     
+    const user = this.authService.getCurrentUser();
+    if (!user) return;
+
     if (this.nuevaTarjeta.guardar && this.nuevaTarjeta.numero.length >= 16) {
       const nuevaTarjetaGuardada: TarjetaGuardada = {
         id: Date.now().toString(),
@@ -121,7 +149,13 @@ export class SeleccionAsientosComponent implements OnInit {
       
       this.tarjetasGuardadas.push(nuevaTarjetaGuardada);
       try {
-        localStorage.setItem('tarjetasGuardadas', JSON.stringify(this.tarjetasGuardadas));
+        const userKey = `tarjetasGuardadas_${user.id}`;
+        localStorage.setItem(userKey, JSON.stringify(this.tarjetasGuardadas));
+        // Guardar esta nueva tarjeta como última usada
+        const ultimaTarjetaKey = `ultimaTarjetaUsada_${user.id}`;
+        localStorage.setItem(ultimaTarjetaKey, nuevaTarjetaGuardada.id);
+        // Actualizar la selección para que la próxima vez se use esta
+        this.tarjetaSeleccionada = nuevaTarjetaGuardada.id;
       } catch (error) {
         console.error('Error al guardar tarjeta:', error);
       }
@@ -139,9 +173,13 @@ export class SeleccionAsientosComponent implements OnInit {
   eliminarTarjeta(tarjetaId: string): void {
     if (!this.isBrowser) return;
     
+    const user = this.authService.getCurrentUser();
+    if (!user) return;
+
     this.tarjetasGuardadas = this.tarjetasGuardadas.filter(t => t.id !== tarjetaId);
     try {
-      localStorage.setItem('tarjetasGuardadas', JSON.stringify(this.tarjetasGuardadas));
+      const userKey = `tarjetasGuardadas_${user.id}`;
+      localStorage.setItem(userKey, JSON.stringify(this.tarjetasGuardadas));
     } catch (error) {
       console.error('Error al eliminar tarjeta:', error);
     }
@@ -244,6 +282,12 @@ export class SeleccionAsientosComponent implements OnInit {
               .filter(asiento => asiento.estado === AsientoEstado.DANADO)
               .map(asiento => asiento.id);
             console.log('Asientos dañados:', this.asientosDanados);
+            
+            // Cargar asientos que no existen
+            this.asientosNoExisten = sala.asientos
+              .filter(asiento => asiento.estado === AsientoEstado.NO_EXISTE)
+              .map(asiento => asiento.id);
+            console.log('Asientos NO_EXISTE:', this.asientosNoExisten);
           } else {
             // Si no hay asientos en la sala, generarlos (fallback)
             console.log('Generando asientos (sala sin asientos)');
@@ -325,6 +369,10 @@ export class SeleccionAsientosComponent implements OnInit {
     return this.asientosDanados.includes(asientoId);
   }
 
+  isAsientoNoExiste(asientoId: string): boolean {
+    return this.asientosNoExisten.includes(asientoId);
+  }
+
   getAsientosPorFila(fila: number): Asiento[] {
     return this.asientos.filter(asiento => asiento.fila === fila);
   }
@@ -349,17 +397,12 @@ export class SeleccionAsientosComponent implements OnInit {
       return;
     }
     
-    // Forzar detección de cambios antes de abrir el modal
+    // Mostrar el modal
     this.mostrarModalCompra = true;
     this.cdr.detectChanges();
     
-    // Si no hay tarjeta seleccionada y hay tarjetas guardadas, pre-seleccionar la primera
-    if (!this.tarjetaSeleccionada && this.tarjetasGuardadas.length > 0) {
-      this.tarjetaSeleccionada = this.tarjetasGuardadas[0].id;
-    } else if (this.tarjetasGuardadas.length === 0) {
-      this.tarjetaSeleccionada = 'nueva';
-    }
-    
+    // Recargar tarjetas guardadas y última usada por si cambió en otra pestaña
+    this.loadTarjetasGuardadas();
     this.cdr.detectChanges();
   }
 
@@ -399,12 +442,23 @@ export class SeleccionAsientosComponent implements OnInit {
       return;
     }
 
-    // Guardar tarjeta si se seleccionó la opción
-    if (this.tarjetaSeleccionada === 'nueva') {
+    // Guardar tarjeta si se seleccionó la opción y es nueva
+    const esNuevaTarjeta = this.tarjetaSeleccionada === 'nueva';
+    if (esNuevaTarjeta) {
       this.guardarTarjeta();
+      // Nota: guardarTarjeta() ya actualiza this.tarjetaSeleccionada y localStorage
+    } else {
+      // Si es una tarjeta existente, guardarla como última usada
+      if (this.tarjetaSeleccionada) {
+        const user = this.authService.getCurrentUser();
+        if (user) {
+          const ultimaTarjetaKey = `ultimaTarjetaUsada_${user.id}`;
+          localStorage.setItem(ultimaTarjetaKey, this.tarjetaSeleccionada);
+        }
+      }
     }
 
-    const tarjetaInfo = this.tarjetaSeleccionada === 'nueva' 
+    const tarjetaInfo = esNuevaTarjeta 
       ? `**** ${this.nuevaTarjeta.numero.slice(-4)}`
       : `**** ${this.tarjetasGuardadas.find(t => t.id === this.tarjetaSeleccionada)?.ultimos4}`;
 
@@ -477,6 +531,79 @@ export class SeleccionAsientosComponent implements OnInit {
       console.log('✅ Compra confirmada:', this.recibo);
       console.log('✅ Código QR válido del boleto:', urlValidacion);
       
+      // Generar el ticket PDF en base64 para guardarlo
+      const fechaFuncion = new Date(this.funcion.inicio);
+      const total = this.recibo.asientos.length * (this.funcion.precio || 0);
+      
+      console.log('📄 Iniciando generación de ticket PDF...');
+      console.log('   ticketPdfService disponible:', !!this.ticketPdfService);
+      console.log('   Llamando a generarTicketBoletos con soloGenerar=true');
+      
+      let ticketBase64: any;
+      try {
+        ticketBase64 = await this.ticketPdfService.generarTicketBoletos({
+          numeroOrden: this.recibo.numeroOrden,
+          fecha: this.recibo.fecha,
+          hora: this.recibo.hora,
+          tarjeta: this.recibo.tarjeta,
+          pelicula: {
+            titulo: this.funcion.pelicula?.titulo || 'N/A',
+            fechaFuncion: fechaFuncion.toLocaleDateString('es-ES', { 
+              weekday: 'long', 
+              day: 'numeric', 
+              month: 'long', 
+              year: 'numeric' 
+            }),
+            horaFuncion: fechaFuncion.toLocaleTimeString('es-ES', { 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            }),
+            sala: this.funcion.sala?.nombre || 'N/A'
+          },
+          asientos: this.recibo.asientos.map(a => ({
+            fila: a.fila.toString(),
+            numero: a.numero
+          })),
+          total: total,
+          qrCode: this.recibo.qrCode
+        }, true); // soloGenerar = true para obtener base64
+        
+        console.log('✅ generarTicketBoletos retornó');
+        console.log('   Tipo de retorno:', typeof ticketBase64);
+        console.log('   Es string:', typeof ticketBase64 === 'string');
+        console.log('   Tamaño:', ticketBase64?.length || 'undefined');
+        console.log('   Primeros 100 chars:', ticketBase64?.substring(0, 100) || 'no hay datos');
+      } catch (err: any) {
+        console.error('❌ Error en generarTicketBoletos:', err);
+        console.error('   Mensaje:', err?.message);
+        console.error('   Stack:', err?.stack);
+        ticketBase64 = undefined;
+      }
+      
+      // Guardar el ticket en cada boleto
+      if (ticketBase64) {
+        console.log('💾 Guardando ticket en los boletos...');
+        for (const boleto of boletos) {
+          try {
+            console.log(`   Guardando en boleto ${boleto.id}...`);
+            const resultado = await this.boletosService.updateBoleto(boleto.id, {
+              ticketData: ticketBase64
+            }).toPromise();
+            console.log(`   ✅ Guardado exitosamente en boleto ${boleto.id}`);
+            console.log(`   Respuesta del servidor:`, resultado);
+          } catch (error: any) {
+            console.error(`   ❌ Error guardando ticket en boleto ${boleto.id}:`, error);
+            console.error(`   Detalles del error:`, {
+              message: error?.message,
+              status: error?.status,
+              error: error?.error
+            });
+          }
+        }
+      } else {
+        console.error('❌ ticketBase64 es undefined o vacío - NO se guardarán tickets');
+      }
+      
       // Marcar los asientos como ocupados inmediatamente
       this.asientosOcupados.push(...this.asientosSeleccionados);
       console.log('🪑 Asientos marcados como ocupados:', this.asientosSeleccionados);
@@ -510,181 +637,40 @@ export class SeleccionAsientosComponent implements OnInit {
     window.print();
   }
 
-  descargarRecibo(): void {
-    console.log('📄 Descargando recibo PDF...');
-    console.log('🔍 Recibo actual:', {
+  async descargarRecibo(): Promise<void> {
+    if (!this.recibo || !this.funcion) return;
+
+    const fechaFuncion = new Date(this.funcion.inicio);
+    
+    // Calcular total desde el recibo (asientos * precio)
+    const total = this.recibo.asientos.length * (this.funcion.precio || 0);
+    
+    await this.ticketPdfService.generarTicketBoletos({
       numeroOrden: this.recibo.numeroOrden,
-      tieneQR: !!this.recibo.qrCode,
-      longitudQR: this.recibo.qrCode?.length || 0
+      fecha: this.recibo.fecha,
+      hora: this.recibo.hora,
+      tarjeta: this.recibo.tarjeta,
+      pelicula: {
+        titulo: this.funcion.pelicula?.titulo || 'N/A',
+        fechaFuncion: fechaFuncion.toLocaleDateString('es-ES', { 
+          weekday: 'long', 
+          day: 'numeric', 
+          month: 'long', 
+          year: 'numeric' 
+        }),
+        horaFuncion: fechaFuncion.toLocaleTimeString('es-ES', { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        }),
+        sala: this.funcion.sala?.nombre || 'N/A'
+      },
+      asientos: this.recibo.asientos.map(a => ({
+        fila: a.fila.toString(),
+        numero: a.numero
+      })),
+      total: total,
+      qrCode: this.recibo.qrCode
     });
-    
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    let yPosition = 20;
-
-    // Configurar fuente
-    doc.setFont('helvetica');
-
-    // ====== ENCABEZADO ======
-    doc.setFontSize(20);
-    doc.setTextColor(102, 126, 234); // Color morado
-    doc.text('RECIBO DE COMPRA', pageWidth / 2, yPosition, { align: 'center' });
-    
-    yPosition += 10;
-    doc.setFontSize(10);
-    doc.setTextColor(100, 100, 100);
-    doc.text('www.cineapp.com', pageWidth / 2, yPosition, { align: 'center' });
-    
-    // Línea separadora
-    yPosition += 8;
-    doc.setDrawColor(102, 126, 234);
-    doc.setLineWidth(0.5);
-    doc.line(20, yPosition, pageWidth - 20, yPosition);
-
-    // ====== INFORMACIÓN DE LA ORDEN ======
-    yPosition += 10;
-    doc.setFontSize(12);
-    doc.setTextColor(0, 0, 0);
-    doc.setFont('helvetica', 'bold');
-    doc.text('INFORMACIÓN DE LA ORDEN', 20, yPosition);
-    
-    yPosition += 8;
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.text(`Orden: ${this.recibo.numeroOrden}`, 20, yPosition);
-    yPosition += 6;
-    doc.text(`Fecha: ${this.recibo.fecha}`, 20, yPosition);
-    yPosition += 6;
-    doc.text(`Hora: ${this.recibo.hora}`, 20, yPosition);
-
-    // ====== INFORMACIÓN DE LA PELÍCULA ======
-    yPosition += 12;
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(102, 126, 234);
-    doc.text('PELÍCULA', 20, yPosition);
-    
-    yPosition += 8;
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(14);
-    doc.setTextColor(0, 0, 0);
-    doc.text(this.funcion?.pelicula?.titulo || 'N/A', 20, yPosition);
-    
-    yPosition += 8;
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.text(`Fecha función: ${new Date(this.funcion?.inicio || '').toLocaleDateString('es-ES', { 
-      weekday: 'long', 
-      day: 'numeric', 
-      month: 'long', 
-      year: 'numeric' 
-    })}`, 20, yPosition);
-    
-    yPosition += 6;
-    doc.text(`Hora: ${new Date(this.funcion?.inicio || '').toLocaleTimeString('es-ES', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    })}`, 20, yPosition);
-    
-    yPosition += 6;
-    doc.text(`Sala: ${this.funcion?.sala?.nombre}`, 20, yPosition);
-
-    // ====== ASIENTOS ======
-    yPosition += 12;
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(102, 126, 234);
-    doc.text('ASIENTOS SELECCIONADOS', 20, yPosition);
-    
-    yPosition += 8;
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.setTextColor(0, 0, 0);
-    
-    this.recibo.asientos.forEach((asiento, index) => {
-      doc.text(`• Fila ${asiento.fila}, Asiento ${asiento.numero}`, 25, yPosition);
-      yPosition += 6;
-    });
-
-    // ====== INFORMACIÓN DE PAGO ======
-    yPosition += 6;
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(102, 126, 234);
-    doc.text('INFORMACIÓN DE PAGO', 20, yPosition);
-    
-    yPosition += 8;
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.setTextColor(0, 0, 0);
-    doc.text(`Tarjeta: ${this.recibo.tarjeta}`, 20, yPosition);
-    
-    yPosition += 6;
-    doc.text(`Cantidad de boletos: ${this.recibo.asientos.length}`, 20, yPosition);
-    
-    yPosition += 6;
-    doc.text(`Precio unitario: $${this.funcion?.precio}`, 20, yPosition);
-    
-    // Total con fondo de color
-    yPosition += 10;
-    doc.setFillColor(102, 126, 234);
-    doc.rect(20, yPosition - 5, pageWidth - 40, 10, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(14);
-    doc.text(`TOTAL: $${this.getPrecioTotal()}`, pageWidth / 2, yPosition, { align: 'center' });
-
-    // ====== CÓDIGO QR ======
-    yPosition += 15;
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(102, 126, 234);
-    doc.text('CÓDIGO QR DE VALIDACIÓN', 20, yPosition);
-    
-    yPosition += 8;
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(100, 100, 100);
-    doc.text('Presente este código QR en la entrada del cine', 20, yPosition);
-    
-    // Agregar imagen del QR (ya está en base64 en this.recibo.qrCode)
-    if (this.recibo.qrCode) {
-      console.log('✅ Agregando QR al PDF...');
-      yPosition += 5;
-      const qrSize = 50;
-      const qrX = (pageWidth - qrSize) / 2;
-      try {
-        doc.addImage(this.recibo.qrCode, 'PNG', qrX, yPosition, qrSize, qrSize);
-        console.log('✅ QR agregado exitosamente en posición:', { x: qrX, y: yPosition, size: qrSize });
-        yPosition += qrSize + 5;
-      } catch (error) {
-        console.error('❌ Error al agregar QR al PDF:', error);
-      }
-    } else {
-      console.warn('⚠️ No hay código QR para agregar al PDF');
-    }
-
-    // ====== FOOTER ======
-    yPosition += 10;
-    doc.setFontSize(10);
-    doc.setTextColor(0, 0, 0);
-    doc.setFont('helvetica', 'bold');
-    doc.text('¡Gracias por su compra!', pageWidth / 2, yPosition, { align: 'center' });
-    
-    yPosition += 6;
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(100, 100, 100);
-    doc.text('Disfrute de la función', pageWidth / 2, yPosition, { align: 'center' });
-
-    // Línea decorativa final
-    yPosition += 8;
-    doc.setDrawColor(102, 126, 234);
-    doc.setLineWidth(0.5);
-    doc.line(20, yPosition, pageWidth - 20, yPosition);
-
-    // Guardar el PDF
-    doc.save(`recibo-${this.recibo.numeroOrden}.pdf`);
   }
 
   getAsientoInfo(asientoId: string): { fila: number, numero: number } {

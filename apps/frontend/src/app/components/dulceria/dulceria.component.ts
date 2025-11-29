@@ -2,9 +2,12 @@ import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { DulceriaService } from '../../services/dulceria.service';
 import { CarritosService } from '../../services/carritos.service';
 import { AuthService } from '../../services/auth.service';
+import { TicketPdfService } from '../../services/ticket-pdf.service';
+import { PedidosService } from '../../services/pedidos.service';
 import { DulceriaItem, DulceriaItemTipo } from '../../models/dulceria.model';
 import QRCode from 'qrcode';
 
@@ -34,12 +37,19 @@ export class DulceriaComponent implements OnInit {
   filtroBusqueda = '';
   filtroTipo: DulceriaItemTipo | '' = '';
   
+  // Constantes de tipo
+  readonly TIPO_COMBO = DulceriaItemTipo.COMBO;
+  readonly TIPO_DULCE = DulceriaItemTipo.DULCE;
+  
   // Totales
   totalVenta = 0;
   cantidadTotal = 0;
   
   // Items agregándose
   agregando: Set<string> = new Set();
+
+  // Modal del carrito
+  mostrarCarrito = false;
 
   // Pago con tarjeta
   mostrarModalPago = false;
@@ -62,6 +72,8 @@ export class DulceriaComponent implements OnInit {
     private dulceriaService: DulceriaService,
     private carritosService: CarritosService,
     private authService: AuthService,
+    private ticketPdfService: TicketPdfService,
+    private pedidosService: PedidosService,
     private router: Router,
     @Inject(PLATFORM_ID) platformId: Object
   ) {
@@ -80,6 +92,7 @@ export class DulceriaComponent implements OnInit {
     this.dulceriaService.getItemsActivos().subscribe({
       next: (items) => {
         console.log('✅ Items cargados:', items.length);
+        console.log('📷 Imágenes de items:', items.map(i => ({ nombre: i.nombre, imagenUrl: i.imagenUrl })));
         this.items = items;
         this.aplicarFiltros();
         this.isLoading = false;
@@ -114,8 +127,24 @@ export class DulceriaComponent implements OnInit {
     return !!(this.filtroBusqueda || this.filtroTipo);
   }
 
+  cambiarCategoria(tipo: DulceriaItemTipo | ''): void {
+    this.filtroTipo = tipo;
+    this.aplicarFiltros();
+  }
+
   agregarAlCarrito(item: DulceriaItem): void {
     console.log('➕ Agregando al carrito:', item.nombre);
+    
+    // Validar stock disponible
+    const cantidadEnCarrito = this.carrito.has(item.id) ? this.carrito.get(item.id)!.cantidad : 0;
+    
+    if (cantidadEnCarrito >= item.stock) {
+      this.errorMessage = `No hay más stock disponible de ${item.nombre} (Stock: ${item.stock})`;
+      setTimeout(() => {
+        this.errorMessage = '';
+      }, 3000);
+      return;
+    }
     
     if (this.carrito.has(item.id)) {
       const itemCarrito = this.carrito.get(item.id)!;
@@ -164,7 +193,20 @@ export class DulceriaComponent implements OnInit {
     }
     
     if (this.carrito.has(itemId)) {
-      this.carrito.get(itemId)!.cantidad = cantidad;
+      const itemCarrito = this.carrito.get(itemId)!;
+      const item = itemCarrito.item;
+      
+      // Validar que no exceda el stock
+      if (cantidad > item.stock) {
+        this.errorMessage = `Solo hay ${item.stock} unidades disponibles de ${item.nombre}`;
+        setTimeout(() => {
+          this.errorMessage = '';
+        }, 3000);
+        // Mantener la cantidad actual
+        return;
+      }
+      
+      itemCarrito.cantidad = cantidad;
       this.calcularTotales();
     }
   }
@@ -197,6 +239,14 @@ export class DulceriaComponent implements OnInit {
     }
   }
 
+  toggleCarrito(): void {
+    this.mostrarCarrito = !this.mostrarCarrito;
+  }
+
+  cerrarCarrito(): void {
+    this.mostrarCarrito = false;
+  }
+
   finalizarCompra(): void {
     const currentUser = this.authService.getCurrentUser();
     
@@ -211,7 +261,8 @@ export class DulceriaComponent implements OnInit {
       return;
     }
 
-    // Abrir modal de pago
+    // Cerrar modal del carrito y abrir modal de pago
+    this.mostrarCarrito = false;
     this.mostrarModalPago = true;
     
     // Pre-seleccionar primera tarjeta guardada o 'nueva'
@@ -225,8 +276,12 @@ export class DulceriaComponent implements OnInit {
   cargarTarjetasGuardadas(): void {
     if (!this.isBrowser) return;
     
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) return;
+    
     try {
-      const tarjetasGuardadasStr = localStorage.getItem('tarjetasGuardadas');
+      const userKey = `tarjetasGuardadas_${currentUser.id}`;
+      const tarjetasGuardadasStr = localStorage.getItem(userKey);
       if (tarjetasGuardadasStr) {
         this.tarjetasGuardadas = JSON.parse(tarjetasGuardadasStr);
       }
@@ -238,6 +293,9 @@ export class DulceriaComponent implements OnInit {
   guardarTarjeta(): void {
     if (!this.isBrowser) return;
     
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) return;
+    
     if (this.nuevaTarjeta.guardar && this.nuevaTarjeta.numero) {
       const tarjeta = {
         id: 'tarjeta-' + Date.now(),
@@ -247,7 +305,8 @@ export class DulceriaComponent implements OnInit {
       };
       this.tarjetasGuardadas.push(tarjeta);
       try {
-        localStorage.setItem('tarjetasGuardadas', JSON.stringify(this.tarjetasGuardadas));
+        const userKey = `tarjetasGuardadas_${currentUser.id}`;
+        localStorage.setItem(userKey, JSON.stringify(this.tarjetasGuardadas));
       } catch (error) {
         console.error('Error al guardar tarjeta:', error);
       }
@@ -364,6 +423,44 @@ export class DulceriaComponent implements OnInit {
         urlValidacion: `${window.location.origin}/validar-boletos`
       };
 
+      // Generar el ticket PDF en base64 para guardarlo
+      console.log('📄 Generando ticket PDF para guardar en BD...');
+      const ticketBase64 = await this.ticketPdfService.generarTicketDulceria({
+        numeroOrden: this.recibo.numeroOrden,
+        fecha: this.recibo.fecha,
+        hora: this.recibo.hora,
+        tarjeta: this.recibo.tarjeta,
+        items: this.recibo.items,
+        total: this.recibo.total,
+        pedidoId: this.recibo.pedidoId
+      }, true); // soloGenerar = true para obtener base64
+      
+      console.log('✅ Ticket PDF generado');
+      console.log('   Tipo:', typeof ticketBase64);
+      console.log('   Tamaño:', ticketBase64?.length || 'undefined');
+      console.log('   Primeros 100 chars:', ticketBase64?.substring(0, 100) || 'no hay datos');
+      
+      // Guardar el ticket en el pedido
+      if (ticketBase64) {
+        console.log('💾 Guardando ticket en el pedido...');
+        try {
+          const resultado = await this.pedidosService.updatePedido(pedido.id, {
+            ticketData: ticketBase64
+          }).toPromise();
+          console.log(`✅ Guardado exitosamente en pedido ${pedido.id}`);
+          console.log(`   Respuesta del servidor:`, resultado);
+        } catch (error: any) {
+          console.error(`❌ Error guardando ticket en pedido ${pedido.id}:`, error);
+          console.error(`   Detalles del error:`, {
+            message: error?.message,
+            status: error?.status,
+            error: error?.error
+          });
+        }
+      } else {
+        console.error('❌ ticketBase64 es undefined o vacío - NO se guardará ticket');
+      }
+
       // Cerrar modal de pago y mostrar recibo
       this.mostrarModalPago = false;
       this.mostrarRecibo = true;
@@ -388,33 +485,18 @@ export class DulceriaComponent implements OnInit {
     window.print();
   }
 
-  descargarTicket(): void {
+  async descargarTicket(): Promise<void> {
     if (!this.recibo) return;
 
-    let contenido = '=== TICKET DE COMPRA - DULCERÍA ===\n\n';
-    contenido += `Orden: ${this.recibo.numeroOrden}\n`;
-    contenido += `Fecha: ${this.recibo.fecha}\n`;
-    contenido += `Hora: ${this.recibo.hora}\n`;
-    contenido += `Tarjeta: ${this.recibo.tarjeta}\n\n`;
-    contenido += '--- PRODUCTOS ---\n';
-    
-    this.recibo.items.forEach((item: any) => {
-      contenido += `${item.cantidad}x ${item.nombre}\n`;
-      contenido += `  ${this.formatearPrecio(item.precioUnitario)} c/u = ${this.formatearPrecio(item.subtotal)}\n`;
+    await this.ticketPdfService.generarTicketDulceria({
+      numeroOrden: this.recibo.numeroOrden,
+      fecha: this.recibo.fecha,
+      hora: this.recibo.hora,
+      tarjeta: this.recibo.tarjeta,
+      items: this.recibo.items,
+      total: this.recibo.total,
+      pedidoId: this.recibo.pedidoId
     });
-    
-    contenido += `\nTOTAL: ${this.formatearPrecio(this.recibo.total)}\n\n`;
-    contenido += `Código QR: DULC-${this.recibo.pedidoId}\n`;
-    contenido += `Validar en: ${this.recibo.urlValidacion}\n`;
-    contenido += '\n¡Gracias por su compra!';
-
-    const blob = new Blob([contenido], { type: 'text/plain' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `ticket-dulceria-${this.recibo.numeroOrden}.txt`;
-    link.click();
-    window.URL.revokeObjectURL(url);
   }
 
   estaAgregando(itemId: string): boolean {

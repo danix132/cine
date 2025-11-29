@@ -5,4 +5,5 @@ export declare class CreateBoletoDto {
     estado?: string;
     vendedorId?: string;
     precio?: number;
+    ticketData?: string;
 }

@@ -149,10 +149,23 @@
             <span class="total-valor">${{ getTotal().toFixed(2) }}</span>
           </div>
 
-          <!-- Botón para marcar como entregado -->
-          <button class="btn-entregar" (click)="marcarComoEntregado()">
+          <!-- Botón para marcar como entregado (solo si NO está entregado) -->
+          <button 
+            *ngIf="!pedido.entregado" 
+            class="btn-entregar" 
+            (click)="marcarComoEntregado()"
+          >
             <i class="fas fa-box-open"></i> Marcar como Entregado
           </button>
+
+          <!-- Mensaje si ya fue entregado -->
+          <div *ngIf="pedido.entregado" class="ya-entregado-mensaje">
+            <i class="fas fa-check-circle"></i>
+            <span>Este pedido ya fue entregado</span>
+            <small *ngIf="pedido.fechaEntrega">
+              {{ pedido.fechaEntrega | date:'dd/MM/yyyy HH:mm' }}
+            </small>
+          </div>
         </div>
 
         <button class="btn-continuar" (click)="escanearNuevo()">

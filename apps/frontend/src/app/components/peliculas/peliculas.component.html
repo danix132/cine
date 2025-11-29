@@ -15,8 +15,62 @@
     </div>
   </div>
 
-  <div *ngIf="!isLoading && !errorMessage" class="peliculas-grid">
-    <div *ngFor="let pelicula of peliculas" class="pelicula-card">
+  <!-- Sección de Próximos Estrenos -->
+  <div *ngIf="!isLoading && !errorMessage && proximosEstrenos.length > 0" class="proximos-estrenos-section">
+    <div class="section-header">
+      <h2> PRÓXIMOS ESTRENOS</h2>
+      <p>No te pierdas estas películas que pronto estarán en cines</p>
+    </div>
+    
+    <div class="proximos-estrenos-grid">
+      <div *ngFor="let pelicula of proximosEstrenos" class="estreno-card">
+        <div class="estreno-badge">PRÓXIMAMENTE</div>
+        <div class="estreno-poster">
+          <img 
+            [src]="pelicula.posterUrl || '/assets/images/default-poster.svg'" 
+            [alt]="pelicula.titulo"
+            [title]="pelicula.titulo"
+            (error)="onImageError($event)"
+          />
+        </div>
+        
+        <div class="estreno-info">
+          <h3 class="estreno-titulo">{{ pelicula.titulo }}</h3>
+          <p class="estreno-fecha" *ngIf="pelicula.fechaEstreno">
+            <i class="fas fa-calendar-alt"></i>
+            Estreno: {{ formatearFecha(pelicula.fechaEstreno) }}
+          </p>
+          <p class="estreno-clasificacion">{{ pelicula.clasificacion }}</p>
+          <p class="estreno-duracion">{{ getDuracionString(pelicula.duracionMin) }}</p>
+          <p class="estreno-generos">{{ getGenerosString(pelicula.generos) }}</p>
+          
+          <div class="estreno-actions">
+            <button class="btn btn-outline-primary" (click)="verDetalle(pelicula)">
+              <i class="fas fa-info-circle"></i>
+              Ver Más
+            </button>
+            <button 
+              *ngIf="pelicula.trailerUrl"
+              class="btn btn-trailer" 
+              (click)="verTrailer(pelicula.trailerUrl)">
+              <i class="fas fa-play"></i>
+              Ver Tráiler
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sección de Películas en Cartelera -->
+  <div *ngIf="!isLoading && !errorMessage && peliculasCartelera.length > 0" class="cartelera-section">
+    <div class="section-header">
+      <h2>EN CARTELERA AHORA</h2>
+      <p>Disfruta de las películas que están en cines actualmente</p>
+    </div>
+    
+    <div class="peliculas-grid">
+    <div *ngFor="let pelicula of peliculasCartelera" class="pelicula-card">
       <div class="pelicula-poster">
         <img 
           [src]="pelicula.posterUrl || '/assets/images/default-poster.svg'" 
@@ -38,11 +92,7 @@
         <p class="pelicula-generos">{{ getGenerosString(pelicula.generos) }}</p>
         
         <div class="pelicula-actions">
-          <button class="btn btn-secondary" (click)="verDetalle(pelicula)">
-            <i class="fas fa-info-circle"></i>
-            Detalles
-          </button>
-          <button class="btn btn-primary" (click)="verFunciones(pelicula)">
+          <button class="btn btn-primary btn-block" (click)="verFunciones(pelicula)">
             <i class="fas fa-ticket-alt"></i>
             Ver Funciones
           </button>
@@ -59,3 +109,77 @@
     <p>Pronto tendremos nuevas películas en cartelera</p>
   </div>
 </div>
+
+<!-- Modal de Detalles (fuera del contenedor principal) -->
+<div *ngIf="mostrarModal && peliculaSeleccionada" class="modal-overlay" (click)="cerrarModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="cerrarModal()" title="Cerrar" aria-label="Cerrar modal">
+        <i class="fas fa-times"></i>
+      </button>
+
+      <div class="modal-header">
+        <img 
+          [src]="peliculaSeleccionada.posterUrl || '/assets/images/default-poster.svg'" 
+          [alt]="peliculaSeleccionada.titulo"
+          class="modal-poster"
+          (error)="onImageError($event)"
+        />
+        <div class="modal-info">
+          <h2>{{ peliculaSeleccionada.titulo }}</h2>
+          <div class="modal-meta">
+            <span class="badge badge-clasificacion">{{ peliculaSeleccionada.clasificacion }}</span>
+            <span class="badge badge-duracion">
+              <i class="fas fa-clock"></i>
+              {{ getDuracionString(peliculaSeleccionada.duracionMin) }}
+            </span>
+          </div>
+          <div class="modal-generos">
+            <span class="genero-tag" *ngFor="let genero of peliculaSeleccionada.generos">
+              {{ genero }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-body">
+        <h3><i class="fas fa-align-left"></i> Sinopsis</h3>
+        <p class="sinopsis-text">{{ peliculaSeleccionada.sinopsis }}</p>
+
+        <div class="modal-actions">
+          <button 
+            *ngIf="peliculaSeleccionada.trailerUrl" 
+            class="btn btn-secondary btn-lg"
+            (click)="verTrailer(peliculaSeleccionada.trailerUrl)"
+          >
+            <i class="fas fa-play-circle"></i>
+            Ver Tráiler
+          </button>
+          <button class="btn btn-primary btn-lg" (click)="verFunciones(peliculaSeleccionada); cerrarModal()">
+            <i class="fas fa-ticket-alt"></i>
+            Ver Funciones Disponibles
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Tráiler -->
+  <div *ngIf="mostrarModalTrailer" class="modal-overlay modal-trailer-overlay" (click)="cerrarModalTrailer()">
+    <div class="modal-content modal-trailer-content" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="cerrarModalTrailer()" title="Cerrar" aria-label="Cerrar tráiler">
+        <i class="fas fa-times"></i>
+      </button>
+
+      <div class="trailer-container">
+        <iframe
+          *ngIf="trailerUrl"
+          [src]="trailerUrl"
+          title="Tráiler de la película"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+          class="trailer-iframe"
+        ></iframe>
+      </div>
+    </div>
+  </div>

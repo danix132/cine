@@ -10,6 +10,7 @@ export interface Boleto {
   estado: BoletoEstado;
   codigoQR: string;
   fechaValidacion?: string | Date;
+  ticketData?: string;
   createdAt: string;
   updatedAt: string;
   funcion?: Funcion;
@@ -35,4 +36,5 @@ export interface CreateBoletoRequest {
 
 export interface UpdateBoletoRequest {
   estado?: BoletoEstado;
+  ticketData?: string;
 }

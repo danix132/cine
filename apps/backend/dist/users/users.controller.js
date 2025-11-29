@@ -18,6 +18,8 @@ const swagger_1 = require("@nestjs/swagger");
 const users_service_1 = require("./users.service");
 const create_user_dto_1 = require("./dto/create-user.dto");
 const update_user_dto_1 = require("./dto/update-user.dto");
+const change_password_dto_1 = require("./dto/change-password.dto");
+const update_preferencias_dto_1 = require("./dto/update-preferencias.dto");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
 const roles_guard_1 = require("../common/guards/roles.guard");
 const roles_decorator_1 = require("../common/decorators/roles.decorator");
@@ -40,6 +42,21 @@ let UsersController = class UsersController {
     }
     remove(id) {
         return this.usersService.remove(id);
+    }
+    changeMyPassword(req, changePasswordDto) {
+        const userId = req.user.id;
+        console.log('🔐 Usuario cambiando contraseña:', userId);
+        return this.usersService.changePassword(userId, changePasswordDto.currentPassword, changePasswordDto.newPassword);
+    }
+    deleteMyAccount(req) {
+        const userId = req.user.id;
+        console.log('🗑️ Usuario eliminando su propia cuenta:', userId);
+        return this.usersService.remove(userId);
+    }
+    updateMyPreferencias(req, updatePreferenciasDto) {
+        const userId = req.user.id;
+        console.log('🎬 Usuario actualizando preferencias:', userId);
+        return this.usersService.updatePreferencias(userId, updatePreferenciasDto.generosPreferidos || '');
     }
 };
 exports.UsersController = UsersController;
@@ -98,6 +115,39 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "remove", null);
+__decorate([
+    (0, common_1.Patch)('me/change-password'),
+    (0, swagger_1.ApiOperation)({ summary: 'Cambiar mi contraseña' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Contraseña actualizada exitosamente' }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'Usuario no encontrado' }),
+    (0, swagger_1.ApiResponse)({ status: 409, description: 'Contraseña actual incorrecta' }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, change_password_dto_1.ChangePasswordDto]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "changeMyPassword", null);
+__decorate([
+    (0, common_1.Delete)('me/delete-account'),
+    (0, swagger_1.ApiOperation)({ summary: 'Eliminar mi propia cuenta' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Cuenta eliminada exitosamente' }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'Usuario no encontrado' }),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "deleteMyAccount", null);
+__decorate([
+    (0, common_1.Patch)('me/preferencias'),
+    (0, swagger_1.ApiOperation)({ summary: 'Actualizar mis preferencias de géneros' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Preferencias actualizadas exitosamente' }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'Usuario no encontrado' }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, update_preferencias_dto_1.UpdatePreferenciasDto]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "updateMyPreferencias", null);
 exports.UsersController = UsersController = __decorate([
     (0, swagger_1.ApiTags)('users'),
     (0, common_1.Controller)('users'),

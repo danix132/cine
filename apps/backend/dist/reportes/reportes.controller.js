@@ -43,13 +43,17 @@ let ReportesController = class ReportesController {
     async reporteDesglosePorTipo(vendedorId, desde, hasta) {
         const fechaDesde = desde ? new Date(desde) : new Date(new Date().setDate(new Date().getDate() - 30));
         const fechaHasta = hasta ? new Date(hasta) : new Date();
+        fechaDesde.setHours(0, 0, 0, 0);
         fechaHasta.setHours(23, 59, 59, 999);
+        console.log('📅 CONTROLLER desglose: Fechas ajustadas:', { fechaDesde, fechaHasta });
         return this.reportesService.reporteDesglosePorTipo(vendedorId, fechaDesde, fechaHasta);
     }
     async reporteMisVentas(vendedorId, desde, hasta) {
         const fechaDesde = desde ? new Date(desde) : new Date(new Date().setDate(new Date().getDate() - 30));
         const fechaHasta = hasta ? new Date(hasta) : new Date();
+        fechaDesde.setHours(0, 0, 0, 0);
         fechaHasta.setHours(23, 59, 59, 999);
+        console.log('📅 CONTROLLER mis-ventas: Fechas ajustadas:', { fechaDesde, fechaHasta });
         return this.reportesService.reporteMisVentasVendedor(vendedorId, fechaDesde, fechaHasta);
     }
     async reporteVentasDulceria(desde, hasta) {
