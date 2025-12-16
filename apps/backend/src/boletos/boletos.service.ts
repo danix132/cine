@@ -233,8 +233,16 @@ export class BoletosService {
     if (updateBoletoDto.asientoId) updateData.asientoId = updateBoletoDto.asientoId;
     if (updateBoletoDto.usuarioId !== undefined) updateData.usuarioId = updateBoletoDto.usuarioId;
     if (updateBoletoDto.estado) updateData.estado = updateBoletoDto.estado;
+    if (updateBoletoDto.ticketData !== undefined) updateData.ticketData = updateBoletoDto.ticketData;
 
-    return this.prisma.boleto.update({
+    console.log('🔧 SERVICE: Actualizando boleto', id);
+    console.log('   Datos a actualizar:', {
+      tieneTicketData: !!updateData.ticketData,
+      tamanioTicketData: updateData.ticketData?.length || 0,
+      camposActualizados: Object.keys(updateData)
+    });
+
+    const resultado = await this.prisma.boleto.update({
       where: { id },
       data: updateData,
       include: {
@@ -248,6 +256,11 @@ export class BoletosService {
         usuario: { select: { nombre: true, email: true } },
       },
     });
+
+    console.log('✅ SERVICE: Boleto actualizado');
+    console.log('   Resultado guardado correctamente');
+    
+    return resultado;
   }
 
   async remove(id: string) {

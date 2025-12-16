@@ -194,6 +194,21 @@ export class DulceriaService {
     // Crear un mapa de productos para acceso rápido
     const productosMap = new Map(productos.map(p => [p.id, p]));
 
+    // Validar stock disponible para cada producto
+    for (const item of ventaDto.items) {
+      const producto = productosMap.get(item.dulceriaItemId);
+      if (!producto) {
+        throw new BadRequestException(`Producto ${item.dulceriaItemId} no encontrado`);
+      }
+      if (producto.stock < item.cantidad) {
+        throw new BadRequestException(
+          `Stock insuficiente para ${producto.nombre}. Disponible: ${producto.stock}, Solicitado: ${item.cantidad}`
+        );
+      }
+    }
+
+    console.log('✅ Validación de stock completada');
+
     // Calcular total de la venta
     let total = 0;
     const itemsConPrecio = ventaDto.items.map((item: any) => {
@@ -268,18 +283,30 @@ export class DulceriaService {
 
     console.log(`✅ Creados ${pedidoItems.length} items del pedido`);
 
-    // Registrar movimientos de inventario (salida)
+    // Registrar movimientos de inventario (salida) y actualizar stock
     await Promise.all(
-      itemsConPrecio.map((item: any) =>
-        this.registrarMovimiento(
+      itemsConPrecio.map(async (item: any) => {
+        // Registrar movimiento
+        await this.registrarMovimiento(
           item.dulceriaItemId,
           -item.cantidad, // Negativo porque es una salida
           `Venta - Pedido ${pedido.id}`
-        )
-      )
+        );
+        
+        // Actualizar stock directamente en el item
+        const producto = productosMap.get(item.dulceriaItemId);
+        if (producto) {
+          const nuevoStock = Math.max(0, producto.stock - item.cantidad);
+          await this.prisma.dulceriaItem.update({
+            where: { id: item.dulceriaItemId },
+            data: { stock: nuevoStock }
+          });
+          console.log(`📦 Stock actualizado para ${producto.nombre}: ${producto.stock} → ${nuevoStock}`);
+        }
+      })
     );
 
-    console.log('✅ Movimientos de inventario registrados');
+    console.log('✅ Movimientos de inventario registrados y stock actualizado');
 
     // Retornar el pedido completo con sus items
     const pedidoCompleto = await this.prisma.pedido.findUnique({

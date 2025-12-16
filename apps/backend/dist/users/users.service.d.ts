@@ -5,16 +5,16 @@ export declare class UsersService {
     private prisma;
     constructor(prisma: PrismaService);
     create(createUserDto: CreateUserDto): Promise<{
-        email: string;
         nombre: string;
+        email: string;
         rol: import("@prisma/client").$Enums.UserRole;
         id: string;
         createdAt: Date;
         updatedAt: Date;
     }>;
     findAll(query: any): Promise<import("../common/dto/pagination.dto").PaginatedResponseDto<{
-        email: string;
         nombre: string;
+        email: string;
         rol: import("@prisma/client").$Enums.UserRole;
         id: string;
         createdAt: Date;
@@ -26,16 +26,16 @@ export declare class UsersService {
         };
     }>>;
     findOne(id: string): Promise<{
-        email: string;
         nombre: string;
+        email: string;
         rol: import("@prisma/client").$Enums.UserRole;
         id: string;
         createdAt: Date;
         updatedAt: Date;
     }>;
     update(id: string, updateUserDto: UpdateUserDto): Promise<{
-        email: string;
         nombre: string;
+        email: string;
         rol: import("@prisma/client").$Enums.UserRole;
         id: string;
         createdAt: Date;
@@ -45,12 +45,20 @@ export declare class UsersService {
         message: string;
     }>;
     findByEmail(email: string): Promise<{
-        email: string;
         nombre: string;
+        email: string;
         rol: import("@prisma/client").$Enums.UserRole;
+        generosPreferidos: string | null;
         id: string;
         passwordHash: string;
         createdAt: Date;
         updatedAt: Date;
+    }>;
+    changePassword(userId: string, currentPassword: string, newPassword: string): Promise<{
+        message: string;
+    }>;
+    updatePreferencias(userId: string, generosPreferidos: string): Promise<{
+        message: string;
+        generosPreferidos: string;
     }>;
 }

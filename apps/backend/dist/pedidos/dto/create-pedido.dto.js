@@ -91,4 +91,10 @@ __decorate([
     (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", Array)
 ], CreatePedidoDto.prototype, "items", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Ticket en base64 (opcional)' }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreatePedidoDto.prototype, "ticketData", void 0);
 //# sourceMappingURL=create-pedido.dto.js.map

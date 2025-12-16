@@ -50,11 +50,38 @@ export class PedidosController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN', 'VENDEDOR')
+  @Roles('ADMIN', 'VENDEDOR', 'CLIENTE')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Actualizar un pedido' })
-  update(@Param('id') id: string, @Body() updatePedidoDto: UpdatePedidoDto) {
-    return this.pedidosService.update(id, updatePedidoDto);
+  async update(@Param('id') id: string, @Body() updatePedidoDto: UpdatePedidoDto) {
+    console.log('🔄 CONTROLLER: PATCH /pedidos/:id llamado');
+    console.log('   ID del pedido:', id);
+    console.log('   Datos a actualizar:', {
+      tieneTicketData: !!updatePedidoDto.ticketData,
+      tamanioTicketData: updatePedidoDto.ticketData?.length || 0,
+      camposActualizados: Object.keys(updatePedidoDto)
+    });
+    
+    try {
+      const resultado = await this.pedidosService.update(id, updatePedidoDto);
+      console.log('✅ CONTROLLER: Pedido actualizado exitosamente');
+      return resultado;
+    } catch (error) {
+      console.error('❌ CONTROLLER: Error al actualizar pedido:', error.message);
+      throw error;
+    }
+  }
+
+  @Post(':id/entregar')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN', 'VENDEDOR')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Marcar un pedido de dulcería como entregado' })
+  marcarComoEntregado(
+    @Param('id') id: string,
+    @Body('vendedorId') vendedorId: string
+  ) {
+    return this.pedidosService.marcarComoEntregado(id, vendedorId);
   }
 
   @Delete(':id')

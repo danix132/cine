@@ -1,14 +1,14 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { RegisterRequest } from '../../models/user.model';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss']
 })
@@ -61,7 +61,17 @@ export class RegisterComponent {
         },
         error: (error) => {
           this.isLoading = false;
-          this.errorMessage = error.error?.message || 'Error al registrarse';
+          console.error('Error al registrarse:', error);
+          
+          // Manejo específico de errores
+          if (error.status === 409) {
+            // Error 409 Conflict - Email ya registrado
+            this.errorMessage = '❌ Este correo electrónico ya está registrado. Por favor, usa otro correo o inicia sesión.';
+          } else if (error.error?.message) {
+            this.errorMessage = error.error.message;
+          } else {
+            this.errorMessage = 'Error al registrarse. Por favor, intenta de nuevo.';
+          }
         }
       });
     }

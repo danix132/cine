@@ -5,7 +5,17 @@
   </div>
 
   <div class="cliente-grid">
-    <!-- 1. Mis Boletos -->
+    <!-- 1. Recomendaciones Para Ti -->
+    <div class="cliente-card card-recomendaciones">
+      <div class="card-icon">
+        <i class="fas fa-robot"></i>
+      </div>
+      <h3>Recomendaciones Para Ti</h3>
+      <p>Películas personalizadas según tus gustos</p>
+      <button class="btn btn-primary" routerLink="/cliente/recomendaciones">Ver Recomendaciones</button>
+    </div>
+
+    <!-- 2. Comprar Boletos -->
     <div class="cliente-card">
       <div class="card-icon">
         <i class="fas fa-ticket-alt"></i>
@@ -15,7 +25,7 @@
       <button class="btn btn-primary" (click)="navegarFunciones()">Ver Funciones</button>
     </div>
 
-    <!-- 2. Dulcería -->
+    <!-- 3. Dulcería -->
     <div class="cliente-card">
       <div class="card-icon">
         <i class="fas fa-candy-cane"></i>
@@ -25,7 +35,7 @@
       <button class="btn btn-primary" routerLink="/dulceria">Ver Dulcería</button>
     </div>
 
-    <!-- 3. Historial de Compras -->
+    <!-- 4. Historial de Compras -->
     <div class="cliente-card">
       <div class="card-icon">
         <i class="fas fa-history"></i>
@@ -35,14 +45,14 @@
       <button class="btn btn-primary" routerLink="/cliente/historial">Ver Historial</button>
     </div>
 
-    <!-- 4. Mi Carrito -->
+    <!-- 5. Mi Perfil -->
     <div class="cliente-card">
       <div class="card-icon">
-        <i class="fas fa-shopping-cart"></i>
+        <i class="fas fa-user-circle"></i>
       </div>
-      <h3>Mi Carrito</h3>
-      <p>Revisa los items en tu carrito</p>
-      <button class="btn btn-primary" routerLink="/carrito">Ver Carrito</button>
+      <h3>Mi Perfil</h3>
+      <p>Administra tu información personal y preferencias</p>
+      <button class="btn btn-primary" routerLink="/cliente/perfil">Ver Perfil</button>
     </div>
   </div>
 </div>

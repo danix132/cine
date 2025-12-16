@@ -34,4 +34,9 @@ export class CreateBoletoDto {
   @Type(() => Number)
   @IsOptional()
   precio?: number;
+
+  @ApiProperty({ description: 'Ticket en base64 (opcional)', required: false })
+  @IsString()
+  @IsOptional()
+  ticketData?: string;
 }

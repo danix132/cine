@@ -60,11 +60,26 @@ export class BoletosController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN', 'VENDEDOR')
+  @Roles('ADMIN', 'VENDEDOR', 'CLIENTE')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Actualizar un boleto' })
-  update(@Param('id') id: string, @Body() updateBoletoDto: UpdateBoletoDto) {
-    return this.boletosService.update(id, updateBoletoDto);
+  async update(@Param('id') id: string, @Body() updateBoletoDto: UpdateBoletoDto) {
+    console.log('🔄 CONTROLLER: PATCH /boletos/:id llamado');
+    console.log('   ID del boleto:', id);
+    console.log('   Datos a actualizar:', {
+      tieneTicketData: !!updateBoletoDto.ticketData,
+      tamanioTicketData: updateBoletoDto.ticketData?.length || 0,
+      camposActualizados: Object.keys(updateBoletoDto)
+    });
+    
+    try {
+      const resultado = await this.boletosService.update(id, updateBoletoDto);
+      console.log('✅ CONTROLLER: Boleto actualizado exitosamente');
+      return resultado;
+    } catch (error) {
+      console.error('❌ CONTROLLER: Error al actualizar boleto:', error.message);
+      throw error;
+    }
   }
 
   @Delete(':id')

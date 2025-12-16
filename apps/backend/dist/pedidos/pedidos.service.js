@@ -122,7 +122,21 @@ let PedidosService = class PedidosService {
             updateData.total = updatePedidoDto.total;
         if (updatePedidoDto.tipo !== undefined)
             updateData.tipo = updatePedidoDto.tipo;
-        return this.prisma.pedido.update({
+        if (updatePedidoDto.ticketData !== undefined)
+            updateData.ticketData = updatePedidoDto.ticketData;
+        if (updatePedidoDto.estado !== undefined)
+            updateData.estado = updatePedidoDto.estado;
+        if (updatePedidoDto.entregado !== undefined)
+            updateData.entregado = updatePedidoDto.entregado;
+        if (updatePedidoDto.fechaEntrega !== undefined)
+            updateData.fechaEntrega = updatePedidoDto.fechaEntrega;
+        console.log('🔧 SERVICE: Actualizando pedido', id);
+        console.log('   Datos a actualizar:', {
+            tieneTicketData: !!updateData.ticketData,
+            tamanioTicketData: updateData.ticketData?.length || 0,
+            camposActualizados: Object.keys(updateData)
+        });
+        const resultado = await this.prisma.pedido.update({
             where: { id },
             data: updateData,
             include: {
@@ -135,6 +149,8 @@ let PedidosService = class PedidosService {
                 },
             },
         });
+        console.log('✅ SERVICE: Pedido actualizado');
+        return resultado;
     }
     async remove(id) {
         await this.findOne(id);
@@ -142,10 +158,42 @@ let PedidosService = class PedidosService {
             where: { id },
         });
     }
+    async marcarComoEntregado(id, vendedorId) {
+        const pedido = await this.findOne(id);
+        const tieneDulceria = pedido.items.some(item => item.tipo === 'DULCERIA');
+        if (!tieneDulceria) {
+            throw new common_1.NotFoundException('Este pedido no contiene items de dulcería');
+        }
+        if (pedido.tipo !== 'WEB') {
+            throw new common_1.NotFoundException('Solo se pueden entregar pedidos de tipo WEB');
+        }
+        if (pedido.entregado) {
+            throw new common_1.NotFoundException('Este pedido ya fue entregado anteriormente');
+        }
+        if (pedido.estado !== 'COMPLETADO') {
+            throw new common_1.NotFoundException('El pedido debe estar pagado para ser entregado');
+        }
+        return this.prisma.pedido.update({
+            where: { id },
+            data: {
+                entregado: true,
+                fechaEntrega: new Date(),
+                entregadoPorId: vendedorId,
+            },
+            include: {
+                usuario: { select: { nombre: true, email: true } },
+                vendedor: { select: { nombre: true, email: true } },
+                items: true,
+            },
+        });
+    }
     async findMyOrders(usuarioId) {
-        return this.prisma.pedido.findMany({
+        console.log('📖 SERVICE: Buscando pedidos del usuario:', usuarioId);
+        const resultado = await this.prisma.pedido.findMany({
             where: { usuarioId },
             include: {
+                usuario: { select: { nombre: true, email: true } },
+                vendedor: { select: { nombre: true, email: true } },
                 items: {
                     include: {
                         pedido: true,
@@ -154,6 +202,13 @@ let PedidosService = class PedidosService {
             },
             orderBy: { createdAt: 'desc' },
         });
+        console.log('✅ SERVICE: Pedidos encontrados:', resultado.length);
+        if (resultado.length > 0) {
+            const primerPedido = resultado[0];
+            console.log('   Primer pedido tiene ticketData:', !!primerPedido?.ticketData);
+            console.log('   Tamaño ticketData:', primerPedido?.ticketData?.length || 0);
+        }
+        return resultado;
     }
 };
 exports.PedidosService = PedidosService;

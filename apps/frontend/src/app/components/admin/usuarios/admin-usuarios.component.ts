@@ -186,7 +186,15 @@ export class AdminUsuariosComponent implements OnInit {
       error: (error) => {
         console.error('Error al guardar usuario:', error);
         this.guardando = false;
-        alert('Error al guardar usuario: ' + (error.error?.message || error.message));
+        
+        // Manejo específico para email duplicado (HTTP 409)
+        if (error.status === 409) {
+          alert('❌ Este correo electrónico ya está en uso. Por favor, usa otro correo.');
+        } else if (error.error?.message) {
+          alert('Error al guardar usuario: ' + error.error.message);
+        } else {
+          alert('Error al guardar usuario. Por favor, intenta de nuevo.');
+        }
       }
     });
   }

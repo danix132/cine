@@ -5,6 +5,34 @@ export declare class PedidosService {
     private readonly prisma;
     constructor(prisma: PrismaService);
     create(createPedidoDto: CreatePedidoDto): Promise<{
+        items: ({
+            pedido: {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                total: import("@prisma/client/runtime/library").Decimal;
+                estado: import("@prisma/client").$Enums.PedidoEstado;
+                usuarioId: string | null;
+                ticketData: string | null;
+                vendedorId: string | null;
+                tipo: import("@prisma/client").$Enums.PedidoTipo;
+                metodoPago: string | null;
+                entregado: boolean;
+                fechaEntrega: Date | null;
+                entregadoPorId: string | null;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            pedidoId: string;
+            precio: import("@prisma/client/runtime/library").Decimal;
+            tipo: import("@prisma/client").$Enums.PedidoItemTipo;
+            referenciaId: string;
+            descripcion: string | null;
+            cantidad: number;
+            precioUnitario: import("@prisma/client/runtime/library").Decimal;
+            subtotal: import("@prisma/client/runtime/library").Decimal;
+        })[];
         usuario: {
             nombre: string;
             email: string;
@@ -13,43 +41,51 @@ export declare class PedidosService {
             nombre: string;
             email: string;
         };
-        items: ({
-            pedido: {
-                id: string;
-                total: import("@prisma/client/runtime/library").Decimal;
-                tipo: import("@prisma/client").$Enums.PedidoTipo;
-                estado: import("@prisma/client").$Enums.PedidoEstado;
-                metodoPago: string | null;
-                createdAt: Date;
-                updatedAt: Date;
-                usuarioId: string | null;
-                vendedorId: string | null;
-            };
-        } & {
-            id: string;
-            tipo: import("@prisma/client").$Enums.PedidoItemTipo;
-            createdAt: Date;
-            referenciaId: string;
-            descripcion: string | null;
-            cantidad: number;
-            precio: import("@prisma/client/runtime/library").Decimal;
-            precioUnitario: import("@prisma/client/runtime/library").Decimal;
-            subtotal: import("@prisma/client/runtime/library").Decimal;
-            pedidoId: string;
-        })[];
     } & {
         id: string;
-        total: import("@prisma/client/runtime/library").Decimal;
-        tipo: import("@prisma/client").$Enums.PedidoTipo;
-        estado: import("@prisma/client").$Enums.PedidoEstado;
-        metodoPago: string | null;
         createdAt: Date;
         updatedAt: Date;
+        total: import("@prisma/client/runtime/library").Decimal;
+        estado: import("@prisma/client").$Enums.PedidoEstado;
         usuarioId: string | null;
+        ticketData: string | null;
         vendedorId: string | null;
+        tipo: import("@prisma/client").$Enums.PedidoTipo;
+        metodoPago: string | null;
+        entregado: boolean;
+        fechaEntrega: Date | null;
+        entregadoPorId: string | null;
     }>;
     findAll(query: any): Promise<{
         pedidos: ({
+            items: ({
+                pedido: {
+                    id: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    total: import("@prisma/client/runtime/library").Decimal;
+                    estado: import("@prisma/client").$Enums.PedidoEstado;
+                    usuarioId: string | null;
+                    ticketData: string | null;
+                    vendedorId: string | null;
+                    tipo: import("@prisma/client").$Enums.PedidoTipo;
+                    metodoPago: string | null;
+                    entregado: boolean;
+                    fechaEntrega: Date | null;
+                    entregadoPorId: string | null;
+                };
+            } & {
+                id: string;
+                createdAt: Date;
+                pedidoId: string;
+                precio: import("@prisma/client/runtime/library").Decimal;
+                tipo: import("@prisma/client").$Enums.PedidoItemTipo;
+                referenciaId: string;
+                descripcion: string | null;
+                cantidad: number;
+                precioUnitario: import("@prisma/client/runtime/library").Decimal;
+                subtotal: import("@prisma/client/runtime/library").Decimal;
+            })[];
             usuario: {
                 nombre: string;
                 email: string;
@@ -58,40 +94,20 @@ export declare class PedidosService {
                 nombre: string;
                 email: string;
             };
-            items: ({
-                pedido: {
-                    id: string;
-                    total: import("@prisma/client/runtime/library").Decimal;
-                    tipo: import("@prisma/client").$Enums.PedidoTipo;
-                    estado: import("@prisma/client").$Enums.PedidoEstado;
-                    metodoPago: string | null;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    usuarioId: string | null;
-                    vendedorId: string | null;
-                };
-            } & {
-                id: string;
-                tipo: import("@prisma/client").$Enums.PedidoItemTipo;
-                createdAt: Date;
-                referenciaId: string;
-                descripcion: string | null;
-                cantidad: number;
-                precio: import("@prisma/client/runtime/library").Decimal;
-                precioUnitario: import("@prisma/client/runtime/library").Decimal;
-                subtotal: import("@prisma/client/runtime/library").Decimal;
-                pedidoId: string;
-            })[];
         } & {
             id: string;
-            total: import("@prisma/client/runtime/library").Decimal;
-            tipo: import("@prisma/client").$Enums.PedidoTipo;
-            estado: import("@prisma/client").$Enums.PedidoEstado;
-            metodoPago: string | null;
             createdAt: Date;
             updatedAt: Date;
+            total: import("@prisma/client/runtime/library").Decimal;
+            estado: import("@prisma/client").$Enums.PedidoEstado;
             usuarioId: string | null;
+            ticketData: string | null;
             vendedorId: string | null;
+            tipo: import("@prisma/client").$Enums.PedidoTipo;
+            metodoPago: string | null;
+            entregado: boolean;
+            fechaEntrega: Date | null;
+            entregadoPorId: string | null;
         })[];
         total: number;
         page: any;
@@ -100,31 +116,31 @@ export declare class PedidosService {
     findOne(id: string): Promise<{
         items: ({
             id: string;
-            tipo: import("@prisma/client").$Enums.PedidoItemTipo;
             createdAt: Date;
+            pedidoId: string;
+            precio: import("@prisma/client/runtime/library").Decimal;
+            tipo: import("@prisma/client").$Enums.PedidoItemTipo;
             referenciaId: string;
             descripcion: string | null;
             cantidad: number;
-            precio: import("@prisma/client/runtime/library").Decimal;
             precioUnitario: import("@prisma/client/runtime/library").Decimal;
             subtotal: import("@prisma/client/runtime/library").Decimal;
-            pedidoId: string;
         } | {
             dulceriaItem: {
-                tipo: import("@prisma/client").$Enums.DulceriaItemTipo;
-                precio: import("@prisma/client/runtime/library").Decimal;
                 nombre: string;
+                precio: import("@prisma/client/runtime/library").Decimal;
+                tipo: import("@prisma/client").$Enums.DulceriaItemTipo;
             };
             id: string;
-            tipo: import("@prisma/client").$Enums.PedidoItemTipo;
             createdAt: Date;
+            pedidoId: string;
+            precio: import("@prisma/client/runtime/library").Decimal;
+            tipo: import("@prisma/client").$Enums.PedidoItemTipo;
             referenciaId: string;
             descripcion: string | null;
             cantidad: number;
-            precio: import("@prisma/client/runtime/library").Decimal;
             precioUnitario: import("@prisma/client/runtime/library").Decimal;
             subtotal: import("@prisma/client/runtime/library").Decimal;
-            pedidoId: string;
         })[];
         usuario: {
             nombre: string;
@@ -135,104 +151,172 @@ export declare class PedidosService {
             email: string;
         };
         id: string;
-        total: import("@prisma/client/runtime/library").Decimal;
-        tipo: import("@prisma/client").$Enums.PedidoTipo;
-        estado: import("@prisma/client").$Enums.PedidoEstado;
-        metodoPago: string | null;
         createdAt: Date;
         updatedAt: Date;
+        total: import("@prisma/client/runtime/library").Decimal;
+        estado: import("@prisma/client").$Enums.PedidoEstado;
         usuarioId: string | null;
+        ticketData: string | null;
         vendedorId: string | null;
+        tipo: import("@prisma/client").$Enums.PedidoTipo;
+        metodoPago: string | null;
+        entregado: boolean;
+        fechaEntrega: Date | null;
+        entregadoPorId: string | null;
     }>;
     update(id: string, updatePedidoDto: UpdatePedidoDto): Promise<{
-        usuario: {
-            nombre: string;
-            email: string;
-        };
-        vendedor: {
-            nombre: string;
-            email: string;
-        };
         items: ({
             pedido: {
                 id: string;
-                total: import("@prisma/client/runtime/library").Decimal;
-                tipo: import("@prisma/client").$Enums.PedidoTipo;
-                estado: import("@prisma/client").$Enums.PedidoEstado;
-                metodoPago: string | null;
                 createdAt: Date;
                 updatedAt: Date;
+                total: import("@prisma/client/runtime/library").Decimal;
+                estado: import("@prisma/client").$Enums.PedidoEstado;
                 usuarioId: string | null;
+                ticketData: string | null;
                 vendedorId: string | null;
+                tipo: import("@prisma/client").$Enums.PedidoTipo;
+                metodoPago: string | null;
+                entregado: boolean;
+                fechaEntrega: Date | null;
+                entregadoPorId: string | null;
             };
         } & {
             id: string;
-            tipo: import("@prisma/client").$Enums.PedidoItemTipo;
             createdAt: Date;
+            pedidoId: string;
+            precio: import("@prisma/client/runtime/library").Decimal;
+            tipo: import("@prisma/client").$Enums.PedidoItemTipo;
             referenciaId: string;
             descripcion: string | null;
             cantidad: number;
-            precio: import("@prisma/client/runtime/library").Decimal;
             precioUnitario: import("@prisma/client/runtime/library").Decimal;
             subtotal: import("@prisma/client/runtime/library").Decimal;
-            pedidoId: string;
         })[];
+        usuario: {
+            nombre: string;
+            email: string;
+        };
+        vendedor: {
+            nombre: string;
+            email: string;
+        };
     } & {
         id: string;
-        total: import("@prisma/client/runtime/library").Decimal;
-        tipo: import("@prisma/client").$Enums.PedidoTipo;
-        estado: import("@prisma/client").$Enums.PedidoEstado;
-        metodoPago: string | null;
         createdAt: Date;
         updatedAt: Date;
+        total: import("@prisma/client/runtime/library").Decimal;
+        estado: import("@prisma/client").$Enums.PedidoEstado;
         usuarioId: string | null;
+        ticketData: string | null;
         vendedorId: string | null;
+        tipo: import("@prisma/client").$Enums.PedidoTipo;
+        metodoPago: string | null;
+        entregado: boolean;
+        fechaEntrega: Date | null;
+        entregadoPorId: string | null;
     }>;
     remove(id: string): Promise<{
         id: string;
-        total: import("@prisma/client/runtime/library").Decimal;
-        tipo: import("@prisma/client").$Enums.PedidoTipo;
-        estado: import("@prisma/client").$Enums.PedidoEstado;
-        metodoPago: string | null;
         createdAt: Date;
         updatedAt: Date;
+        total: import("@prisma/client/runtime/library").Decimal;
+        estado: import("@prisma/client").$Enums.PedidoEstado;
         usuarioId: string | null;
+        ticketData: string | null;
         vendedorId: string | null;
+        tipo: import("@prisma/client").$Enums.PedidoTipo;
+        metodoPago: string | null;
+        entregado: boolean;
+        fechaEntrega: Date | null;
+        entregadoPorId: string | null;
+    }>;
+    marcarComoEntregado(id: string, vendedorId: string): Promise<{
+        items: {
+            id: string;
+            createdAt: Date;
+            pedidoId: string;
+            precio: import("@prisma/client/runtime/library").Decimal;
+            tipo: import("@prisma/client").$Enums.PedidoItemTipo;
+            referenciaId: string;
+            descripcion: string | null;
+            cantidad: number;
+            precioUnitario: import("@prisma/client/runtime/library").Decimal;
+            subtotal: import("@prisma/client/runtime/library").Decimal;
+        }[];
+        usuario: {
+            nombre: string;
+            email: string;
+        };
+        vendedor: {
+            nombre: string;
+            email: string;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        total: import("@prisma/client/runtime/library").Decimal;
+        estado: import("@prisma/client").$Enums.PedidoEstado;
+        usuarioId: string | null;
+        ticketData: string | null;
+        vendedorId: string | null;
+        tipo: import("@prisma/client").$Enums.PedidoTipo;
+        metodoPago: string | null;
+        entregado: boolean;
+        fechaEntrega: Date | null;
+        entregadoPorId: string | null;
     }>;
     findMyOrders(usuarioId: string): Promise<({
         items: ({
             pedido: {
                 id: string;
-                total: import("@prisma/client/runtime/library").Decimal;
-                tipo: import("@prisma/client").$Enums.PedidoTipo;
-                estado: import("@prisma/client").$Enums.PedidoEstado;
-                metodoPago: string | null;
                 createdAt: Date;
                 updatedAt: Date;
+                total: import("@prisma/client/runtime/library").Decimal;
+                estado: import("@prisma/client").$Enums.PedidoEstado;
                 usuarioId: string | null;
+                ticketData: string | null;
                 vendedorId: string | null;
+                tipo: import("@prisma/client").$Enums.PedidoTipo;
+                metodoPago: string | null;
+                entregado: boolean;
+                fechaEntrega: Date | null;
+                entregadoPorId: string | null;
             };
         } & {
             id: string;
-            tipo: import("@prisma/client").$Enums.PedidoItemTipo;
             createdAt: Date;
+            pedidoId: string;
+            precio: import("@prisma/client/runtime/library").Decimal;
+            tipo: import("@prisma/client").$Enums.PedidoItemTipo;
             referenciaId: string;
             descripcion: string | null;
             cantidad: number;
-            precio: import("@prisma/client/runtime/library").Decimal;
             precioUnitario: import("@prisma/client/runtime/library").Decimal;
             subtotal: import("@prisma/client/runtime/library").Decimal;
-            pedidoId: string;
         })[];
+        usuario: {
+            nombre: string;
+            email: string;
+        };
+        vendedor: {
+            nombre: string;
+            email: string;
+        };
     } & {
         id: string;
-        total: import("@prisma/client/runtime/library").Decimal;
-        tipo: import("@prisma/client").$Enums.PedidoTipo;
-        estado: import("@prisma/client").$Enums.PedidoEstado;
-        metodoPago: string | null;
         createdAt: Date;
         updatedAt: Date;
+        total: import("@prisma/client/runtime/library").Decimal;
+        estado: import("@prisma/client").$Enums.PedidoEstado;
         usuarioId: string | null;
+        ticketData: string | null;
         vendedorId: string | null;
+        tipo: import("@prisma/client").$Enums.PedidoTipo;
+        metodoPago: string | null;
+        entregado: boolean;
+        fechaEntrega: Date | null;
+        entregadoPorId: string | null;
     })[]>;
 }

@@ -64,4 +64,9 @@ export class CreatePedidoDto {
   @IsArray()
   @IsNotEmpty()
   items: CreatePedidoItemDto[];
+
+  @ApiProperty({ description: 'Ticket en base64 (opcional)' })
+  @IsString()
+  @IsOptional()
+  ticketData?: string;
 }

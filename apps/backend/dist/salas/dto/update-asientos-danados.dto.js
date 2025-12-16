@@ -9,10 +9,16 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UpdateAsientosDanadosDto = void 0;
+exports.UpdateAsientosDanadosDto = exports.AsientoEstadoDto = void 0;
 const class_validator_1 = require("class-validator");
 const class_transformer_1 = require("class-transformer");
 const swagger_1 = require("@nestjs/swagger");
+var AsientoEstadoDto;
+(function (AsientoEstadoDto) {
+    AsientoEstadoDto["DISPONIBLE"] = "DISPONIBLE";
+    AsientoEstadoDto["DANADO"] = "DANADO";
+    AsientoEstadoDto["NO_EXISTE"] = "NO_EXISTE";
+})(AsientoEstadoDto || (exports.AsientoEstadoDto = AsientoEstadoDto = {}));
 class AsientoDanadoDto {
 }
 __decorate([
@@ -27,11 +33,17 @@ __decorate([
     (0, class_validator_1.Min)(1),
     __metadata("design:type", Number)
 ], AsientoDanadoDto.prototype, "numero", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ enum: AsientoEstadoDto, required: false }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsEnum)(AsientoEstadoDto),
+    __metadata("design:type", String)
+], AsientoDanadoDto.prototype, "estado", void 0);
 class UpdateAsientosDanadosDto {
 }
 exports.UpdateAsientosDanadosDto = UpdateAsientosDanadosDto;
 __decorate([
-    (0, swagger_1.ApiProperty)({ type: [AsientoDanadoDto] }),
+    (0, swagger_1.ApiProperty)({ type: [AsientoDanadoDto], required: true, isArray: true }),
     (0, class_validator_1.IsArray)(),
     (0, class_validator_1.ValidateNested)({ each: true }),
     (0, class_transformer_1.Type)(() => AsientoDanadoDto),

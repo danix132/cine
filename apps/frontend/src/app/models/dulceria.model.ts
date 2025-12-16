@@ -5,6 +5,7 @@ export interface DulceriaItem {
   descripcion?: string;
   precio: number;
   imagenUrl?: string;
+  stock: number;
   activo: boolean;
   createdAt: string;
   updatedAt: string;
@@ -31,6 +32,7 @@ export interface CreateDulceriaItemRequest {
   descripcion?: string;
   precio: number;
   imagenUrl?: string;
+  stock?: number;
 }
 
 export interface UpdateDulceriaItemRequest {
@@ -39,5 +41,6 @@ export interface UpdateDulceriaItemRequest {
   descripcion?: string;
   precio?: number;
   imagenUrl?: string;
+  stock?: number;
   activo?: boolean;
 }

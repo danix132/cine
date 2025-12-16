@@ -69,6 +69,13 @@ export class AuthService {
     return this.currentUserSubject.value;
   }
 
+  updateCurrentUser(user: User): void {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.setItem('user', JSON.stringify(user));
+    }
+    this.currentUserSubject.next(user);
+  }
+
   isAuthenticated(): boolean {
     const token = this.getToken();
     const user = this.getCurrentUser();

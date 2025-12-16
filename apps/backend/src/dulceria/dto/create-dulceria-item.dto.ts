@@ -29,6 +29,12 @@ export class CreateDulceriaItemDto {
   @IsString()
   imagenUrl?: string;
 
+  @ApiPropertyOptional({ example: 50, minimum: 0, default: 0 })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  stock?: number;
+
   @ApiPropertyOptional({ example: true, default: true })
   @IsOptional()
   @IsBoolean()

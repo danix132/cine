@@ -31,7 +31,7 @@
             <i class="fas fa-chair"></i> {{ sala.filas }} filas × {{ sala.asientosPorFila }} asientos
           </span>
           <span class="badge bg-success">
-            <i class="fas fa-check-circle"></i> {{ asientos.length - asientosOcupados.length - asientosDanados.length }} disponibles
+            <i class="fas fa-check-circle"></i> {{ asientos.length - asientosOcupados.length - asientosDanados.length - asientosNoExisten.length }} disponibles
           </span>
         </div>
       </div>
@@ -45,12 +45,12 @@
           <div class="fila-label">Fila {{ fila }}</div>
           <div class="asientos-fila">
             <div 
-              *ngFor="let asiento of getAsientosPorFila(fila)" 
+              *ngFor="let asiento of getAsientosPorFila(fila); let i = index"
               [class]="getAsientoClass(asiento)"
               (click)="toggleAsiento(asiento.id)"
               [title]="getAsientoTooltip(asiento)"
             >
-              {{ asiento.numero }}
+              {{ i + 1 }}
             </div>
           </div>
         </div>
@@ -384,7 +384,7 @@
           </div>
           <div class="pago-item total">
             <span>TOTAL PAGADO:</span>
-            <span class="total-monto">${{ getPrecioTotal() }}</span>
+            <span class="total-monto">${{ recibo.asientos.length * (funcion?.precio || 0) }}</span>
           </div>
         </div>
       </div>

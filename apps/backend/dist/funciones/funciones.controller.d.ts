@@ -60,6 +60,8 @@ export declare class FuncionesController {
             posterUrl: string | null;
             trailerUrl: string | null;
             generos: string[];
+            esProximoEstreno: boolean;
+            fechaEstreno: Date | null;
         };
     } & {
         id: string;
@@ -120,6 +122,8 @@ export declare class FuncionesController {
             posterUrl: string | null;
             trailerUrl: string | null;
             generos: string[];
+            esProximoEstreno: boolean;
+            fechaEstreno: Date | null;
         };
         _count: {
             boletos: number;
@@ -155,6 +159,8 @@ export declare class FuncionesController {
             posterUrl: string | null;
             trailerUrl: string | null;
             generos: string[];
+            esProximoEstreno: boolean;
+            fechaEstreno: Date | null;
         };
         _count: {
             boletos: number;
@@ -204,6 +210,8 @@ export declare class FuncionesController {
             posterUrl: string | null;
             trailerUrl: string | null;
             generos: string[];
+            esProximoEstreno: boolean;
+            fechaEstreno: Date | null;
         };
         _count: {
             boletos: number;
@@ -239,19 +247,22 @@ export declare class FuncionesController {
             posterUrl: string | null;
             trailerUrl: string | null;
             generos: string[];
+            esProximoEstreno: boolean;
+            fechaEstreno: Date | null;
         };
         boletos: ({
             asiento: {
                 id: string;
-                salaId: string;
                 fila: number;
                 numero: number;
                 estado: import("@prisma/client").$Enums.AsientoEstado;
+                salaId: string;
             };
             usuario: {
-                email: string;
                 nombre: string;
+                email: string;
                 rol: import("@prisma/client").$Enums.UserRole;
+                generosPreferidos: string | null;
                 id: string;
                 passwordHash: string;
                 createdAt: Date;
@@ -268,6 +279,7 @@ export declare class FuncionesController {
             pedidoId: string | null;
             codigoQR: string;
             fechaValidacion: Date | null;
+            ticketData: string | null;
         })[];
         _count: {
             boletos: number;
@@ -303,6 +315,8 @@ export declare class FuncionesController {
             posterUrl: string | null;
             trailerUrl: string | null;
             generos: string[];
+            esProximoEstreno: boolean;
+            fechaEstreno: Date | null;
         };
     } & {
         id: string;
@@ -337,6 +351,8 @@ export declare class FuncionesController {
                 posterUrl: string | null;
                 trailerUrl: string | null;
                 generos: string[];
+                esProximoEstreno: boolean;
+                fechaEstreno: Date | null;
             };
         } & {
             id: string;
@@ -372,6 +388,8 @@ export declare class FuncionesController {
                 posterUrl: string | null;
                 trailerUrl: string | null;
                 generos: string[];
+                esProximoEstreno: boolean;
+                fechaEstreno: Date | null;
             };
         } & {
             id: string;

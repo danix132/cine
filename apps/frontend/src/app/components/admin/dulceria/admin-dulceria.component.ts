@@ -53,6 +53,7 @@ export class AdminDulceriaComponent implements OnInit {
       descripcion: ['', [Validators.maxLength(500)]],
       precio: [0, [Validators.required, Validators.min(0)]],
       imagenUrl: [''],
+      stock: [0, [Validators.required, Validators.min(0)]],
       activo: [true]
     });
   }
@@ -104,6 +105,7 @@ export class AdminDulceriaComponent implements OnInit {
     this.itemForm.patchValue({
       activo: true,
       precio: 0,
+      stock: 0,
       imagenUrl: ''
     });
     this.mostrarFormulario = true;
@@ -117,6 +119,7 @@ export class AdminDulceriaComponent implements OnInit {
       descripcion: item.descripcion || '',
       precio: item.precio,
       imagenUrl: item.imagenUrl || '',
+      stock: item.stock,
       activo: item.activo
     });
     this.mostrarFormulario = true;
@@ -133,7 +136,8 @@ export class AdminDulceriaComponent implements OnInit {
     const cleanedData: any = {
       nombre: formData.nombre,
       tipo: formData.tipo,
-      precio: formData.precio
+      precio: Number(formData.precio) || 0,
+      stock: Number(formData.stock) || 0
     };
 
     // Solo agregar campos opcionales si tienen valor

@@ -8,6 +8,8 @@ export interface Pelicula {
   trailerUrl?: string;
   generos: string[];
   estado: PeliculaEstado;
+  esProximoEstreno?: boolean;
+  fechaEstreno?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -36,4 +38,6 @@ export interface UpdatePeliculaRequest {
   trailerUrl?: string;
   generos?: string[];
   estado?: PeliculaEstado;
+  esProximoEstreno?: boolean;
+  fechaEstreno?: string;
 }

@@ -16,6 +16,7 @@ exports.PeliculasController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const peliculas_service_1 = require("./peliculas.service");
+const recomendaciones_service_1 = require("./recomendaciones.service");
 const create_pelicula_dto_1 = require("./dto/create-pelicula.dto");
 const update_pelicula_dto_1 = require("./dto/update-pelicula.dto");
 const pagination_dto_1 = require("../common/dto/pagination.dto");
@@ -25,8 +26,9 @@ const roles_decorator_1 = require("../common/decorators/roles.decorator");
 const public_decorator_1 = require("../common/decorators/public.decorator");
 const client_1 = require("@prisma/client");
 let PeliculasController = class PeliculasController {
-    constructor(peliculasService) {
+    constructor(peliculasService, recomendacionesService) {
         this.peliculasService = peliculasService;
+        this.recomendacionesService = recomendacionesService;
     }
     create(createPeliculaDto) {
         return this.peliculasService.create(createPeliculaDto);
@@ -51,6 +53,11 @@ let PeliculasController = class PeliculasController {
     }
     forceRemove(id) {
         return this.peliculasService.forceRemove(id);
+    }
+    getRecomendaciones(req) {
+        const userId = req.user.id;
+        console.log('🎬 Generando recomendaciones para usuario:', userId);
+        return this.recomendacionesService.getRecomendacionesParaUsuario(userId);
     }
 };
 exports.PeliculasController = PeliculasController;
@@ -146,9 +153,22 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], PeliculasController.prototype, "forceRemove", null);
+__decorate([
+    (0, common_1.Get)('recomendaciones/personalizadas'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Obtener recomendaciones personalizadas basadas en preferencias del usuario' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Recomendaciones generadas' }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'Usuario no encontrado' }),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], PeliculasController.prototype, "getRecomendaciones", null);
 exports.PeliculasController = PeliculasController = __decorate([
     (0, swagger_1.ApiTags)('peliculas'),
     (0, common_1.Controller)('peliculas'),
-    __metadata("design:paramtypes", [peliculas_service_1.PeliculasService])
+    __metadata("design:paramtypes", [peliculas_service_1.PeliculasService,
+        recomendaciones_service_1.RecomendacionesService])
 ], PeliculasController);
 //# sourceMappingURL=peliculas.controller.js.map

@@ -2,9 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { PedidosService } from '../../../services/pedidos.service';
 import { BoletosService } from '../../../services/boletos.service';
 import { AuthService } from '../../../services/auth.service';
+import { TicketPdfService } from '../../../services/ticket-pdf.service';
 import { Pedido, PedidoItem } from '../../../models/pedido.model';
 import { Boleto } from '../../../models/boleto.model';
 import { jsPDF } from 'jspdf';
@@ -47,6 +49,12 @@ export class HistorialComprasComponent implements OnInit {
   pedidos: PedidoHistorial[] = [];
   pedidosFiltrados: PedidoHistorial[] = [];
   
+  // Modal de ticket
+  public mostrarModalTicket: boolean = false;
+  public ticketActual: SafeResourceUrl | null = null;
+  public ticketActualRaw: string = '';
+  public numeroPedidoActual: string = '';
+  
   // Filtros
   filtroTipo: 'TODOS' | 'BOLETO' | 'DULCERIA' = 'TODOS';
   filtroEstado: 'TODOS' | 'CANJEADO' | 'PENDIENTE' = 'TODOS';
@@ -68,7 +76,9 @@ export class HistorialComprasComponent implements OnInit {
     private pedidosService: PedidosService,
     private boletosService: BoletosService,
     private authService: AuthService,
-    private router: Router
+    private ticketPdfService: TicketPdfService,
+    private router: Router,
+    private sanitizer: DomSanitizer
   ) {}
 
   ngOnInit(): void {
@@ -90,6 +100,10 @@ export class HistorialComprasComponent implements OnInit {
       const pedidosData = await this.pedidosService.getMisPedidos(currentUser.id).toPromise();
 
       console.log('📦 Pedidos cargados:', pedidosData);
+      console.log('🔍 Verificando ticketData en pedidos:');
+      pedidosData?.forEach((p: any, i: number) => {
+        console.log(`   Pedido ${i}: ticketData = ${p.ticketData ? '✅ Presente' : '❌ Vacío'} (${p.ticketData?.length || 0} chars)`);
+      });
 
       if (!pedidosData || pedidosData.length === 0) {
         this.pedidos = [];
@@ -139,9 +153,12 @@ export class HistorialComprasComponent implements OnInit {
                 console.warn('⚠️ No se pudo cargar el boleto:', item.referenciaId);
               }
             } else if (item.tipo === 'DULCERIA') {
-              // Para dulcería, consideramos "canjeado/entregado" si el pedido está COMPLETADO
-              itemHistorial.estado = pedido.estado;
-              itemHistorial.canjeado = pedido.estado === 'COMPLETADO';
+              // Para dulcería, el estado depende de si está entregado
+              itemHistorial.estado = pedido.entregado ? 'ENTREGADO' : pedido.estado;
+              itemHistorial.canjeado = pedido.entregado || false;
+              // Generar código QR para dulcería usando el ID del pedido
+              itemHistorial.codigoQR = `DULC-${pedido.id}`;
+              itemHistorial.qrCodeUrl = await this.generarQRCode(`DULC-${pedido.id}`);
             }
 
             itemsHistorial.push(itemHistorial);
@@ -273,7 +290,9 @@ export class HistorialComprasComponent implements OnInit {
       case 'CANCELADO':
         return 'badge-danger';
       case 'COMPLETADO':
-        return 'badge-info';
+        return 'badge-primary'; // Usar azul para "Pagado"
+      case 'ENTREGADO':
+        return 'badge-success'; // Usar verde para "Entregado"
       default:
         return 'badge-secondary';
     }
@@ -290,7 +309,9 @@ export class HistorialComprasComponent implements OnInit {
       case 'CANCELADO':
         return 'Cancelado';
       case 'COMPLETADO':
-        return 'Completado';
+        return 'Pagado'; // Mostrar "Pagado" en lugar de "Completado"
+      case 'ENTREGADO':
+        return 'Entregado';
       default:
         return estado;
     }
@@ -309,6 +330,11 @@ export class HistorialComprasComponent implements OnInit {
   mostrarQRModal(item: ItemHistorial): void {
     if (!item.codigoQR) return;
     
+    // Determinar instrucción según el tipo
+    const instruccion = item.tipo === 'BOLETO' 
+      ? 'Muestra este código en la entrada del cine'
+      : 'Muestra este código en el mostrador de dulcería';
+    
     // Crear modal para mostrar QR más grande
     const modal = document.createElement('div');
     modal.className = 'qr-modal-overlay';
@@ -320,7 +346,7 @@ export class HistorialComprasComponent implements OnInit {
           <img src="${item.qrCodeUrl}" alt="Código QR" />
         </div>
         <p class="qr-code-text">${item.codigoQR}</p>
-        <p class="qr-instrucciones">Muestra este código en la entrada del cine</p>
+        <p class="qr-instrucciones">${instruccion}</p>
       </div>
     `;
     
@@ -340,244 +366,194 @@ export class HistorialComprasComponent implements OnInit {
   }
 
   // Métodos helper para el template
-  getTotalItemsPedido(pedido: PedidoHistorial): number {
+  public getTotalItemsPedido(pedido: PedidoHistorial): number {
     return pedido.items.reduce((sum: number, item: ItemHistorial) => sum + item.cantidad, 0);
   }
 
-  tieneBoletos(pedido: PedidoHistorial): boolean {
+  public tieneBoletos(pedido: PedidoHistorial): boolean {
     return pedido.items.some((item: ItemHistorial) => item.tipo === 'BOLETO');
   }
 
-  tieneDulceria(pedido: PedidoHistorial): boolean {
+  public tieneDulceria(pedido: PedidoHistorial): boolean {
     return pedido.items.some((item: ItemHistorial) => item.tipo === 'DULCERIA');
   }
 
-  async descargarTicket(pedido: PedidoHistorial): Promise<void> {
-    console.log('📄 Generando ticket PDF para pedido:', pedido.numeroPedido);
-    console.log('📦 Items del pedido:', pedido.items.map(i => ({
-      tipo: i.tipo,
-      descripcion: i.descripcion,
-      tieneCodigoQR: !!i.codigoQR,
-      codigoQR: i.codigoQR?.substring(0, 20) + '...'
-    })));
-    
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    let yPosition = 20;
+  estaEntregado(pedido: PedidoHistorial): boolean {
+    // Solo devolver true si el pedido tiene dulcería Y está marcado como entregado
+    return this.tieneDulceria(pedido) && 
+           pedido.pedidoCompleto?.entregado === true;
+  }
 
-    // Configurar fuente
-    doc.setFont('helvetica');
+  getFechaEntrega(pedido: PedidoHistorial): Date | string | null {
+    return pedido.pedidoCompleto?.fechaEntrega || null;
+  }
 
-    // ====== ENCABEZADO ======
-    doc.setFontSize(20);
-    doc.setTextColor(102, 126, 234); // Color morado
-    doc.text('TICKET DE COMPRA', pageWidth / 2, yPosition, { align: 'center' });
+  public async descargarTicket(pedido: PedidoHistorial): Promise<void> {
+    console.log('📄 Abriendo modal de ticket...');
     
-    yPosition += 10;
-    doc.setFontSize(10);
-    doc.setTextColor(100, 100, 100);
-    doc.text('www.cineapp.com', pageWidth / 2, yPosition, { align: 'center' });
+    const itemsBoletos = pedido.items.filter(item => item.tipo === 'BOLETO');
+    const itemsDulceria = pedido.items.filter(item => item.tipo === 'DULCERIA');
     
-    // Línea separadora
-    yPosition += 8;
-    doc.setDrawColor(102, 126, 234);
-    doc.setLineWidth(0.5);
-    doc.line(20, yPosition, pageWidth - 20, yPosition);
-
-    // ====== INFORMACIÓN DEL PEDIDO ======
-    yPosition += 10;
-    doc.setFontSize(12);
-    doc.setTextColor(0, 0, 0);
-    doc.setFont('helvetica', 'bold');
-    doc.text('INFORMACIÓN DEL PEDIDO', 20, yPosition);
-    
-    yPosition += 8;
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.text(`Pedido: ${pedido.numeroPedido}`, 20, yPosition);
-    yPosition += 6;
-    doc.text(`Fecha: ${pedido.fecha.toLocaleDateString('es-ES', { 
-      weekday: 'long', 
-      day: 'numeric', 
-      month: 'long', 
-      year: 'numeric' 
-    })}`, 20, yPosition);
-    yPosition += 6;
-    doc.text(`Hora: ${pedido.fecha.toLocaleTimeString('es-ES', {
-      hour: '2-digit',
-      minute: '2-digit'
-    })}`, 20, yPosition);
-    yPosition += 6;
-    
-    // Tipo de compra con icono
-    const tipoTexto = pedido.tipo === 'WEB' ? 'Compra Web' : 'Compra en Mostrador';
-    const tipoColor: [number, number, number] = pedido.tipo === 'WEB' ? [56, 239, 125] : [255, 193, 7];
-    doc.setTextColor(...tipoColor);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`Tipo: ${tipoTexto}`, 20, yPosition);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(0, 0, 0);
-    
-    yPosition += 6;
-    if (pedido.metodoPago) {
-      doc.text(`Método de Pago: ${pedido.metodoPago}`, 20, yPosition);
-      yPosition += 6;
+    // Verificar que tenga al menos boletos o dulcería
+    if (itemsBoletos.length === 0 && itemsDulceria.length === 0) {
+      alert('Este pedido no contiene items con ticket');
+      return;
     }
-    doc.text(`Estado: ${pedido.estado}`, 20, yPosition);
+    
+    console.log('🔍 Pedido actual:', {
+      numeroOrden: pedido.numeroPedido,
+      items: pedido.items.length,
+      tieneBoletos: itemsBoletos.length > 0,
+      tieneDulceria: itemsDulceria.length > 0,
+      tieneTicketGuardado: !!pedido.pedidoCompleto?.ticketData,
+      ticketDataLength: pedido.pedidoCompleto?.ticketData?.length || 0
+    });
+    
+    // Si hay ticket guardado en el pedido, mostrarlo en el modal (para dulcería o boletos)
+    if (pedido.pedidoCompleto?.ticketData) {
+      console.log('✅ Ticket encontrado en BD, abriendo modal...');
+      this.ticketActualRaw = pedido.pedidoCompleto.ticketData;
+      this.ticketActual = this.sanitizer.bypassSecurityTrustResourceUrl(pedido.pedidoCompleto.ticketData);
+      this.numeroPedidoActual = pedido.numeroPedido;
+      this.mostrarModalTicket = true;
+      return;
+    }
+    
+    // Si no hay ticket guardado en el pedido, buscar en los boletos
+    if (itemsBoletos.length > 0 && itemsBoletos[0]?.detalles?.boleto?.ticketData) {
+      console.log('✅ Ticket encontrado en boleto, abriendo modal...');
+      this.ticketActualRaw = itemsBoletos[0].detalles.boleto.ticketData;
+      this.ticketActual = this.sanitizer.bypassSecurityTrustResourceUrl(itemsBoletos[0].detalles.boleto.ticketData);
+      this.numeroPedidoActual = pedido.numeroPedido;
+      this.mostrarModalTicket = true;
+      return;
+    }
+    
+    console.log('⚠️ No hay ticket guardado para este pedido');
+    alert('No hay ticket disponible para este pedido');
+  }
 
-    // ====== PRODUCTOS ======
-    yPosition += 12;
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(102, 126, 234);
-    doc.text('PRODUCTOS', 20, yPosition);
+  public cerrarModalTicket(): void {
+    this.mostrarModalTicket = false;
+    this.ticketActual = null;
+    this.ticketActualRaw = '';
+    this.numeroPedidoActual = '';
+  }
+
+  public descargarTicketDelModal(): void {
+    if (!this.ticketActualRaw) return;
     
-    yPosition += 8;
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(0, 0, 0);
+    try {
+      const link = document.createElement('a');
+      link.href = this.ticketActualRaw;
+      link.download = `recibo-${this.numeroPedidoActual}.pdf`;
+      link.click();
+      console.log('✅ Ticket descargado exitosamente');
+    } catch (error) {
+      console.error('❌ Error al descargar ticket:', error);
+      alert('Error al descargar el ticket');
+    }
+  }
+
+  async generarPDFBoletos(pedido: PedidoHistorial, items: ItemHistorial[]): Promise<void> {
+    // Tomar el primer boleto para obtener info de la película/función
+    const primerItem = items[0];
+    const boleto = primerItem?.detalles?.boleto;
     
-    // Agregar items
-    for (let index = 0; index < pedido.items.length; index++) {
-      const item = pedido.items[index];
-      
-      // Verificar si necesitamos una nueva página
-      if (yPosition > 250) {
-        doc.addPage();
-        yPosition = 20;
+    if (!boleto || !boleto.funcion) {
+      console.error('No se encontró información de la función');
+      alert('No se puede generar el ticket: información de función no disponible');
+      return;
+    }
+
+    const funcion = boleto.funcion;
+    const fecha = new Date(pedido.fecha);
+    const fechaFuncion = new Date(funcion.inicio);
+    const timestamp = new Date(pedido.pedidoCompleto.createdAt).getTime();
+    const numeroOrden = 'BOL-' + timestamp.toString().slice(-8);
+    
+    // Generar QR con el código del primer boleto (todos comparten la misma compra)
+    const qrCodeDataUrl = await QRCode.toDataURL(boleto.codigoQR, {
+      width: 300,
+      margin: 2,
+      color: {
+        dark: '#000000',
+        light: '#FFFFFF'
       }
-      
-      // Número y descripción
-      doc.setFont('helvetica', 'bold');
-      doc.text(`${index + 1}. ${item.descripcion}`, 20, yPosition);
-      yPosition += 5;
-      
-      doc.setFont('helvetica', 'normal');
-      doc.text(`   Cantidad: ${item.cantidad} x $${item.precio.toFixed(2)}`, 20, yPosition);
-      yPosition += 5;
-      doc.text(`   Subtotal: $${item.subtotal.toFixed(2)}`, 20, yPosition);
-      yPosition += 5;
-      
-      // Estado con color
-      const estadoTexto = item.canjeado ? 'Canjeado' : 'Pendiente';
-      const estadoColor: [number, number, number] = item.canjeado ? [34, 197, 94] : [234, 179, 8];
-      doc.setTextColor(...estadoColor);
-      doc.text(`   Estado: ${estadoTexto}`, 20, yPosition);
-      doc.setTextColor(0, 0, 0);
-      yPosition += 5;
-      
-      // Código QR si existe
-      if (item.codigoQR) {
-        doc.setFontSize(8);
-        doc.setTextColor(100, 100, 100);
-        doc.text(`   QR: ${item.codigoQR.substring(0, 30)}...`, 20, yPosition);
-        doc.setFontSize(9);
-        doc.setTextColor(0, 0, 0);
-        yPosition += 5;
-      }
-      
-      // Generar y agregar QR visual si existe código QR
-      if (item.codigoQR && item.tipo === 'BOLETO') {
-        console.log('🔍 Generando QR para item:', {
-          tipo: item.tipo,
-          codigoQR: item.codigoQR,
-          descripcion: item.descripcion
-        });
-        
-        try {
-          // Generar QR dinámicamente
-          const qrDataUrl = await QRCode.toDataURL(item.codigoQR, {
-            width: 300,
-            margin: 2,
-            color: {
-              dark: '#000000',
-              light: '#FFFFFF'
-            }
-          });
-          
-          console.log('✅ QR generado exitosamente, longitud:', qrDataUrl.length);
-          
-          const qrSize = 30;
-          doc.addImage(qrDataUrl, 'PNG', 25, yPosition, qrSize, qrSize);
-          yPosition += qrSize + 3;
-          
-          console.log('✅ QR agregado al PDF en posición Y:', yPosition - qrSize - 3);
-        } catch (error) {
-          console.error('❌ Error generando QR:', error);
-          console.warn('No se pudo generar o agregar el QR al PDF:', error);
-        }
-      } else {
-        console.log('⚠️ Item sin QR:', {
-          tipo: item.tipo,
-          tieneCodigoQR: !!item.codigoQR,
-          descripcion: item.descripcion
-        });
-      }
-      
-      yPosition += 3;
-    }
-
-    // ====== TOTAL ======
-    yPosition += 5;
-    doc.setFillColor(102, 126, 234);
-    doc.rect(20, yPosition - 5, pageWidth - 40, 12, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(16);
-    doc.text(`TOTAL: $${pedido.total.toFixed(2)}`, pageWidth / 2, yPosition + 3, { align: 'center' });
-
-    // ====== INFORMACIÓN ADICIONAL ======
-    yPosition += 18;
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(102, 126, 234);
+    });
     
-    if (this.tieneBoletos(pedido)) {
-      doc.text('BOLETOS INCLUIDOS', 20, yPosition);
-      yPosition += 6;
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      doc.setTextColor(0, 0, 0);
-      doc.text('Presenta tu codigo QR en la entrada del cine', 20, yPosition);
-      yPosition += 8;
-    }
+    const totalBoletos = items.reduce((sum, item) => sum + item.subtotal, 0);
+    const tarjetaInfo = pedido.metodoPago === 'TARJETA' ? '**** ****' : pedido.metodoPago || 'No especificado';
     
-    if (this.tieneDulceria(pedido)) {
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(10);
-      doc.setTextColor(102, 126, 234);
-      doc.text('PRODUCTOS DE DULCERIA INCLUIDOS', 20, yPosition);
-      yPosition += 6;
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      doc.setTextColor(0, 0, 0);
-      doc.text('Recogelos en el mostrador de dulceria', 20, yPosition);
-      yPosition += 8;
-    }
+    await this.ticketPdfService.generarTicketBoletos({
+      numeroOrden: numeroOrden,
+      fecha: fecha.toLocaleDateString('es-ES', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      }),
+      hora: fecha.toLocaleTimeString('es-ES', {
+        hour: '2-digit',
+        minute: '2-digit'
+      }),
+      tarjeta: tarjetaInfo,
+      pelicula: {
+        titulo: funcion.pelicula?.titulo || 'N/A',
+        fechaFuncion: fechaFuncion.toLocaleDateString('es-ES', { 
+          weekday: 'long', 
+          day: 'numeric', 
+          month: 'long', 
+          year: 'numeric' 
+        }),
+        horaFuncion: fechaFuncion.toLocaleTimeString('es-ES', { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        }),
+        sala: funcion.sala?.nombre || 'N/A'
+      },
+      asientos: items.map(item => {
+        const boletoItem = item.detalles?.boleto;
+        return {
+          fila: boletoItem?.asiento?.fila?.toString() || '?',
+          numero: boletoItem?.asiento?.numero || 0
+        };
+      }),
+      total: totalBoletos,
+      qrCode: qrCodeDataUrl
+    });
+  }
 
-    // ====== FOOTER ======
-    yPosition += 5;
-    doc.setFontSize(12);
-    doc.setTextColor(0, 0, 0);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Gracias por su compra!', pageWidth / 2, yPosition, { align: 'center' });
+  async generarPDFDulceria(pedido: PedidoHistorial, items: ItemHistorial[]): Promise<void> {
+    // Usar exactamente el mismo formato que dulceria.component.ts
+    const fecha = new Date(pedido.fecha);
+    const totalDulceria = items.reduce((sum, item) => sum + item.subtotal, 0);
     
-    yPosition += 6;
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(100, 100, 100);
-    doc.text('Conserve este ticket como comprobante', pageWidth / 2, yPosition, { align: 'center' });
-
-    // Línea decorativa final
-    yPosition += 8;
-    doc.setDrawColor(102, 126, 234);
-    doc.setLineWidth(0.5);
-    doc.line(20, yPosition, pageWidth - 20, yPosition);
-
-    // Guardar el PDF
-    const fechaArchivo = pedido.fecha.toLocaleDateString('es-ES').replace(/\//g, '-');
-    doc.save(`ticket-${pedido.numeroPedido}-${fechaArchivo}.pdf`);
+    // Formatear fecha y hora EXACTAMENTE como en dulceria.component.ts
+    const ahora = new Date(pedido.fecha);
     
-    console.log('📄 Ticket PDF descargado:', pedido.numeroPedido);
+    // Generar numeroOrden usando el timestamp del pedido (igual que en dulceria pero con la fecha original)
+    const timestamp = new Date(pedido.pedidoCompleto.createdAt).getTime();
+    const numeroOrden = 'DULC-' + timestamp.toString().slice(-8);
+    
+    // Obtener información de la tarjeta - usar el mismo formato que dulceria
+    // En dulceria se guarda como "**** 1234", pero en el backend solo se guarda "TARJETA"
+    // Por ahora usamos el metodoPago del pedido
+    const tarjetaInfo = pedido.metodoPago === 'TARJETA' ? '**** ****' : pedido.metodoPago || 'No especificado';
+    
+    await this.ticketPdfService.generarTicketDulceria({
+      numeroOrden: numeroOrden,
+      fecha: ahora.toLocaleDateString('es-MX'),
+      hora: ahora.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }),
+      tarjeta: tarjetaInfo,
+      items: items.map(item => ({
+        nombre: item.descripcion,
+        cantidad: item.cantidad,
+        precioUnitario: item.precio,
+        subtotal: item.subtotal
+      })),
+      total: totalDulceria,
+      pedidoId: pedido.id  // Usar el ID directamente como string (UUID)
+    });
   }
 }

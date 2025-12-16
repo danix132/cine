@@ -3,6 +3,7 @@ export interface User {
   nombre: string;
   email: string;
   rol: UserRole;
+  generosPreferidos?: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 
@@ -9,12 +9,8 @@ import { RouterModule, Router } from '@angular/router';
   templateUrl: './cliente.component.html',
   styleUrls: ['./cliente.component.scss']
 })
-export class ClienteComponent implements OnInit {
-
+export class ClienteComponent {
   constructor(private router: Router) {}
-
-  ngOnInit(): void {
-  }
 
   navegarFunciones(): void {
     this.router.navigate(['/funciones']);

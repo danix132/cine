@@ -44,7 +44,7 @@ export class PeliculasService {
         },
         skip,
         take: limit,
-        orderBy: { titulo: 'asc' },
+        orderBy: { createdAt: 'desc' }, // Ordenar por fecha de creación, más recientes primero
       }),
       this.prisma.pelicula.count({ where }),
     ]);
@@ -270,6 +270,34 @@ export class PeliculasService {
           },
         },
       },
+    });
+  }
+
+  async getPeliculasPorPreferencias(generosPreferidos: string[]) {
+    // Obtener películas que coincidan con los géneros preferidos del usuario
+    return this.prisma.pelicula.findMany({
+      where: {
+        estado: 'ACTIVA',
+        OR: generosPreferidos.map(genero => ({
+          generos: { has: genero }
+        }))
+      },
+      include: {
+        funciones: {
+          where: {
+            inicio: { gt: new Date() },
+            cancelada: false,
+          },
+          include: {
+            sala: true,
+          },
+          orderBy: {
+            inicio: 'asc'
+          },
+          take: 3
+        },
+      },
+      take: 20
     });
   }
 }

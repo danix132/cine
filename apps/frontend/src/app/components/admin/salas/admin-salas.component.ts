@@ -330,16 +330,34 @@ export class AdminSalasComponent implements OnInit {
       next: (sala) => {
         this.asientosParaGestion = sala.asientos || [];
         this.asientosDanadosSeleccionados.clear();
+        this.estadosAsientos.clear();
         
-        // Marcar asientos ya dañados
-        this.asientosParaGestion.forEach(asiento => {
-          if (asiento.estado === 'DANADO') {
-            this.asientosDanadosSeleccionados.add(`${asiento.fila}-${asiento.numero}`);
+        // Cargar TODOS los asientos con sus estados (incluyendo DISPONIBLE)
+        // Generar todos los asientos posibles basados en la configuración de la sala
+        if (this.salaParaAsientos) {
+          for (let fila = 1; fila <= this.salaParaAsientos.filas; fila++) {
+            for (let numero = 1; numero <= this.salaParaAsientos.asientosPorFila; numero++) {
+              const asientoId = `${fila}-${numero}`;
+              
+              // Buscar el asiento en los datos cargados
+              const asientoExistente = this.asientosParaGestion.find(
+                a => a.fila === fila && a.numero === numero
+              );
+              
+              // Establecer el estado (por defecto DISPONIBLE si no existe)
+              const estado = asientoExistente?.estado || 'DISPONIBLE';
+              this.estadosAsientos.set(asientoId, estado);
+              
+              if (estado === 'DANADO') {
+                this.asientosDanadosSeleccionados.add(asientoId);
+              }
+            }
           }
-        });
+        }
         
         console.log('🔧 Asientos cargados:', this.asientosParaGestion.length);
-        console.log('🔧 Asientos dañados actuales:', this.asientosDanadosSeleccionados.size);
+        console.log('🔧 Estados inicializados:', this.estadosAsientos.size);
+        console.log('🔧 Map de estados:', this.estadosAsientos);
         this.loading = false;
       },
       error: (error) => {
@@ -347,6 +365,40 @@ export class AdminSalasComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  // Map para almacenar el estado de cada asiento (key: "fila-numero", value: estado)
+  estadosAsientos = new Map<string, string>();
+
+  toggleEstadoAsiento(fila: number, numero: number): void {
+    const asientoId = `${fila}-${numero}`;
+    const estadoActual = this.estadosAsientos.get(asientoId) || 'DISPONIBLE';
+    
+    // Ciclo: DISPONIBLE → DANADO → NO_EXISTE → DISPONIBLE
+    let nuevoEstado: string;
+    if (estadoActual === 'DISPONIBLE') {
+      nuevoEstado = 'DANADO';
+    } else if (estadoActual === 'DANADO') {
+      nuevoEstado = 'NO_EXISTE';
+    } else {
+      nuevoEstado = 'DISPONIBLE';
+    }
+    
+    this.estadosAsientos.set(asientoId, nuevoEstado);
+    
+    // Actualizar el set de asientos dañados para compatibilidad
+    if (nuevoEstado === 'DANADO') {
+      this.asientosDanadosSeleccionados.add(asientoId);
+    } else {
+      this.asientosDanadosSeleccionados.delete(asientoId);
+    }
+    
+    console.log(`🪑 Asiento ${asientoId}: ${estadoActual} → ${nuevoEstado}`);
+  }
+
+  getEstadoAsiento(fila: number, numero: number): string {
+    const asientoId = `${fila}-${numero}`;
+    return this.estadosAsientos.get(asientoId) || 'DISPONIBLE';
   }
 
   toggleAsientoDanado(fila: number, numero: number): void {
@@ -370,15 +422,30 @@ export class AdminSalasComponent implements OnInit {
 
     this.guardandoAsientos = true;
 
-    // Convertir Set a array de objetos con fila y numero
-    const asientosDanados = Array.from(this.asientosDanadosSeleccionados).map(asientoId => {
-      const [fila, numero] = asientoId.split('-').map(Number);
-      return { fila, numero };
+    console.log('💾 Map de estados completo:', this.estadosAsientos);
+    console.log('💾 Tamaño del Map:', this.estadosAsientos.size);
+
+    // Convertir Map a array de objetos con fila, numero y estado
+    // IMPORTANTE: Solo enviamos asientos que NO sean DISPONIBLE
+    const asientosDanados: Array<{fila: number, numero: number, estado: AsientoEstado}> = [];
+    
+    this.estadosAsientos.forEach((estado, asientoId) => {
+      console.log(`💾 Procesando asiento ${asientoId}: ${estado}`);
+      // Solo incluir asientos que NO sean DISPONIBLE
+      if (estado !== 'DISPONIBLE') {
+        const [fila, numero] = asientoId.split('-').map(Number);
+        asientosDanados.push({ fila, numero, estado: estado as AsientoEstado });
+      }
     });
 
-    console.log('💾 Guardando asientos dañados:', asientosDanados);
+    console.log('💾 Array de asientos a enviar:', asientosDanados);
+    console.log('💾 Total asientos con estado especial:', asientosDanados.length);
 
-    this.salasService.updateAsientosDanados(this.salaParaAsientos.id, { asientosDanados }).subscribe({
+    // Siempre enviar el array, incluso si está vacío (significa que todos están disponibles)
+    const payload = { asientosDanados };
+    console.log('💾 Payload final:', JSON.stringify(payload, null, 2));
+
+    this.salasService.updateAsientosDanados(this.salaParaAsientos.id, payload).subscribe({
       next: (response) => {
         console.log('✅ Asientos dañados actualizados exitosamente:', response);
         
@@ -448,6 +515,10 @@ export class AdminSalasComponent implements OnInit {
     return String.fromCharCode(65 + index); // A, B, C, etc.
   }
 
+  getAsientosDeFila(cantidad: number): number[] {
+    return Array.from({ length: cantidad }, (_, i) => i + 1);
+  }
+
   // Métodos para dividir asientos en grupos con pasillo central
   getPrimerGrupoAsientos(sala: Sala): number[] {
     const mitad = Math.floor(sala.asientosPorFila / 2);
@@ -468,6 +539,33 @@ export class AdminSalasComponent implements OnInit {
     return sala.asientos.some(asiento => 
       asiento.fila === fila && asiento.numero === numero && asiento.estado === 'DANADO'
     );
+  }
+
+  // Método para obtener el estado de un asiento en la previa
+  getEstadoAsientoPrevia(sala: Sala, fila: number, numero: number): string {
+    if (!sala.asientos || sala.asientos.length === 0) {
+      return 'DISPONIBLE';
+    }
+    const asiento = sala.asientos.find(a => a.fila === fila && a.numero === numero);
+    const estado = asiento?.estado || 'DISPONIBLE';
+    
+    // Debug: mostrar todos los asientos con estado especial
+    if (estado !== 'DISPONIBLE') {
+      console.log(`🔍 Sala ${sala.nombre} - Asiento [${fila},${numero}]: ${estado}`, asiento);
+    }
+    
+    return estado;
+  }
+
+  // Para el modal de detalles
+  getEstadoAsientoModal(fila: number, asiento: number): string {
+    if (!this.salaSeleccionada?.asientos) return 'DISPONIBLE';
+    
+    const asientoReal = this.salaSeleccionada.asientos.find(
+      a => a.fila === (fila + 1) && a.numero === (asiento + 1)
+    );
+    
+    return asientoReal?.estado || 'DISPONIBLE';
   }
 
   // Para el mapa de asientos detallado
@@ -495,6 +593,19 @@ export class AdminSalasComponent implements OnInit {
     if (!this.salaSeleccionada?.asientos) return 0;
     
     return this.salaSeleccionada.asientos.filter(asiento => asiento.estado === 'DANADO').length;
+  }
+
+  calcularAsientosNoExisten(): number {
+    if (!this.salaSeleccionada?.asientos) return 0;
+    
+    return this.salaSeleccionada.asientos.filter(asiento => asiento.estado === 'NO_EXISTE').length;
+  }
+
+  calcularCapacidadTotal(): number {
+    if (!this.salaSeleccionada) return 0;
+    const totalPosiciones = this.salaSeleccionada.filas * this.salaSeleccionada.asientosPorFila;
+    const noExisten = this.calcularAsientosNoExisten();
+    return totalPosiciones - noExisten;
   }
 
   formatearFecha(fecha: string): string {

@@ -1,67 +1,65 @@
 <div class="vender-dulceria-container">
+  <!-- Notificaciones fijas -->
+  <div class="notificaciones-container">
+    <div *ngIf="successMessage" class="notificacion notificacion-success">
+      <i class="fas fa-check-circle"></i>
+      <span>{{ successMessage }}</span>
+    </div>
+
+    <div *ngIf="errorMessage" class="notificacion notificacion-error">
+      <i class="fas fa-exclamation-circle"></i>
+      <span>{{ errorMessage }}</span>
+    </div>
+  </div>
+
   <!-- Header -->
   <div class="validar-header">
-    <button class="btn-volver" routerLink="/peliculas">
+    <button class="btn-volver" routerLink="/cliente">
       <i class="fas fa-arrow-left"></i> Volver
     </button>
     <h1><i class="fas fa-candy-cane"></i> Dulcería</h1>
     <p>Selecciona tus productos favoritos</p>
-    <div class="carrito-badge-header" *ngIf="cantidadTotal > 0">
-      <i class="fas fa-shopping-cart"></i>
-      <span class="badge">{{ cantidadTotal }}</span>
-    </div>
   </div>
 
   <div class="content-wrapper">
     <!-- Sección de productos -->
     <div class="productos-section">
-      <!-- Filtros -->
+      <!-- Barra de búsqueda -->
       <div class="filtros-card">
         <div class="filtros-row">
           <div class="filtro-item flex-grow">
-            <label for="filtroBusqueda" class="form-label">Buscar producto:</label>
             <input 
               type="text" 
               id="filtroBusqueda" 
               class="form-control" 
               [(ngModel)]="filtroBusqueda" 
               (input)="aplicarFiltros()"
-              placeholder="Nombre o descripción..."
+              placeholder="🔍 Buscar producto..."
               autocomplete="off">
-          </div>
-          <div class="filtro-item">
-            <label for="filtroTipo" class="form-label">Tipo:</label>
-            <select 
-              id="filtroTipo" 
-              class="form-select" 
-              [(ngModel)]="filtroTipo" 
-              (change)="aplicarFiltros()">
-              <option value="">Todos</option>
-              <option value="COMBO">Combos</option>
-              <option value="DULCE">Dulces</option>
-            </select>
-          </div>
-          <div class="filtro-item">
-            <label class="form-label">&nbsp;</label>
-            <button class="btn btn-outline-secondary form-control" 
-                    (click)="limpiarFiltros()"
-                    [disabled]="!hayFiltrosActivos()"
-                    title="Limpiar filtros">
-              <i class="fas fa-times"></i>
-            </button>
           </div>
         </div>
       </div>
 
-      <!-- Mensajes -->
-      <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show">
-        <i class="fas fa-check-circle"></i>
-        {{ successMessage }}
-      </div>
-
-      <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show">
-        <i class="fas fa-exclamation-circle"></i>
-        {{ errorMessage }}
+      <!-- Tabs de categorías -->
+      <div class="categorias-tabs">
+        <button 
+          class="tab-btn" 
+          [class.active]="filtroTipo === ''"
+          (click)="filtroTipo = ''; aplicarFiltros()">
+          <i class="fas fa-th"></i> Todos
+        </button>
+        <button 
+          class="tab-btn" 
+          [class.active]="filtroTipo === TIPO_COMBO"
+          (click)="filtroTipo = TIPO_COMBO; aplicarFiltros()">
+          <i class="fas fa-box"></i> Combos
+        </button>
+        <button 
+          class="tab-btn" 
+          [class.active]="filtroTipo === TIPO_DULCE"
+          (click)="filtroTipo = TIPO_DULCE; aplicarFiltros()">
+          <i class="fas fa-candy-cane"></i> Dulces
+        </button>
       </div>
 
       <!-- Loading -->
@@ -87,27 +85,40 @@
             <div class="tipo-badge">
               {{ getTipoIcono(item.tipo) }}
             </div>
-            <img *ngIf="item.imagenUrl" [src]="item.imagenUrl" [alt]="item.nombre">
+            <img *ngIf="item.imagenUrl" 
+                 [src]="item.imagenUrl" 
+                 [alt]="item.nombre"
+                 loading="lazy">
             <div *ngIf="!item.imagenUrl" class="placeholder-imagen">
-              <i class="fas fa-image fa-3x"></i>
+              <i class="fas fa-box"></i>
             </div>
           </div>
           
           <div class="producto-info">
             <h4>{{ item.nombre }}</h4>
             <p class="descripcion" *ngIf="item.descripcion">{{ item.descripcion }}</p>
-            <p class="tipo">
+            <div class="producto-meta">
               <span class="badge bg-secondary">{{ item.tipo }}</span>
-            </p>
+              <span class="badge stock-badge" [ngClass]="{
+                'bg-success': item.stock > 10,
+                'bg-warning text-dark': item.stock > 0 && item.stock <= 10,
+                'bg-danger': item.stock === 0
+              }">
+                <i class="fas fa-box"></i> Stock: {{ item.stock }}
+              </span>
+            </div>
           </div>
           
           <div class="producto-footer">
             <div class="precio">{{ formatearPrecio(item.precio) }}</div>
             <button class="btn btn-primary btn-agregar" 
                     (click)="agregarAlCarrito(item)"
-                    [disabled]="estaAgregando(item.id)">
-              <span *ngIf="!estaAgregando(item.id)">
+                    [disabled]="estaAgregando(item.id) || item.stock === 0">
+              <span *ngIf="!estaAgregando(item.id) && item.stock > 0">
                 <i class="fas fa-plus"></i> Agregar
+              </span>
+              <span *ngIf="item.stock === 0">
+                <i class="fas fa-times"></i> Sin stock
               </span>
               <span *ngIf="estaAgregando(item.id)">
                 <i class="fas fa-spinner fa-spin"></i>
@@ -117,89 +128,102 @@
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Carrito lateral -->
-    <div class="carrito-section" [class.empty]="carrito.size === 0">
-      <div class="carrito-header">
-        <h3><i class="fas fa-shopping-cart"></i> Mi Carrito</h3>
+  <!-- Botón flotante del carrito -->
+  <button class="carrito-flotante" (click)="toggleCarrito()" *ngIf="!mostrarCarrito">
+    <i class="fas fa-shopping-cart"></i>
+    <span class="badge-cantidad" *ngIf="cantidadTotal > 0">{{ cantidadTotal }}</span>
+  </button>
+</div>
+
+<!-- Modal del Carrito -->
+<div class="modal-overlay" *ngIf="mostrarCarrito" (click)="cerrarCarrito()">
+  <div class="carrito-modal" (click)="$event.stopPropagation()">
+    <div class="carrito-header">
+      <h3><i class="fas fa-shopping-cart"></i> Mi Carrito</h3>
+      <div class="header-actions">
         <button class="btn btn-sm btn-outline-danger" 
                 (click)="limpiarCarrito()"
                 *ngIf="carrito.size > 0"
                 title="Vaciar carrito">
           <i class="fas fa-trash"></i>
         </button>
-      </div>
-
-      <div class="carrito-body">
-        <div *ngIf="carrito.size === 0" class="carrito-vacio">
-          <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
-          <p class="text-muted">El carrito está vacío</p>
-          <small class="text-muted">Selecciona productos para comenzar</small>
-        </div>
-
-        <div *ngIf="carrito.size > 0" class="carrito-items">
-          <div class="carrito-item" *ngFor="let itemCarrito of getItemsCarrito()">
-            <div class="item-info">
-              <div class="item-nombre">
-                {{ getTipoIcono(itemCarrito.item.tipo) }} {{ itemCarrito.item.nombre }}
-              </div>
-              <div class="item-precio">
-                {{ formatearPrecio(itemCarrito.item.precio) }} c/u
-              </div>
-            </div>
-            
-            <div class="item-controls">
-              <button class="btn btn-sm btn-outline-secondary" 
-                      (click)="quitarDelCarrito(itemCarrito.item.id)"
-                      title="Reducir cantidad">
-                <i class="fas fa-minus"></i>
-              </button>
-              
-              <input type="number" 
-                     class="form-control cantidad-input" 
-                     [value]="itemCarrito.cantidad"
-                     (change)="actualizarCantidad(itemCarrito.item.id, $any($event.target).value)"
-                     min="1"
-                     max="99"
-                     aria-label="Cantidad"
-                     title="Cantidad del producto">
-              
-              <button class="btn btn-sm btn-outline-secondary" 
-                      (click)="agregarAlCarrito(itemCarrito.item)"
-                      title="Aumentar cantidad">
-                <i class="fas fa-plus"></i>
-              </button>
-              
-              <button class="btn btn-sm btn-outline-danger" 
-                      (click)="eliminarDelCarrito(itemCarrito.item.id)"
-                      title="Eliminar del carrito">
-                <i class="fas fa-trash"></i>
-              </button>
-            </div>
-            
-            <div class="item-subtotal">
-              Subtotal: <strong>{{ formatearPrecio(itemCarrito.item.precio * itemCarrito.cantidad) }}</strong>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="carrito-footer" *ngIf="carrito.size > 0">
-        <div class="totales">
-          <div class="total-row">
-            <span>Items:</span>
-            <span>{{ cantidadTotal }}</span>
-          </div>
-          <div class="total-row total-final">
-            <span>Total:</span>
-            <span>{{ formatearPrecio(totalVenta) }}</span>
-          </div>
-        </div>
-        
-        <button class="btn btn-success btn-confirmar" (click)="finalizarCompra()">
-          <i class="fas fa-check"></i> Finalizar Compra
+        <button class="btn-close" (click)="cerrarCarrito()" title="Cerrar">
+          <i class="fas fa-times"></i>
         </button>
       </div>
+    </div>
+
+    <div class="carrito-body">
+      <div *ngIf="carrito.size === 0" class="carrito-vacio">
+        <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+        <p class="text-muted">El carrito está vacío</p>
+        <small class="text-muted">Selecciona productos para comenzar</small>
+      </div>
+
+      <div *ngIf="carrito.size > 0" class="carrito-items">
+        <div class="carrito-item" *ngFor="let itemCarrito of getItemsCarrito()">
+          <div class="item-info">
+            <div class="item-nombre">
+              {{ getTipoIcono(itemCarrito.item.tipo) }} {{ itemCarrito.item.nombre }}
+            </div>
+            <div class="item-precio">
+              {{ formatearPrecio(itemCarrito.item.precio) }} c/u
+            </div>
+          </div>
+          
+          <div class="item-controls">
+            <button class="btn btn-sm btn-outline-secondary" 
+                    (click)="quitarDelCarrito(itemCarrito.item.id)"
+                    title="Reducir cantidad">
+              <i class="fas fa-minus"></i>
+            </button>
+            
+            <input type="number" 
+                   class="form-control cantidad-input" 
+                   [value]="itemCarrito.cantidad"
+                   (change)="actualizarCantidad(itemCarrito.item.id, $any($event.target).value)"
+                   min="1"
+                   [max]="itemCarrito.item.stock"
+                   aria-label="Cantidad"
+                   [title]="'Cantidad del producto (máx: ' + itemCarrito.item.stock + ')'">
+            
+            <button class="btn btn-sm btn-outline-secondary" 
+                    (click)="agregarAlCarrito(itemCarrito.item)"
+                    title="Aumentar cantidad">
+              <i class="fas fa-plus"></i>
+            </button>
+            
+            <button class="btn btn-sm btn-outline-danger" 
+                    (click)="eliminarDelCarrito(itemCarrito.item.id)"
+                    title="Eliminar del carrito">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+          
+          <div class="item-subtotal">
+            Subtotal: <strong>{{ formatearPrecio(itemCarrito.item.precio * itemCarrito.cantidad) }}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="carrito-footer" *ngIf="carrito.size > 0">
+      <div class="totales">
+        <div class="total-row">
+          <span>Items:</span>
+          <span>{{ cantidadTotal }}</span>
+        </div>
+        <div class="total-row total-final">
+          <span>Total:</span>
+          <span>{{ formatearPrecio(totalVenta) }}</span>
+        </div>
+      </div>
+      
+      <button class="btn btn-success btn-confirmar" (click)="finalizarCompra()">
+        <i class="fas fa-check"></i> Finalizar Compra
+      </button>
     </div>
   </div>
 </div>

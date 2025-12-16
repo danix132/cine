@@ -9,6 +9,8 @@ dist/
 **/dist/
 build/
 *.js.map
+*.d.ts
+*.tsbuildinfo
 
 # Logs
 logs
@@ -18,11 +20,14 @@ pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
+.rmv/
 
 # Variables de entorno
 .env
 .env.local
 .env.*.local
+apps/backend/.env
+apps/frontend/.env
 
 # IDEs
 .vscode/

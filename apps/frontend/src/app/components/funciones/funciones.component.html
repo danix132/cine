@@ -4,6 +4,45 @@
     <p>Selecciona la función que deseas ver</p>
   </div>
 
+  <!-- Filtro por fecha tipo calendario -->
+  <div *ngIf="!isLoading && !errorMessage && fechasDisponibles.length > 0" class="filtros-container">
+    <div class="filtro-calendario">
+      <div class="filtro-header">
+        <label>
+          <i class="fas fa-calendar-alt"></i>
+          Selecciona una fecha:
+        </label>
+        <button 
+          *ngIf="fechaSeleccionada" 
+          class="btn-limpiar" 
+          (click)="limpiarFiltro()"
+          title="Mostrar todas las fechas"
+        >
+          <i class="fas fa-times"></i>
+          Limpiar filtro
+        </button>
+      </div>
+      
+      <div class="calendario-fechas">
+        <div 
+          *ngFor="let fecha of fechasDisponibles" 
+          class="fecha-card"
+          [class.active]="fecha.activo"
+          (click)="onFechaChange(fecha.fechaStr)"
+        >
+          <div class="fecha-dia-semana">{{ fecha.diaNombre }}</div>
+          <div class="fecha-dia">{{ fecha.dia }}</div>
+          <div class="fecha-mes">{{ fecha.mes }}</div>
+        </div>
+      </div>
+
+      <div *ngIf="fechaSeleccionada" class="fecha-seleccionada-info">
+        <i class="fas fa-info-circle"></i>
+        Mostrando funciones disponibles para esta fecha
+      </div>
+    </div>
+  </div>
+
   <div *ngIf="isLoading" class="loading-container">
     <div class="spinner"></div>
     <p>Cargando funciones...</p>
@@ -16,7 +55,7 @@
   </div>
 
   <div *ngIf="!isLoading && !errorMessage" class="funciones-grid">
-    <div *ngFor="let funcion of funciones" class="funcion-card">
+    <div *ngFor="let funcion of funcionesFiltradas" class="funcion-card">
       <div class="funcion-poster">
         <img 
           [src]="funcion.pelicula?.posterUrl || '/assets/images/default-poster.svg'" 
@@ -47,7 +86,7 @@
     </div>
   </div>
 
-  <div *ngIf="!isLoading && !errorMessage && funciones.length === 0" class="empty-state">
+  <div *ngIf="!isLoading && !errorMessage && funcionesFiltradas.length === 0" class="empty-state">
     <div class="empty-icon">
       <i class="fas fa-calendar-times"></i>
     </div>

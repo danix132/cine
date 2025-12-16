@@ -73,8 +73,29 @@ export class UsuariosService {
     return this.http.patch<Usuario>(`${this.apiUrl}/${id}`, usuario);
   }
 
-  // Eliminar usuario
+  // Eliminar usuario (solo admin)
   deleteUsuario(id: string): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(`${this.apiUrl}/${id}`);
+  }
+
+  // Cambiar mi contraseña
+  changeMyPassword(currentPassword: string, newPassword: string): Observable<{ message: string }> {
+    return this.http.patch<{ message: string }>(`${this.apiUrl}/me/change-password`, {
+      currentPassword,
+      newPassword
+    });
+  }
+
+  // Eliminar mi propia cuenta
+  deleteMyAccount(): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.apiUrl}/me/delete-account`);
+  }
+
+  // Actualizar mis preferencias de géneros
+  updateMyPreferencias(generosPreferidos: string): Observable<{ message: string; generosPreferidos: string }> {
+    return this.http.patch<{ message: string; generosPreferidos: string }>(
+      `${this.apiUrl}/me/preferencias`,
+      { generosPreferidos }
+    );
   }
 }

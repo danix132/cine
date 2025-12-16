@@ -29,11 +29,28 @@ export class FuncionesService {
     // Verificar que la sala existe
     const sala = await this.prisma.sala.findUnique({
       where: { id: salaId },
+      include: {
+        asientos: true,
+      },
     });
 
     if (!sala) {
       throw new NotFoundException('Sala no encontrada');
     }
+
+    // Verificar que la sala tenga al menos un asiento disponible
+    const asientosDisponibles = sala.asientos.filter(
+      asiento => asiento.estado === 'DISPONIBLE'
+    );
+
+    if (asientosDisponibles.length === 0) {
+      throw new BadRequestException(
+        `No se puede crear una función en la sala "${sala.nombre}" porque no tiene asientos disponibles. ` +
+        `Todos los asientos están dañados o marcados como no existentes.`
+      );
+    }
+
+    console.log(`✅ Sala ${sala.nombre} tiene ${asientosDisponibles.length} asientos disponibles`);
 
     // Verificar que no haya conflictos de horario en la misma sala
     const inicioFuncion = moment.tz(inicio, 'America/Mazatlan');
@@ -316,6 +333,31 @@ export class FuncionesService {
   }
 
   private async validarConflictosParaActualizacion(funcionId: string, peliculaId: string, salaId: string, inicio: string, forzarActualizacion: boolean = false) {
+    // Verificar que la sala tenga asientos disponibles
+    const sala = await this.prisma.sala.findUnique({
+      where: { id: salaId },
+      include: {
+        asientos: true,
+      },
+    });
+
+    if (!sala) {
+      throw new NotFoundException('Sala no encontrada');
+    }
+
+    const asientosDisponibles = sala.asientos.filter(
+      asiento => asiento.estado === 'DISPONIBLE'
+    );
+
+    if (asientosDisponibles.length === 0) {
+      throw new BadRequestException(
+        `No se puede asignar la función a la sala "${sala.nombre}" porque no tiene asientos disponibles. ` +
+        `Todos los asientos están dañados o marcados como no existentes.`
+      );
+    }
+
+    console.log(`✅ Sala ${sala.nombre} tiene ${asientosDisponibles.length} asientos disponibles`);
+
     // Obtener información de la película para calcular duración
     const pelicula = await this.prisma.pelicula.findUnique({
       where: { id: peliculaId },

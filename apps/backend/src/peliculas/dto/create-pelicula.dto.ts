@@ -1,4 +1,5 @@
-import { IsString, IsInt, Min, MinLength, MaxLength, IsArray, IsOptional, IsEnum, IsUrl } from 'class-validator';
+import { IsString, IsInt, Min, MinLength, MaxLength, IsArray, IsOptional, IsEnum, IsUrl, IsBoolean, IsDateString } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PeliculaEstado } from '@prisma/client';
 
@@ -45,4 +46,15 @@ export class CreatePeliculaDto {
   @IsOptional()
   @IsEnum(PeliculaEstado)
   estado?: PeliculaEstado;
+
+  @ApiPropertyOptional({ example: false, default: false })
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => value === true || value === 'true')
+  esProximoEstreno?: boolean;
+
+  @ApiPropertyOptional({ example: '2025-12-25T00:00:00Z' })
+  @IsOptional()
+  @IsDateString()
+  fechaEstreno?: string;
 }

@@ -8,9 +8,11 @@ import {
   Delete,
   UseGuards,
   Query,
+  Request,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { PeliculasService } from './peliculas.service';
+import { RecomendacionesService } from './recomendaciones.service';
 import { CreatePeliculaDto } from './dto/create-pelicula.dto';
 import { UpdatePeliculaDto } from './dto/update-pelicula.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
@@ -23,7 +25,10 @@ import { UserRole } from '@prisma/client';
 @ApiTags('peliculas')
 @Controller('peliculas')
 export class PeliculasController {
-  constructor(private readonly peliculasService: PeliculasService) {}
+  constructor(
+    private readonly peliculasService: PeliculasService,
+    private readonly recomendacionesService: RecomendacionesService
+  ) {}
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -99,5 +104,17 @@ export class PeliculasController {
   @ApiResponse({ status: 404, description: 'Película no encontrada' })
   forceRemove(@Param('id') id: string) {
     return this.peliculasService.forceRemove(id);
+  }
+
+  @Get('recomendaciones/personalizadas')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Obtener recomendaciones personalizadas basadas en preferencias del usuario' })
+  @ApiResponse({ status: 200, description: 'Recomendaciones generadas' })
+  @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
+  getRecomendaciones(@Request() req: any) {
+    const userId = req.user.id;
+    console.log('🎬 Generando recomendaciones para usuario:', userId);
+    return this.recomendacionesService.getRecomendacionesParaUsuario(userId);
   }
 }

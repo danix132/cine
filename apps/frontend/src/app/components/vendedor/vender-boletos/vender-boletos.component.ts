@@ -6,6 +6,7 @@ import { FuncionesService } from '../../../services/funciones.service';
 import { SalasService } from '../../../services/salas.service';
 import { BoletosService } from '../../../services/boletos.service';
 import { AuthService } from '../../../services/auth.service';
+import { TicketPdfService } from '../../../services/ticket-pdf.service';
 import { Funcion } from '../../../models/funcion.model';
 import { Sala, Asiento, AsientoEstado } from '../../../models/sala.model';
 import { Boleto, BoletoEstado, CreateBoletoRequest } from '../../../models/boleto.model';
@@ -59,7 +60,8 @@ export class VenderBoletosComponent implements OnInit {
     private boletosService: BoletosService,
     private authService: AuthService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private ticketPdfService: TicketPdfService
   ) {}
 
   ngOnInit(): void {
@@ -70,7 +72,8 @@ export class VenderBoletosComponent implements OnInit {
     this.loading = true;
     console.log('🎬 Cargando funciones disponibles...');
     
-    this.funcionesService.getFunciones().subscribe({
+    // Solicitar todas las funciones sin límite de paginación
+    this.funcionesService.getFunciones({ limit: 1000 }).subscribe({
       next: (response: any) => {
         console.log('✅ Respuesta funciones:', response);
         // Si es una respuesta paginada, usar la propiedad data
@@ -147,8 +150,10 @@ export class VenderBoletosComponent implements OnInit {
     const fechaInicio = new Date(funcion.inicio);
     const ahora = new Date();
     
-    // Considerar vencida si ya pasó la fecha/hora de inicio
-    return fechaInicio < ahora;
+    // Considerar vencida si pasaron más de 2 horas desde el inicio
+    // Esto permite vender boletos hasta 2 horas después del inicio
+    const dosHorasEnMs = 2 * 60 * 60 * 1000;
+    return (ahora.getTime() - fechaInicio.getTime()) > dosHorasEnMs;
   }
 
   private deberiaOcultarFuncionesVencidas(): boolean {
@@ -1658,7 +1663,9 @@ export class VenderBoletosComponent implements OnInit {
 
   getAsientosPorFila(fila: number): Asiento[] {
     if (!this.salaDetalles?.asientos) return [];
-    return this.salaDetalles.asientos.filter(asiento => asiento.fila === fila);
+    return this.salaDetalles.asientos.filter(asiento => 
+      asiento.fila === fila && asiento.estado !== AsientoEstado.NO_EXISTE
+    );
   }
 
   getAsientoClass(asiento: Asiento): string {
@@ -1721,17 +1728,68 @@ export class VenderBoletosComponent implements OnInit {
     window.print();
   }
 
-  descargarRecibo(): void {
+  async descargarRecibo(): Promise<void> {
     if (this.boletosCreados.length === 0) return;
 
-    const contenido = this.generarContenidoRecibo();
-    const blob = new Blob([contenido], { type: 'text/plain;charset=utf-8' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `recibo-venta-${this.boletosCreados[0].id.substring(0, 8)}.txt`;
-    link.click();
-    window.URL.revokeObjectURL(url);
+    try {
+      const fecha = new Date();
+      const timestamp = fecha.getTime();
+      const numeroOrden = 'BOL-' + timestamp.toString().slice(-8);
+      
+      // Generar QR con el código del primer boleto (todos comparten la misma compra)
+      const primerBoleto = this.boletosCreados[0];
+      const qrCodeDataUrl = await QRCode.toDataURL(primerBoleto.codigoQR, {
+        width: 300,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      });
+      
+      const fechaFuncion = new Date(this.funcionSeleccionada?.inicio || '');
+      
+      // Generar el PDF usando el servicio
+      await this.ticketPdfService.generarTicketBoletos({
+        numeroOrden: numeroOrden,
+        fecha: fecha.toLocaleDateString('es-ES', { 
+          weekday: 'long', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        }),
+        hora: fecha.toLocaleTimeString('es-ES', {
+          hour: '2-digit',
+          minute: '2-digit'
+        }),
+        tarjeta: 'Efectivo',
+        pelicula: {
+          titulo: this.funcionSeleccionada?.pelicula?.titulo || 'N/A',
+          fechaFuncion: fechaFuncion.toLocaleDateString('es-ES', { 
+            weekday: 'long', 
+            day: 'numeric', 
+            month: 'long', 
+            year: 'numeric' 
+          }),
+          horaFuncion: fechaFuncion.toLocaleTimeString('es-ES', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          }),
+          sala: this.funcionSeleccionada?.sala?.nombre || 'N/A'
+        },
+        asientos: this.boletosCreados.map(boleto => ({
+          fila: boleto.asiento?.fila?.toString() || '?',
+          numero: boleto.asiento?.numero || 0
+        })),
+        total: this.totalVentaCompletada,
+        qrCode: qrCodeDataUrl
+      }, false); // false = descargar el PDF directamente
+      
+      console.log('✅ Ticket PDF generado y descargado exitosamente');
+    } catch (error) {
+      console.error('❌ Error al generar ticket PDF:', error);
+      alert('Error al generar el ticket PDF');
+    }
   }
 
   private generarContenidoRecibo(): string {

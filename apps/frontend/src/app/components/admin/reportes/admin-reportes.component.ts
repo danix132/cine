@@ -344,13 +344,32 @@ export class AdminReportesComponent implements OnInit {
   }
 
   exportarExcel(): void {
-    if (!this.reporteActual) return;
+    if (!this.reporteActual) {
+      console.warn('⚠️ No hay reporte actual para exportar');
+      return;
+    }
 
     let data: any[] = [];
     let filename = '';
     let sheetName = '';
 
+    console.log('📊 Exportando reporte:', this.reporteActual);
+
     switch (this.reporteActual) {
+      case 'dashboard-kpis':
+        if (this.reporteDashboardKPIs) {
+          data = this.generarDatosDashboardKPIs();
+          filename = 'reporte-dashboard-kpis.xlsx';
+          sheetName = 'Dashboard KPIs';
+        }
+        break;
+      case 'serie-temporal':
+        if (this.reporteSerieTemporal) {
+          data = this.generarDatosSerieTemporal();
+          filename = 'reporte-serie-temporal.xlsx';
+          sheetName = 'Serie Temporal';
+        }
+        break;
       case 'ventas':
         if (this.reporteVentas) {
           data = this.generarDatosVentas();
@@ -386,10 +405,46 @@ export class AdminReportesComponent implements OnInit {
           sheetName = 'Ventas Dulcería';
         }
         break;
+      case 'ventas-por-canal':
+        if (this.reporteVentasPorCanal) {
+          data = this.generarDatosVentasPorCanal();
+          filename = 'reporte-ventas-por-canal.xlsx';
+          sheetName = 'Ventas por Canal';
+        }
+        break;
+      case 'descuentos-promociones':
+        if (this.reporteDescuentos) {
+          data = this.generarDatosDescuentos();
+          filename = 'reporte-descuentos.xlsx';
+          sheetName = 'Descuentos';
+        }
+        break;
+      case 'horarios-pico':
+        if (this.reporteHorariosPico) {
+          data = this.generarDatosHorariosPico();
+          filename = 'reporte-horarios-pico.xlsx';
+          sheetName = 'Horarios Pico';
+        }
+        break;
+      case 'ingresos-por-pelicula':
+        if (this.reporteIngresosPorPelicula) {
+          data = this.generarDatosIngresosPorPelicula();
+          filename = 'reporte-ingresos-pelicula.xlsx';
+          sheetName = 'Ingresos por Película';
+        }
+        break;
+      default:
+        console.warn('⚠️ Tipo de reporte no soportado:', this.reporteActual);
+        this.error = 'Este tipo de reporte aún no soporta exportación a Excel';
+        return;
     }
 
     if (data.length > 0) {
+      console.log('✅ Descargando Excel con', data.length, 'filas');
       this.descargarExcel(data, filename, sheetName);
+    } else {
+      console.warn('⚠️ No hay datos para exportar');
+      this.error = 'No hay datos disponibles para exportar';
     }
   }
 
@@ -866,5 +921,186 @@ export class AdminReportesComponent implements OnInit {
       return 1; // Evitar división por cero
     }
     return Math.max(...this.reporteVentasDulceria.ventasPorDia.map(dia => dia.totalVentas));
+  }
+
+  private generarDatosDashboardKPIs(): any[] {
+    if (!this.reporteDashboardKPIs) return [];
+    
+    return [
+      ['═══════════════════════════════════════════════════════════════'],
+      ['                  📊 DASHBOARD DE KPIs                          '],
+      ['═══════════════════════════════════════════════════════════════'],
+      [''],
+      ['📅 Período:', `${this.formatearFecha(this.reporteDashboardKPIs.periodo.desde)} - ${this.formatearFecha(this.reporteDashboardKPIs.periodo.hasta)}`],
+      [''],
+      ['💰 INGRESOS TOTALES:', this.formatearMoneda(this.reporteDashboardKPIs.kpis.totalIngresos)],
+      ['🎫 BOLETOS VENDIDOS:', this.reporteDashboardKPIs.kpis.totalBoletos],
+      ['🍿 VENTAS DULCERÍA:', this.formatearMoneda(this.reporteDashboardKPIs.kpis.ventasDulceria)],
+      ['📦 PEDIDOS TOTALES:', this.reporteDashboardKPIs.kpis.totalPedidos],
+      ['👥 CLIENTES ÚNICOS:', this.reporteDashboardKPIs.kpis.clientesUnicos],
+      ['💵 TICKET PROMEDIO:', this.formatearMoneda(this.reporteDashboardKPIs.kpis.ticketPromedio)],
+      ['📊 OCUPACIÓN PROMEDIO:', `${this.reporteDashboardKPIs.kpis.ocupacionPromedio.toFixed(1)}%`],
+      [''],
+      ['═══════════════════════════════════════════════════════════════']
+    ];
+  }
+
+  private generarDatosSerieTemporal(): any[] {
+    if (!this.reporteSerieTemporal) return [];
+    
+    const datos = [
+      ['═══════════════════════════════════════════════════════════════'],
+      ['                📈 SERIE TEMPORAL DE VENTAS                     '],
+      ['═══════════════════════════════════════════════════════════════'],
+      [''],
+      ['📅 Fecha', '💰 Ingresos', '📦 Pedidos', '🎫 Boletos', '🍿 Dulcería', '💵 Ing. Boletos', '💵 Ing. Dulcería']
+    ];
+    
+    this.reporteSerieTemporal.serie.forEach((dia: any) => {
+      datos.push([
+        this.formatearFecha(dia.fecha),
+        this.formatearMoneda(dia.ingresos),
+        dia.pedidos,
+        dia.cantidadBoletos || 0,
+        dia.cantidadDulceria || 0,
+        this.formatearMoneda(dia.ingresosBoletos || 0),
+        this.formatearMoneda(dia.ingresosDulceria || 0)
+      ]);
+    });
+    
+    datos.push(['']);
+    datos.push(['TOTALES:', this.formatearMoneda(this.calcularTotalSerie()), String(this.calcularTotalPedidosSerie()), 
+                String(this.calcularCantidadBoletosSerie()), String(this.calcularCantidadDulceriaSerie()),
+                this.formatearMoneda(this.calcularTotalBoletosSerie()), this.formatearMoneda(this.calcularTotalDulceriaSerie())]);
+    
+    return datos;
+  }
+
+  private generarDatosVentasPorCanal(): any[] {
+    if (!this.reporteVentasPorCanal) return [];
+    
+    const datos = [
+      ['═══════════════════════════════════════════════════════════════'],
+      ['              📱 REPORTE DE VENTAS POR CANAL                    '],
+      ['═══════════════════════════════════════════════════════════════'],
+      [''],
+      ['📅 Período:', `${this.formatearFecha(this.reporteVentasPorCanal.periodo.desde)} - ${this.formatearFecha(this.reporteVentasPorCanal.periodo.hasta)}`],
+      [''],
+      ['📊 Canal', '💰 Total Ventas', '📦 Cantidad', '📈 % del Total']
+    ];
+    
+    const total = this.reporteVentasPorCanal.totalVentas;
+    
+    // Online
+    const porcentajeOnline = total > 0 ? ((this.reporteVentasPorCanal.ventasPorCanal.online.total / total) * 100).toFixed(1) : '0.0';
+    datos.push([
+      '🌐 Online',
+      this.formatearMoneda(this.reporteVentasPorCanal.ventasPorCanal.online.total),
+      String(this.reporteVentasPorCanal.ventasPorCanal.online.cantidad),
+      `${porcentajeOnline}%`
+    ]);
+    
+    // Taquilla
+    const porcentajeTaquilla = total > 0 ? ((this.reporteVentasPorCanal.ventasPorCanal.taquilla.total / total) * 100).toFixed(1) : '0.0';
+    datos.push([
+      '🎫 Taquilla',
+      this.formatearMoneda(this.reporteVentasPorCanal.ventasPorCanal.taquilla.total),
+      String(this.reporteVentasPorCanal.ventasPorCanal.taquilla.cantidad),
+      `${porcentajeTaquilla}%`
+    ]);
+    
+    datos.push(['']);
+    datos.push(['TOTAL:', this.formatearMoneda(total), String(this.reporteVentasPorCanal.totalPedidos), '100%']);
+    
+    return datos;
+  }
+
+  private generarDatosDescuentos(): any[] {
+    if (!this.reporteDescuentos) return [];
+    
+    return [
+      ['═══════════════════════════════════════════════════════════════'],
+      ['           🎁 REPORTE DE DESCUENTOS Y PROMOCIONES               '],
+      ['═══════════════════════════════════════════════════════════════'],
+      [''],
+      ['📅 Período:', `${this.formatearFecha(this.reporteDescuentos.periodo.desde)} - ${this.formatearFecha(this.reporteDescuentos.periodo.hasta)}`],
+      [''],
+      ['📊 RESUMEN DE DESCUENTOS'],
+      [''],
+      ['Total de Pedidos:', this.reporteDescuentos.totalPedidos],
+      ['Pedidos con Descuento:', this.reporteDescuentos.pedidosConDescuento],
+      ['% de Pedidos con Descuento:', `${this.reporteDescuentos.porcentajeDescuento.toFixed(1)}%`],
+      ['Total Descuentos:', this.formatearMoneda(this.reporteDescuentos.totalDescuentos)],
+      ['Promedio de Descuento:', this.formatearMoneda(this.reporteDescuentos.promedioDescuento)],
+      [''],
+      ['═══════════════════════════════════════════════════════════════']  
+    ];
+  }
+
+  private generarDatosHorariosPico(): any[] {
+    if (!this.reporteHorariosPico) return [];
+    
+    const datos = [
+      ['═══════════════════════════════════════════════════════════════'],
+      ['               ⏰ REPORTE DE HORARIOS PICO                      '],
+      ['═══════════════════════════════════════════════════════════════'],
+      [''],
+      ['📅 Período:', `${this.formatearFecha(this.reporteHorariosPico.periodo.desde)} - ${this.formatearFecha(this.reporteHorariosPico.periodo.hasta)}`],
+      [''],
+      ['🕐 Hora', '🎬 Funciones', '🎫 Boletos', '💺 Capacidad', '📊 % Ocupación']
+    ];
+    
+    const totalBoletos = this.reporteHorariosPico.horariosPico.reduce((sum: number, h: any) => sum + h.totalBoletos, 0);
+    
+    this.reporteHorariosPico.horariosPico.forEach((horario: any) => {
+      const porcentaje = totalBoletos > 0 ? ((horario.totalBoletos / totalBoletos) * 100).toFixed(1) : '0.0';
+      datos.push([
+        `${horario.hora}:00`,
+        horario.funciones,
+        horario.totalBoletos,
+        horario.capacidadTotal,
+        `${horario.ocupacionPromedio.toFixed(1)}%`
+      ]);
+    });
+    
+    datos.push(['']);
+    if (this.reporteHorariosPico.horaMasPopular !== null) {
+      datos.push(['⭐ Hora más popular:', `${this.reporteHorariosPico.horaMasPopular}:00`]);
+    }
+    
+    return datos;
+  }
+
+  private generarDatosIngresosPorPelicula(): any[] {
+    if (!this.reporteIngresosPorPelicula) return [];
+    
+    const datos = [
+      ['═══════════════════════════════════════════════════════════════'],
+      ['            🎬 REPORTE DE INGRESOS POR PELÍCULA                 '],
+      ['═══════════════════════════════════════════════════════════════'],
+      [''],
+      ['📅 Período:', `${this.formatearFecha(this.reporteIngresosPorPelicula.periodo.desde)} - ${this.formatearFecha(this.reporteIngresosPorPelicula.periodo.hasta)}`],
+      [''],
+      ['🎬 Película', '🎫 Boletos', '🎬 Funciones', '💰 Ingreso Total', '💵 Promedio/Función', '📈 % del Total']
+    ];
+    
+    const totalIngresos = this.reporteIngresosPorPelicula.totalIngresos;
+    
+    this.reporteIngresosPorPelicula.peliculas.forEach((pelicula: any) => {
+      const porcentaje = totalIngresos > 0 ? ((pelicula.ingresoTotal / totalIngresos) * 100).toFixed(1) : '0.0';
+      datos.push([
+        pelicula.titulo,
+        pelicula.totalBoletos,
+        pelicula.totalFunciones,
+        this.formatearMoneda(pelicula.ingresoTotal),
+        this.formatearMoneda(pelicula.ingresoPromedioPorFuncion),
+        `${porcentaje}%`
+      ]);
+    });
+    
+    datos.push(['']);
+    datos.push(['TOTALES:', '', '', this.formatearMoneda(totalIngresos), '', '100%']);
+    
+    return datos;
   }
 }

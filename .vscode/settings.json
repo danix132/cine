@@ -14,5 +14,21 @@
         "**/.rmv/catalog/**": true,
         "*/_*": false
     },
-    "compile-hero.disable-compile-files-on-did-save-code": true
+    "compile-hero.disable-compile-files-on-did-save-code": true,
+    "css.lint.validProperties": [
+        "scrollbar-width",
+        "scrollbar-color",
+        "-webkit-overflow-scrolling"
+    ],
+    "css.lint.vendorPrefix": "ignore",
+    "css.lint.compatibleVendorPrefixes": "ignore",
+    "scss.lint.validProperties": [
+        "scrollbar-width",
+        "scrollbar-color",
+        "-webkit-overflow-scrolling"
+    ],
+    "scss.lint.vendorPrefix": "ignore",
+    "scss.lint.compatibleVendorPrefixes": "ignore",
+    "html.validate.scripts": false,
+    "html.validate.styles": false
 }

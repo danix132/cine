@@ -10,13 +10,15 @@ exports.PeliculasModule = void 0;
 const common_1 = require("@nestjs/common");
 const peliculas_service_1 = require("./peliculas.service");
 const peliculas_controller_1 = require("./peliculas.controller");
+const recomendaciones_service_1 = require("./recomendaciones.service");
+const gemini_service_1 = require("../modules/gemini.service");
 let PeliculasModule = class PeliculasModule {
 };
 exports.PeliculasModule = PeliculasModule;
 exports.PeliculasModule = PeliculasModule = __decorate([
     (0, common_1.Module)({
         controllers: [peliculas_controller_1.PeliculasController],
-        providers: [peliculas_service_1.PeliculasService],
+        providers: [peliculas_service_1.PeliculasService, recomendaciones_service_1.RecomendacionesService, gemini_service_1.GeminiService],
         exports: [peliculas_service_1.PeliculasService],
     })
 ], PeliculasModule);

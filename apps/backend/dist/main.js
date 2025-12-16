@@ -14,7 +14,11 @@ async function bootstrap() {
         }
     });
     moment.tz.setDefault('America/Mazatlan');
-    const app = await core_1.NestFactory.create(app_module_1.AppModule);
+    const app = await core_1.NestFactory.create(app_module_1.AppModule, {
+        bodyParser: true,
+    });
+    app.use(require('express').json({ limit: '50mb' }));
+    app.use(require('express').urlencoded({ limit: '50mb', extended: true }));
     app.enableCors({
         origin: ['http://localhost:4200', 'http://localhost:4201', 'http://localhost:3000'],
         credentials: true,

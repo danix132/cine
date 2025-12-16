@@ -14,4 +14,5 @@ export declare class CreatePedidoDto {
     total: number;
     tipo: PedidoTipo;
     items: CreatePedidoItemDto[];
+    ticketData?: string;
 }

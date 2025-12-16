@@ -12,6 +12,8 @@ interface PedidoDulceria {
   estado: 'PENDIENTE' | 'COMPLETADO' | 'CANCELADO';
   tipo: 'WEB' | 'MOSTRADOR';
   metodoPago: string;
+  entregado: boolean;
+  fechaEntrega?: Date;
   createdAt: Date;
   usuario?: {
     nombre: string;
@@ -217,6 +219,13 @@ export class ValidarDulceriaComponent implements OnInit, OnDestroy {
           this.tipoMensaje = 'error';
           this.agregarAlHistorial(codigoQR, 'CANCELADO', 'invalido');
           this.reproducirSonido('error');
+        } else if (pedido.entregado) {
+          // Ya fue entregado anteriormente
+          const fechaEntrega = pedido.fechaEntrega ? new Date(pedido.fechaEntrega).toLocaleString('es-UY') : 'Fecha desconocida';
+          this.mensaje = `⚠️ Este pedido YA FUE ENTREGADO\nFecha: ${fechaEntrega}`;
+          this.tipoMensaje = 'error';
+          this.agregarAlHistorial(codigoQR, 'YA_ENTREGADO', 'invalido');
+          this.reproducirSonido('error');
         } else if (pedido.estado === 'COMPLETADO') {
           this.mensaje = '✓ Pedido válido - Puede entregar';
           this.tipoMensaje = 'success';
@@ -258,24 +267,70 @@ export class ValidarDulceriaComponent implements OnInit, OnDestroy {
   marcarComoEntregado(): void {
     if (!this.pedido) return;
 
+    // Verificar que el pedido no esté ya entregado
+    if (this.pedido.entregado) {
+      this.mensaje = '⚠️ Este pedido ya fue entregado anteriormente';
+      this.tipoMensaje = 'error';
+      this.reproducirSonido('error');
+      return;
+    }
+
     const token = this.authService.getToken();
-    if (!token) return;
+    if (!token) {
+      this.mensaje = '⚠️ No estás autenticado';
+      this.tipoMensaje = 'error';
+      return;
+    }
+
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser || !currentUser.id) {
+      this.mensaje = '⚠️ No se pudo obtener el usuario actual';
+      this.tipoMensaje = 'error';
+      return;
+    }
 
     const headers = {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'
     };
 
-    // Aquí podrías agregar un endpoint para marcar como entregado
-    // Por ahora solo actualizamos la UI
-    this.mensaje = '✓ Pedido marcado como entregado';
-    this.tipoMensaje = 'success';
-    this.agregarAlHistorial(this.pedido.id, 'ENTREGADO', 'entregado');
-    this.reproducirSonido('success');
-    
-    setTimeout(() => {
-      this.escanearNuevo();
-    }, 2000);
+    console.log('📦 Marcando pedido como entregado:', this.pedido.id);
+
+    this.http.post(
+      `${environment.apiUrl}/pedidos/${this.pedido.id}/entregar`,
+      { vendedorId: currentUser.id },
+      { headers }
+    ).subscribe({
+      next: (response: any) => {
+        console.log('✅ Pedido marcado como entregado:', response);
+        this.mensaje = '✓ Pedido marcado como entregado exitosamente';
+        this.tipoMensaje = 'success';
+        this.agregarAlHistorial(this.pedido!.id, 'ENTREGADO', 'entregado');
+        this.reproducirSonido('success');
+        
+        // Actualizar el pedido local
+        if (this.pedido) {
+          this.pedido.entregado = true;
+          this.pedido.fechaEntrega = new Date();
+        }
+        
+        setTimeout(() => {
+          this.escanearNuevo();
+        }, 2000);
+      },
+      error: (error) => {
+        console.error('❌ Error al marcar como entregado:', error);
+        
+        if (error.status === 404 && error.error?.message) {
+          this.mensaje = `⚠️ ${error.error.message}`;
+        } else {
+          this.mensaje = '✗ Error al marcar el pedido como entregado';
+        }
+        
+        this.tipoMensaje = 'error';
+        this.reproducirSonido('error');
+      }
+    });
   }
 
   agregarAlHistorial(pedidoId: string, estado: string, resultado: 'valido' | 'invalido' | 'entregado'): void {

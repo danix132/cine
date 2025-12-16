@@ -71,6 +71,8 @@ export class SalasService {
   }
 
   updateAsientosDanados(salaId: string, asientosDanados: UpdateAsientosDanadosRequest): Observable<Sala> {
+    console.log('🔧 SalasService - Actualizando asientos:', { salaId, asientosDanados });
+    console.log('🔧 Datos JSON:', JSON.stringify(asientosDanados, null, 2));
     return this.http.patch<Sala>(`${this.API_URL}/${salaId}/asientos-danados`, asientosDanados);
   }
 

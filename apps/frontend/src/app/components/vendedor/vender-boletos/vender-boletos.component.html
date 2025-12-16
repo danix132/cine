@@ -184,12 +184,12 @@
             <div class="fila-label">Fila {{ fila }}</div>
             <div class="asientos-fila">
               <div 
-                *ngFor="let asiento of getAsientosPorFila(fila)" 
+                *ngFor="let asiento of getAsientosPorFila(fila); let i = index" 
                 [class]="getAsientoClass(asiento)"
                 (click)="toggleAsiento(asiento)"
                 [title]="getAsientoTooltip(asiento)"
               >
-                {{ asiento.numero }}
+                {{ i + 1 }}
               </div>
             </div>
           </div>

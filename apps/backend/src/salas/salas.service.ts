@@ -67,7 +67,9 @@ export class SalasService {
           },
           asientos: {
             where: {
-              estado: 'DANADO'
+              estado: {
+                not: 'DISPONIBLE'
+              }
             },
             select: {
               id: true,
@@ -226,8 +228,8 @@ export class SalasService {
   async updateAsientosDanados(id: string, updateAsientosDanadosDto: UpdateAsientosDanadosDto) {
     const { asientosDanados } = updateAsientosDanadosDto;
 
-    console.log('🔧 Actualizando asientos dañados para sala:', id);
-    console.log('🔧 Asientos a marcar como dañados:', asientosDanados);
+    console.log('🔧 Actualizando estados de asientos para sala:', id);
+    console.log('🔧 Asientos a actualizar:', asientosDanados);
 
     // Verificar si la sala existe
     const sala = await this.findOne(id);
@@ -243,12 +245,13 @@ export class SalasService {
       },
     });
 
-    // PASO 2: Marcar solo los asientos seleccionados como DANADOS
+    // PASO 2: Actualizar estados específicos de los asientos
     if (asientosDanados && asientosDanados.length > 0) {
-      console.log('🔧 Paso 2: Marcando asientos específicos como DAÑADOS');
+      console.log('🔧 Paso 2: Actualizando estados específicos de asientos');
       
       for (const asiento of asientosDanados) {
-        console.log(`🔧 Marcando como dañado: Fila ${asiento.fila}, Asiento ${asiento.numero}`);
+        const estado = asiento.estado || 'DANADO'; // Por compatibilidad, si no se especifica estado, se asume DANADO
+        console.log(`🔧 Marcando asiento: Fila ${asiento.fila}, Asiento ${asiento.numero} -> ${estado}`);
         
         const resultado = await this.prisma.asiento.updateMany({
           where: {
@@ -257,7 +260,7 @@ export class SalasService {
             numero: asiento.numero,
           },
           data: {
-            estado: 'DANADO',
+            estado: estado as any,
           },
         });
         
@@ -272,13 +275,15 @@ export class SalasService {
     });
     
     const asientosDanadosFinales = asientosFinales.filter(a => a.estado === 'DANADO');
+    const asientosNoExistenFinales = asientosFinales.filter(a => a.estado === 'NO_EXISTE');
     console.log('🔧 Estado final - Total asientos dañados:', asientosDanadosFinales.length);
-    console.log('🔧 Asientos dañados finales:', asientosDanadosFinales);
+    console.log('🔧 Estado final - Total asientos no existen:', asientosNoExistenFinales.length);
 
     return { 
-      message: 'Asientos dañados actualizados exitosamente',
+      message: 'Estados de asientos actualizados exitosamente',
       asientosDanadosCount: asientosDanadosFinales.length,
-      asientosDanados: asientosDanadosFinales
+      asientosNoExistenCount: asientosNoExistenFinales.length,
+      asientos: asientosFinales
     };
   }
 

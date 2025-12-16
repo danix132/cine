@@ -8,4 +8,6 @@ export declare class CreatePeliculaDto {
     trailerUrl?: string;
     generos: string[];
     estado?: PeliculaEstado;
+    esProximoEstreno?: boolean;
+    fechaEstreno?: string;
 }

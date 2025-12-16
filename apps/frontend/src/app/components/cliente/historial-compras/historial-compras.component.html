@@ -172,7 +172,7 @@
             </div>
           </div>
 
-          <!-- Código QR (solo para boletos) -->
+          <!-- Código QR (para boletos y dulcería) -->
           <div class="item-qr" *ngIf="item.codigoQR && item.qrCodeUrl">
             <div class="qr-mini" (click)="mostrarQRModal(item)">
               <img [src]="item.qrCodeUrl" alt="QR" />
@@ -188,10 +188,6 @@
               <!-- Mostrar estado del boleto/pedido -->
               <span class="estado-badge" [ngClass]="getEstadoClass(item.estado || pedido.estado)">
                 {{ getEstadoTexto(item.estado || pedido.estado) }}
-              </span>
-              <!-- Para dulcería: mostrar "Entregado" adicional solo si está completado -->
-              <span class="canjeado-badge" *ngIf="item.tipo === 'DULCERIA' && item.canjeado">
-                <i class="fas fa-box-open"></i> Entregado
               </span>
             </div>
           </div>
@@ -228,6 +224,41 @@
           de <strong>{{ pedidos.length }}</strong> total{{ pedidos.length !== 1 ? 'es' : '' }}
         </span>
       </p>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Visualización de Ticket -->
+<div class="modal-overlay" *ngIf="mostrarModalTicket" (click)="cerrarModalTicket()">
+  <div class="modal-ticket" (click)="$event.stopPropagation()">
+    <!-- Header del Modal -->
+    <div class="modal-header">
+      <h2>Recibo de Compra</h2>
+      <button class="btn-cerrar" (click)="cerrarModalTicket()" title="Cerrar modal">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Contenido del PDF -->
+    <div class="modal-content">
+      <div class="pdf-viewer">
+        <iframe 
+          [src]="ticketActual" 
+          class="pdf-iframe"
+          frameborder="0"
+          title="Visualizador de ticket PDF"
+        ></iframe>
+      </div>
+    </div>
+
+    <!-- Footer del Modal -->
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarModalTicket()">
+        <i class="fas fa-times"></i> Cerrar
+      </button>
+      <button class="btn-descargar" (click)="descargarTicketDelModal()">
+        <i class="fas fa-download"></i> Descargar PDF
+      </button>
     </div>
   </div>
 </div>

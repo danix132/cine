@@ -12,8 +12,9 @@ import { User } from './models/user.model';
   styleUrl: './app.component.scss'
 })
 export class AppComponent implements OnInit {
-  title = 'Cine App';
+  title = 'CiMeme';
   currentUser: User | null = null;
+  menuOpen = false;
 
   constructor(
     private authService: AuthService,
@@ -52,6 +53,17 @@ export class AppComponent implements OnInit {
       this.router.navigate(['/admin']);
     } else if (this.isVendedor()) {
       this.router.navigate(['/reportes']);
+    }
+  }
+
+  toggleMenu(): void {
+    this.menuOpen = !this.menuOpen;
+  }
+
+  onLogoClick(): void {
+    // Solo redirigir en móvil (< 992px)
+    if (window.innerWidth < 992 && this.isAuthenticated() && this.isCliente()) {
+      this.router.navigate(['/cliente']);
     }
   }
 }
